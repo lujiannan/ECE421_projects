@@ -13,7 +13,7 @@ struct Args {
     ticker: String,
 }
 
-
+// cargo run -- --ticker aapl
 #[tokio::main] // allow async main function for now
 async fn main() {
     // parse arguments and ticker
@@ -22,9 +22,18 @@ async fn main() {
     println!("ticker: {}", ticker);
 
 
+    // get stock quote data
     let provider = yahoo::YahooConnector::new();
     // Use `await` instead of `tokio_test::block_on` for async calls in the main function.
-    let response = provider.get_quote_range(ticker.as_str(), "1d", "6mo").await.unwrap(); // ticker, frequency, time range
-    let quotes = response.quotes().unwrap();
-    println!("Apple's quotes of the last month: {:?}", quotes);
+    match provider.get_quote_range(ticker.as_str(), "1d", "1mo").await {
+        Ok(response) => {
+            match response.quotes() {
+                Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
+                Err(_) => println!("Failed to get quotes for ticker: {}", ticker),
+            }
+        },
+        Err(_) => println!("Invalid ticker: {}", ticker),
+    }
+
+    // plot the data
 }
