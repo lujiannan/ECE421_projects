@@ -1,8 +1,14 @@
 use clap::Parser; // command line parser
 extern crate yahoo_finance_api as yahoo; // rename as yahoo
-// Import necessary modules for using yahoo
+                                         // Import necessary modules for using yahoo
 use std::time::{Duration, UNIX_EPOCH};
 use tokio; // tokio async dependencies (make sure full features enabled in toml)
+
+use plotly::layout::Layout;
+use plotly::Candlestick;
+use plotly::Plot;
+use plotly::common::Title;
+use yahoo_finance_api::Quote;
 
 /// Program to analyze a stock
 #[derive(Parser, Debug)]
@@ -13,6 +19,33 @@ struct Args {
     ticker: String,
 }
 
+fn quotes_to_candlestick_data(
+    quotes: Vec<Quote>,
+) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
+    let dates: Vec<String> = quotes.iter().map(|quote| quote.timestamp.to_string()).collect();
+    let opens: Vec<f64> = quotes.iter().map(|quote| quote.open).collect();
+    let highs: Vec<f64> = quotes.iter().map(|quote| quote.high).collect();
+    let lows: Vec<f64> = quotes.iter().map(|quote| quote.low).collect();
+    let closes: Vec<f64> = quotes.iter().map(|quote| quote.close).collect();
+
+    (dates, opens, highs, lows, closes)
+}
+
+fn simple_candlestick_chart(quotes: Vec<Quote>, ticker: &String) {
+    let (dates, opens, highs, lows, closes) = quotes_to_candlestick_data(quotes);
+
+    let trace1 = Candlestick::new(dates, opens, highs, lows, closes)
+        .name("Candlestick");
+
+    let mut plot = Plot::new();
+    plot.add_trace(Box::new(trace1));
+
+    let layout = Layout::new().title(Title::new(&format!("Candlestick Chart of stock: {}", ticker)));
+    plot.set_layout(layout);
+
+    plot.show();
+}
+
 // cargo run -- --ticker aapl
 #[tokio::main] // allow async main function for now
 async fn main() {
@@ -21,17 +54,30 @@ async fn main() {
     let mut ticker = args.ticker.to_uppercase();
     println!("ticker: {}", ticker);
 
-
     // get stock quote data
     let provider = yahoo::YahooConnector::new();
     // Use `await` instead of `tokio_test::block_on` for async calls in the main function.
-    match provider.get_quote_range(ticker.as_str(), "1d", "1mo").await {
+    // match provider.get_quote_range(ticker.as_str(), "1d", "1mo").await {
+    //     Ok(response) => {
+    //         match response.quotes() {
+    //             Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
+    //             Err(_) => println!("Failed to get quotes for ticker: {}", ticker),
+    //         }
+    //     },
+    //     Err(_) => println!("Invalid ticker: {}", ticker),
+    // }
+
+    match provider.get_quote_range(ticker.as_str(), "1d", "6mo").await {
         Ok(response) => {
             match response.quotes() {
-                Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
+                // Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
+                Ok(quotes) => {
+                    // Call the modified candlestick chart function with the obtained quotes
+                    simple_candlestick_chart(quotes, &args.ticker);
+                }
                 Err(_) => println!("Failed to get quotes for ticker: {}", ticker),
             }
-        },
+        }
         Err(_) => println!("Invalid ticker: {}", ticker),
     }
 
