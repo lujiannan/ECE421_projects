@@ -10,6 +10,10 @@ use plotly::Plot;
 use plotly::common::Title;
 use yahoo_finance_api::Quote;
 
+
+// use chrono::{prelude::*, Duration};
+use chrono::{prelude::*};
+
 /// Program to analyze a stock
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -18,11 +22,24 @@ struct Args {
     #[arg(short, long)]
     ticker: String,
 }
+fn timestamp_to_date(timestamp: u64) -> String {
+    // Create a NaiveDateTime from the timestamp
+    let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
+
+    // Create a normal DateTime from the NaiveDateTime
+    let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+
+    // Format the datetime as desired (e.g., "%Y-%m-%d %H:%M:%S")
+    let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+    formatted_date
+}
 
 fn quotes_to_candlestick_data(
     quotes: Vec<Quote>,
 ) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
-    let dates: Vec<String> = quotes.iter().map(|quote| quote.timestamp.to_string()).collect();
+    // let dates: Vec<String> = quotes.iter().map(|quote| quote.timestamp.to_string()).collect();
+    let dates: Vec<String> = quotes.iter().map(|quote| timestamp_to_date(quote.timestamp)).collect();
     let opens: Vec<f64> = quotes.iter().map(|quote| quote.open).collect();
     let highs: Vec<f64> = quotes.iter().map(|quote| quote.high).collect();
     let lows: Vec<f64> = quotes.iter().map(|quote| quote.low).collect();
