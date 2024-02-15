@@ -1,102 +1,203 @@
-use clap::Parser; // command line parser
-extern crate yahoo_finance_api as yahoo; // rename as yahoo
-                                         // Import necessary modules for using yahoo
-use std::time::{Duration, UNIX_EPOCH};
-use tokio; // tokio async dependencies (make sure full features enabled in toml)
+/*
+ECE421 Group Project 1, due Feb 15, 2024
 
-use plotly::layout::Layout;
-use plotly::Candlestick;
-use plotly::Plot;
-use plotly::common::Title;
+Program Name: Our Stock Querying Program
+Version: 0.1
+Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu
+About:
+    This program queries stock data from Yahoo Finance and displays it in an interactive chart.
+    When started, it will prompt the user to enter a stock ticker, and then, if valid,
+    display the ticker's last 6-month's daily closing values in an interactive browser-based chart;
+    The chart also highlights volatile days (where the difference between the high
+    and low prices is greater than 2%), using a candlestick chart overlay option.
+    The user will then be prompted to continue checking stocks or exit the program.
+
+*/
+
+use chrono::prelude::{DateTime, NaiveDateTime, Utc}; // for date and time unix conversion
+use clap::App; // for command line argument parser
+use plotly::common::{Marker, Mode, Title}; // for charting abilities
+use plotly::layout::{Axis, Layout};
+use plotly::{Candlestick, Plot, Scatter};
+use tokio; // for async await abilities (make sure full features enabled in toml)
+extern crate yahoo_finance_api as yahoo; // for grabbing stock data from Yahoo
 use yahoo_finance_api::Quote;
 
-
-// use chrono::{prelude::*, Duration};
-use chrono::{prelude::*};
-
-/// Program to analyze a stock
-#[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
-struct Args {
-    /// Stock ticker
-    #[arg(short, long)]
-    ticker: String,
-}
-fn timestamp_to_date(timestamp: u64) -> String {
+// Function takes a u64 Unix timestamp and returns a formatted date String
+fn convert_timestamp_to_date(timestamp: u64) -> String {
     // Create a NaiveDateTime from the timestamp
-    let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0);
+    let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0); //* this is deprecated, but still works; and screws up the next DateTime if updated
 
     // Create a normal DateTime from the NaiveDateTime
     let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
 
     // Format the datetime as desired (e.g., "%Y-%m-%d %H:%M:%S")
-    let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+    // let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+    let formatted_date = datetime.format("%Y-%m-%d").to_string();
 
-    formatted_date
+    return formatted_date;
 }
 
-fn quotes_to_candlestick_data(
+// Function to convert Yahoo Quote quotes to separated Vector data (this currently seems easier to work with in plotly, but might be unnecessary)
+fn convert_quotes_to_candlestick_data(
     quotes: Vec<Quote>,
 ) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
-    // let dates: Vec<String> = quotes.iter().map(|quote| quote.timestamp.to_string()).collect();
-    let dates: Vec<String> = quotes.iter().map(|quote| timestamp_to_date(quote.timestamp)).collect();
+    // pull out the dates, opens, highs, lows, and closes from the quotes and put them into separate vectors
+    // need to convert the unix timestamp to a date string
+    // 'iter' sets up iteration over the quotes, 'map' applies a possible internal function conversion to each quote,
+    // and 'collect' collects the results into a vector
+    let dates: Vec<String> = quotes
+        .iter()
+        .map(|quote| convert_timestamp_to_date(quote.timestamp))
+        .collect();
     let opens: Vec<f64> = quotes.iter().map(|quote| quote.open).collect();
     let highs: Vec<f64> = quotes.iter().map(|quote| quote.high).collect();
     let lows: Vec<f64> = quotes.iter().map(|quote| quote.low).collect();
     let closes: Vec<f64> = quotes.iter().map(|quote| quote.close).collect();
 
-    (dates, opens, highs, lows, closes)
+    return (dates, opens, highs, lows, closes); //return tuple of vectors ready to be used in a stock chart
 }
 
-fn simple_candlestick_chart(quotes: Vec<Quote>, ticker: &String) {
-    let (dates, opens, highs, lows, closes) = quotes_to_candlestick_data(quotes);
+// Function to setup the plotly chart
+fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
+    // pull out the dates, opens, highs, lows, and closes from the quotes and put them into separate vectors
+    let (dates, opens, highs, lows, closes) = convert_quotes_to_candlestick_data(quotes.clone());
 
-    let trace1 = Candlestick::new(dates, opens, highs, lows, closes)
-        .name("Candlestick");
+    // find the highest and lowest closing prices and their respective dates, and print them to the console
+    let highest_closing = closes.iter().fold(f64::MIN, |a, &b| a.max(b)); // find the highest closing price
+    let date_of_highest_closing =
+        &dates[closes.iter().position(|&x| x == highest_closing).unwrap()]; // find the date of the highest closing price
+    let lowest_closing = closes.iter().fold(f64::MAX, |a, &b| a.min(b)); // find the lowest closing price
+    let date_of_lowest_closing = &dates[closes.iter().position(|&x| x == lowest_closing).unwrap()]; // find the date of the lowest closing price
+    println!(
+        "The highest closing price of {} was ${:.2} on {}",
+        stock_ticker, highest_closing, date_of_highest_closing
+    );
+    println!(
+        "The lowest closing price of {} was ${:.2} on {}",
+        stock_ticker, lowest_closing, date_of_lowest_closing
+    );
 
-    let mut plot = Plot::new();
-    plot.add_trace(Box::new(trace1));
+    // Create a Scatter trace
+    let trace_1_line_closing_days = Scatter::new(dates.clone(), closes.clone())
+        .mode(Mode::Lines) // Set the marker mode
+        .marker(Marker::new().size(4)) // Set the marker size
+        .name("Daily Closing Prices"); // Set the trace name
 
-    let layout = Layout::new().title(Title::new(&format!("Candlestick Chart of stock: {}", ticker)));
-    plot.set_layout(layout);
+    // Of the given days, let's find the volatile dates //* should put this in a separate function
+    let mut vdates = vec![];
+    let mut vopens = vec![];
+    let mut vhighs = vec![];
+    let mut vlows = vec![];
+    let mut vcloses = vec![];
 
-    plot.show();
-}
-
-// cargo run -- --ticker aapl
-#[tokio::main] // allow async main function for now
-async fn main() {
-    // parse arguments and ticker
-    let args = Args::parse();
-    let mut ticker = args.ticker.to_uppercase();
-    println!("ticker: {}", ticker);
-
-    // get stock quote data
-    let provider = yahoo::YahooConnector::new();
-    // Use `await` instead of `tokio_test::block_on` for async calls in the main function.
-    // match provider.get_quote_range(ticker.as_str(), "1d", "1mo").await {
-    //     Ok(response) => {
-    //         match response.quotes() {
-    //             Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
-    //             Err(_) => println!("Failed to get quotes for ticker: {}", ticker),
-    //         }
-    //     },
-    //     Err(_) => println!("Invalid ticker: {}", ticker),
-    // }
-
-    match provider.get_quote_range(ticker.as_str(), "1d", "6mo").await {
-        Ok(response) => {
-            match response.quotes() {
-                // Ok(quotes) => println!("Quotes for the last month: {:?}", quotes),
-                Ok(quotes) => {
-                    // Call the modified candlestick chart function with the obtained quotes
-                    simple_candlestick_chart(quotes, &args.ticker);
-                }
-                Err(_) => println!("Failed to get quotes for ticker: {}", ticker),
-            }
+    for (i, date) in dates.iter().enumerate() {
+        if (highs[i] - lows[i]) / closes[i] > 0.02 {
+            vdates.push(date.clone());
+            vopens.push(opens[i]);
+            vhighs.push(highs[i]);
+            vlows.push(lows[i]);
+            vcloses.push(closes[i]);
         }
-        Err(_) => println!("Invalid ticker: {}", ticker),
     }
 
-    // plot the data
+    // Create a second trace (in Candlestick form) to represent volatile dates
+    let trace_2_error_volatile_days =
+        Candlestick::new(vdates, vopens, vhighs, vlows, vcloses).name("Volatile Days");
+
+    // create plot and add traces
+    let mut plot = Plot::new();
+    plot.add_trace(Box::new(trace_2_error_volatile_days));
+    plot.add_trace(trace_1_line_closing_days);
+
+    // Create the plot layout
+    let layout = Layout::new()
+        .title(Title::new(&format!(
+            "Stock Price Chart of Stock Ticker: {}",
+            stock_ticker
+        )))
+        .x_axis(Axis::new().title(Title::new("Date")))
+        .y_axis(Axis::new().title(Title::new("Price ($USD)")))
+        .height(900); // Set the height to 800 pixels (default is 450 pixels, which is too short)
+    plot.set_layout(layout);
+
+    plot.show(); // open the plot in a browser window
+}
+
+// main function to run the program
+#[tokio::main] // allows async await function in main() (when using Yahoo to check for stock data)
+async fn main() {
+    // '--help' setup, messaging information
+    let helpermsg = App::new("Our Stock Querying Program")
+        .version("0.1")
+        .author("Prabh Kooner, Brandon Hoynick, Jiannan Lu")
+        .about(
+            "
+        This program queries stock data from Yahoo Finance and displays it in an interactive chart. 
+        When started, it will prompt the user to enter a stock ticker, and then, if valid,
+        display the ticker's last 6-month's daily values in an interactive browser-based chart.
+        The chart also highlights volatile days (where the difference between the high
+        and low prices is greater than 2%), using a candlestick chart overlay option.
+        The user will then be prompted to continue checking stocks or exit the program.
+        ",
+        ) // this newlined layout displays as is on the --help, so do not change
+        .get_matches();
+
+    // Check if the '--help' flag is present in command line
+    if helpermsg.is_present("help") {
+        println!("{:?}", helpermsg);
+        return;
+    }
+
+    // Program's welcome message
+    println!("Welcome to our stock querying program!");
+    let mut while_holder = true; // setup while loop to keep asking for stock tickers
+    while while_holder {
+        println!("Enter a valid stock ticker to get the last 6-month's daily values: "); // ask for stock ticker
+        let mut stock_ticker = String::new();
+        let _ = std::io::stdin().read_line(&mut stock_ticker); // get keyboard input
+        stock_ticker = stock_ticker.trim().to_uppercase(); // make it trimmed and uppercase
+        println!("You entered the stock ticker: {}", stock_ticker);
+
+        let provider = yahoo::YahooConnector::new(); // setup stock data provider (Yahoo) ref: https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range , https://crates.io/crates/yahoo_finance_api/0.3.1
+
+        match provider // match,OK,Err Ref: https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
+            .get_quote_range(stock_ticker.as_str(), "1d", "6mo")
+            .await
+        {
+            // check Yahoo for this ticker, for daily values, for last 6-months
+            Ok(response) => {
+                // if we get a good ticker...
+                match response.quotes() {
+                    // ...then get the quotes...
+                    Ok(quotes) => {
+                        // println!("We have received a valid stock ticker response from: {}", quotes.longname); //* print the longname of the stock (cant seem find it in the quotes struct)
+                        setup_plotly_chart(quotes, &stock_ticker); // ...and use the quotes in a candlestick chart. Ref:
+                    }
+                    Err(e) => println!(
+                        "Error: {}, Failed to get quotes for ticker: {}",
+                        e, stock_ticker
+                    ),
+                }
+            }
+            Err(e) => println!("Error: {}, Invalid ticker: {}", e, stock_ticker),
+        }
+        let mut while_holder_2 = true; // setup while loop to ask if user wants to continue checking stocks (along with error checking)
+        while while_holder_2 {
+            println!("Would you like to continue checking stocks? (y or n): ");
+            let mut ask = String::new();
+            let _ = std::io::stdin().read_line(&mut ask); // get keyboard input
+            ask = ask.trim().to_uppercase(); // make it trimmed and uppercase
+            if ask == "Y" || ask == "YES" {
+                while_holder = true;
+                while_holder_2 = false;
+            } else if ask == "N" || ask == "NO" {
+                while_holder = false;
+                while_holder_2 = false;
+                println!("Thank you for using our stock querying program, goodbye!");
+            } else {
+                println!("Invalid input, please try again.");
+            }
+        }
+    }
 }
