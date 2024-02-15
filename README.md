@@ -43,7 +43,7 @@ After running the program:
 4. When prompted afterwards: you can check for another stock, or, quit the program.
 
 ## References
-plotly examples - https://github.com/igiagkiozis/plotly/blob/master/examples/financial_charts/src/main.rs ; https://docs.rs/plotly/latest/plotly/plot/struct.Plot.html ; https://blog.logrocket.com/plotting-rust-projects-plotly/
-chrono timestamp conversion example - https://www.epochconvert.com/programming/rust
-match,OK,Err example -  https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
-Yahoo stock data examples - https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range ; https://crates.io/crates/yahoo_finance_api/0.3.1
+- plotly examples - https://github.com/igiagkiozis/plotly/blob/master/examples/financial_charts/src/main.rs ; https://docs.rs/plotly/latest/plotly/plot/struct.Plot.html ; https://blog.logrocket.com/plotting-rust-projects-plotly/
+- chrono timestamp conversion example - https://www.epochconvert.com/programming/rust
+- match,OK,Err example -  https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
+- Yahoo stock data examples - https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range ; https://crates.io/crates/yahoo_finance_api/0.3.1
