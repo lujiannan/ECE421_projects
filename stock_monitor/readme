@@ -21,3 +21,11 @@ Low - lowest price that day
 Volume - total number of shared that were traded that day
 Close - closing price that day
 Adj close - adjusted close. adjusted for corporate actions such as dividents, stock splits, new stock offerings
+
+References:
+clap = { version = "4.5.0", features = ["derive"] }
+yahoo_finance_api = "2.1.0"
+tokio = { version = "1.36.0", features = ["full"] }
+reference?
+plotly github example - https://github.com/igiagkiozis/plotly/blob/master/examples/financial_charts/src/main.rs
+timestamp conversion - https://www.epochconvert.com/programming/rust
