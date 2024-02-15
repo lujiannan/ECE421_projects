@@ -5,11 +5,11 @@ Version: 0.1
 Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu  
 
 ## Crates Used
-- `chrono`: This crate is used for handling date and time data (like converting unix timestamps).
-- `clap`: This crate is used for command line argument parsing (like `--help`).
-- `plotly`: This crate is used for creating interactive charts to visualize the stock data.
-- `tokio`: This crate is used for asynchronous programming (for async-await parsing Yahoo's stock database).
-- `yahoo_finance_api`: This crate is used to fetch stock data from Yahoo Finance.
+- `chrono`: This crate is used for handling date and time data (like converting unix timestamps).  https://crates.io/crates/chrono
+- `clap`: This crate is used for command line argument parsing (like `--help`). https://crates.io/crates/clap
+- `plotly`: This crate is used for creating interactive charts to visualize the stock data. https://crates.io/crates/plotly
+- `tokio`: This crate is used for asynchronous programming (for async-await parsing Yahoo's stock database). https://crates.io/crates/tokio
+- `yahoo_finance_api`: This crate is used to fetch stock data from Yahoo Finance. https://crates.io/crates/yahoo_finance_api
 
 ## Financial Analysis Algorithms
 As per the project requirements:
