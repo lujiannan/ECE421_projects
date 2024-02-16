@@ -1,21 +1,28 @@
 /*
-ECE421 Group Project 1, due Feb 15, 2024
+ECE421 Group Project 1, due Feb 16, 2024
 
 Program Name: Our Stock Querying Program
-Version: 0.1
+Version: 0.1.0
 Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu
 */
-const ABOUT_TEXT: &str = r#"This program queries stock data from Yahoo Finance and displays it in an interactive chart.
-When started, it will prompt the user to enter a stock ticker, and then, if valid,
-display the ticker's last 6-month's daily closing values in an interactive browser-based chart;
-The chart also highlights volatile days (where the difference between the high
-and low prices is greater than 2%), using a candlestick chart overlay option.
-The user will then be prompted to continue checking stocks or exit the program."#;
 
+// Program Description:
+const ABOUT_TEXT: &str = r#"
+This program queries stock tickers from Yahoo Finance 
+and displays it's historical data in an interactive chart.
 
+Start the executable with a stock ticker as a --ticker argument.
+If that ticker is valid, 
+it will then query Yahoo Finance for the ticker's last 6-month's daily closing values,
+and output the values in an interactive chart (using a browser-based html file).
 
+The chart also highlights volatile days 
+(where the difference between the high and low prices is greater than 2% of the closing price), 
+using a candlestick chart overlay option.
+"#;
 
-use chrono::prelude::{DateTime, NaiveDateTime, Utc}; // for date and time unix conversion
+// Importing the necessary libraries
+use chrono::prelude::DateTime; // for date and time unix conversion
 use clap::Parser; // for command line argument parser
 use plotly::common::{Marker, Mode, Title}; // for charting abilities
 use plotly::layout::{Axis, Layout};
@@ -26,20 +33,16 @@ use yahoo_finance_api::Quote;
 
 // Function takes a u64 Unix timestamp and returns a formatted date String
 fn convert_timestamp_to_date(timestamp: u64) -> String {
-    // Create a NaiveDateTime from the timestamp
-    let naive = NaiveDateTime::from_timestamp(timestamp as i64, 0); //* this is deprecated, but still works; and screws up the next DateTime if updated
-
-    // Create a normal DateTime from the NaiveDateTime
-    let datetime: DateTime<Utc> = DateTime::from_utc(naive, Utc);
+    // Create a DateTime from the 'Unix seconds' timestamp
+    let datetime = DateTime::from_timestamp(timestamp as i64, 0).unwrap();
 
     // Format the datetime as desired (e.g., "%Y-%m-%d %H:%M:%S")
-    // let formatted_date = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
     let formatted_date = datetime.format("%Y-%m-%d").to_string();
 
     return formatted_date;
 }
 
-// Function to convert Yahoo Quote quotes to separated Vector data (this currently seems easier to work with in plotly, but might be unnecessary)
+// Function to convert Yahoo Quote quotes to separated Vector data (this currently seems easier to work with in plotly more than the struct itself)
 fn convert_quotes_to_candlestick_data(
     quotes: Vec<Quote>,
 ) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
@@ -57,6 +60,31 @@ fn convert_quotes_to_candlestick_data(
     let closes: Vec<f64> = quotes.iter().map(|quote| quote.close).collect();
 
     return (dates, opens, highs, lows, closes); //return tuple of vectors ready to be used in a stock chart
+}
+
+// Function to find which days of the previous vectors are volatile, and return them in a new set of vectors
+fn grab_volatile_days(
+    dates: Vec<String>, opens: Vec<f64>, highs: Vec<f64>, lows: Vec<f64>, closes: Vec<f64>
+) -> (Vec<String>, Vec<f64>, Vec<f64>, Vec<f64>, Vec<f64>) {
+    // Let's setup some new vectors to hold the volatile days
+    let mut vdates = vec![];
+    let mut vopens = vec![];
+    let mut vhighs = vec![];
+    let mut vlows = vec![];
+    let mut vcloses = vec![];
+
+    // iterate through the dates, and if the difference between the high and low is greater than 2% of the closing price, then add it to the new vectors
+    for (i, date) in dates.iter().enumerate() {
+        if (highs[i] - lows[i]) / closes[i] > 0.02 {
+            vdates.push(date.clone());
+            vopens.push(opens[i]);
+            vhighs.push(highs[i]);
+            vlows.push(lows[i]);
+            vcloses.push(closes[i]);
+        }
+    }
+
+    return (vdates, vopens, vhighs, vlows, vcloses); //return tuple of vectors ready to be used in a stock chart
 }
 
 // Function to setup the plotly chart
@@ -85,22 +113,8 @@ fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
         .marker(Marker::new().size(4)) // Set the marker size
         .name("Daily Closing Prices"); // Set the trace name
 
-    // Of the given days, let's find the volatile dates //* should put this in a separate function
-    let mut vdates = vec![];
-    let mut vopens = vec![];
-    let mut vhighs = vec![];
-    let mut vlows = vec![];
-    let mut vcloses = vec![];
-
-    for (i, date) in dates.iter().enumerate() {
-        if (highs[i] - lows[i]) / closes[i] > 0.02 {
-            vdates.push(date.clone());
-            vopens.push(opens[i]);
-            vhighs.push(highs[i]);
-            vlows.push(lows[i]);
-            vcloses.push(closes[i]);
-        }
-    }
+    // Of the given days, let's find the volatile dates
+    let (vdates, vopens, vhighs, vlows, vcloses) = grab_volatile_days(dates, opens, highs, lows, closes);
 
     // Create a second trace (in Candlestick form) to represent volatile dates
     let trace_2_error_volatile_days =
@@ -119,7 +133,7 @@ fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
         )))
         .x_axis(Axis::new().title(Title::new("Date")))
         .y_axis(Axis::new().title(Title::new("Price ($USD)")))
-        .height(900); // Set the height to 800 pixels (default is 450 pixels, which is too short)
+        .height(900); // Set the height to 900 pixels (default is 450 pixels, which is too short)
     plot.set_layout(layout);
 
     // plot.show(); // open the plot in a browser window
@@ -127,8 +141,7 @@ fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
 
 }
 
-// DONT REMOVE this is needed to clap, cmd line parsing, about, and help
-/// Program to analyze a stock
+// this is needed to use clap, cmd line parsing, about, and help
 #[derive(Parser, Debug)]
 #[command(version = "1.0", about = ABOUT_TEXT , long_about = None)]
 struct Args {
@@ -136,8 +149,6 @@ struct Args {
     #[arg(short, long)]
     ticker: String,
 }
-
-
 
 // main function to run the program
 #[tokio::main] // allows async await function in main() (when using Yahoo to check for stock data)
@@ -147,9 +158,9 @@ async fn main() {
     let stock_ticker = args.ticker.to_uppercase();
     println!("Your stock ticker: {}", stock_ticker);
 
-    let provider = yahoo::YahooConnector::new(); // setup stock data provider (Yahoo) ref: https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range , https://crates.io/crates/yahoo_finance_api/0.3.1
+    let provider = yahoo::YahooConnector::new(); // setup stock data provider (Yahoo)
 
-    match provider // match,OK,Err Ref: https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
+    match provider // look for quote, using 'match,OK,Err' style
         .get_quote_range(stock_ticker.as_str(), "1d", "6mo")
         .await
     {
