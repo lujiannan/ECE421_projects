@@ -123,10 +123,11 @@ fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
     plot.set_layout(layout);
 
     // plot.show(); // open the plot in a browser window
-    plot.write_html("plot.html");
+    plot.write_html(&format!("plot_{}.html", stock_ticker));
+
 }
 
-
+// DONT REMOVE this is needed to clap, cmd line parsing, about, and help
 /// Program to analyze a stock
 #[derive(Parser, Debug)]
 #[command(version = "1.0", about = ABOUT_TEXT , long_about = None)]
