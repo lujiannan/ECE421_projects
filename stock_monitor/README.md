@@ -22,7 +22,7 @@ As per the project requirements:
 - Additionally, our programs prompts and calls are setup to prevent crashes (i.e. they include error checkers).
 
 ## Charting Setup
-We used the `plotly` crate to create a chart of both line and candlestick traces for the stock data. The line trace shows the daily closing prices, while the candlestick trace represents volatile days. The x-axis represents the date and the y-axis represents the stock price (in $USD). We enabled autoscaling for the y-axis to ensure that all data points are visible in the chart. The program generates an interactive `plot_<stock_ticker>.html` file. The interactivity of the chart allows the user to show/hide traces, and zoom into date ranges.
+We used the `plotly` crate to create a chart of both line and candlestick traces for the stock data. The line trace shows the daily closing prices, while the candlestick trace represents volatile days. The x-axis represents the date and the y-axis represents the stock price (in $USD). We enabled autoscaling for the y-axis to ensure that all data points are visible in the chart; we also set the pixel size large enough to resonably fill the html page. The program generates an interactive `plot_<stock_ticker>.html` file. The interactivity of the chart allows the user to show/hide traces, and zoom into date ranges.
 
 ## Project Setup
 To build the program:

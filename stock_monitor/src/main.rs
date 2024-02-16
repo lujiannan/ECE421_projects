@@ -174,8 +174,7 @@ async fn stock_data_checker(provider: &yahoo::YahooConnector, stock_ticker_arg: 
             match response.quotes() {
                 // ...then get the quotes...
                 Ok(quotes) => {
-                    // println!("We have received a valid stock ticker response from: {}", quotes.longname); //* print the longname of the stock (cant seem find it in the quotes struct)
-                    setup_plotly_chart(quotes, &stock_ticker_arg); // ...and use the quotes in a candlestick chart. Ref:
+                    setup_plotly_chart(quotes, &stock_ticker_arg); // ...and use the quotes in a line and candlestick chart html file
                 }
                 Err(e) => println!(
                     "Error: {}, Failed to get quotes for ticker: {}",
