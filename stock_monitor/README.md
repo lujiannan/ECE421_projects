@@ -31,8 +31,8 @@ To build the program:
 3. Build the project: `cargo build`
 
 To build and run the program:
-1. Run the command: 'cargo run -- --ticker <stock_ticker>'
-2. (Optional) Open the help menu: 'cargo run -- --help`
+1. Run the command: `cargo run -- --ticker <stock_ticker>`
+2. (Optional) Open the help menu: `cargo run -- --help`
 
 To run the compiled binary:
 1. Navigate to the program directory: `cd target/debug/`
