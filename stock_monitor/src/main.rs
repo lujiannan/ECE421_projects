@@ -4,18 +4,19 @@ ECE421 Group Project 1, due Feb 15, 2024
 Program Name: Our Stock Querying Program
 Version: 0.1
 Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu
-About:
-    This program queries stock data from Yahoo Finance and displays it in an interactive chart.
-    When started, it will prompt the user to enter a stock ticker, and then, if valid,
-    display the ticker's last 6-month's daily closing values in an interactive browser-based chart;
-    The chart also highlights volatile days (where the difference between the high
-    and low prices is greater than 2%), using a candlestick chart overlay option.
-    The user will then be prompted to continue checking stocks or exit the program.
-
 */
+const ABOUT_TEXT: &str = r#"This program queries stock data from Yahoo Finance and displays it in an interactive chart.
+When started, it will prompt the user to enter a stock ticker, and then, if valid,
+display the ticker's last 6-month's daily closing values in an interactive browser-based chart;
+The chart also highlights volatile days (where the difference between the high
+and low prices is greater than 2%), using a candlestick chart overlay option.
+The user will then be prompted to continue checking stocks or exit the program."#;
+
+
+
 
 use chrono::prelude::{DateTime, NaiveDateTime, Utc}; // for date and time unix conversion
-use clap::App; // for command line argument parser
+use clap::Parser; // for command line argument parser
 use plotly::common::{Marker, Mode, Title}; // for charting abilities
 use plotly::layout::{Axis, Layout};
 use plotly::{Candlestick, Plot, Scatter};
@@ -121,83 +122,52 @@ fn setup_plotly_chart(quotes: Vec<Quote>, stock_ticker: &String) {
         .height(900); // Set the height to 800 pixels (default is 450 pixels, which is too short)
     plot.set_layout(layout);
 
-    plot.show(); // open the plot in a browser window
+    // plot.show(); // open the plot in a browser window
+    plot.write_html("plot.html");
 }
+
+
+/// Program to analyze a stock
+#[derive(Parser, Debug)]
+#[command(version = "1.0", about = ABOUT_TEXT , long_about = None)]
+struct Args {
+    /// Stock ticker
+    #[arg(short, long)]
+    ticker: String,
+}
+
+
 
 // main function to run the program
 #[tokio::main] // allows async await function in main() (when using Yahoo to check for stock data)
 async fn main() {
-    // '--help' setup, messaging information
-    let helpermsg = App::new("Our Stock Querying Program")
-        .version("0.1")
-        .author("Prabh Kooner, Brandon Hoynick, Jiannan Lu")
-        .about(
-            "
-        This program queries stock data from Yahoo Finance and displays it in an interactive chart. 
-        When started, it will prompt the user to enter a stock ticker, and then, if valid,
-        display the ticker's last 6-month's daily values in an interactive browser-based chart.
-        The chart also highlights volatile days (where the difference between the high
-        and low prices is greater than 2%), using a candlestick chart overlay option.
-        The user will then be prompted to continue checking stocks or exit the program.
-        ",
-        ) // this newlined layout displays as is on the --help, so do not change
-        .get_matches();
+    // parse args
+    let args = Args::parse();
+    let stock_ticker = args.ticker.to_uppercase();
+    println!("Your stock ticker: {}", stock_ticker);
 
-    // Check if the '--help' flag is present in command line
-    if helpermsg.is_present("help") {
-        println!("{:?}", helpermsg);
-        return;
-    }
+    let provider = yahoo::YahooConnector::new(); // setup stock data provider (Yahoo) ref: https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range , https://crates.io/crates/yahoo_finance_api/0.3.1
 
-    // Program's welcome message
-    println!("Welcome to our stock querying program!");
-    let mut while_holder = true; // setup while loop to keep asking for stock tickers
-    while while_holder {
-        println!("Enter a valid stock ticker to get the last 6-month's daily values: "); // ask for stock ticker
-        let mut stock_ticker = String::new();
-        let _ = std::io::stdin().read_line(&mut stock_ticker); // get keyboard input
-        stock_ticker = stock_ticker.trim().to_uppercase(); // make it trimmed and uppercase
-        println!("You entered the stock ticker: {}", stock_ticker);
-
-        let provider = yahoo::YahooConnector::new(); // setup stock data provider (Yahoo) ref: https://docs.rs/yahoo_finance_api/latest/yahoo_finance_api/#get-the-history-of-quotes-for-time-range , https://crates.io/crates/yahoo_finance_api/0.3.1
-
-        match provider // match,OK,Err Ref: https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
-            .get_quote_range(stock_ticker.as_str(), "1d", "6mo")
-            .await
-        {
-            // check Yahoo for this ticker, for daily values, for last 6-months
-            Ok(response) => {
-                // if we get a good ticker...
-                match response.quotes() {
-                    // ...then get the quotes...
-                    Ok(quotes) => {
-                        // println!("We have received a valid stock ticker response from: {}", quotes.longname); //* print the longname of the stock (cant seem find it in the quotes struct)
-                        setup_plotly_chart(quotes, &stock_ticker); // ...and use the quotes in a candlestick chart. Ref:
-                    }
-                    Err(e) => println!(
-                        "Error: {}, Failed to get quotes for ticker: {}",
-                        e, stock_ticker
-                    ),
+    match provider // match,OK,Err Ref: https://doc.rust-lang.org/rust-by-example/error/result/result_map.html
+        .get_quote_range(stock_ticker.as_str(), "1d", "6mo")
+        .await
+    {
+        // check Yahoo for this ticker, for daily values, for last 6-months
+        Ok(response) => {
+            // if we get a good ticker...
+            match response.quotes() {
+                // ...then get the quotes...
+                Ok(quotes) => {
+                    // println!("We have received a valid stock ticker response from: {}", quotes.longname); //* print the longname of the stock (cant seem find it in the quotes struct)
+                    setup_plotly_chart(quotes, &stock_ticker); // ...and use the quotes in a candlestick chart. Ref:
                 }
-            }
-            Err(e) => println!("Error: {}, Invalid ticker: {}", e, stock_ticker),
-        }
-        let mut while_holder_2 = true; // setup while loop to ask if user wants to continue checking stocks (along with error checking)
-        while while_holder_2 {
-            println!("Would you like to continue checking stocks? (y or n): ");
-            let mut ask = String::new();
-            let _ = std::io::stdin().read_line(&mut ask); // get keyboard input
-            ask = ask.trim().to_uppercase(); // make it trimmed and uppercase
-            if ask == "Y" || ask == "YES" {
-                while_holder = true;
-                while_holder_2 = false;
-            } else if ask == "N" || ask == "NO" {
-                while_holder = false;
-                while_holder_2 = false;
-                println!("Thank you for using our stock querying program, goodbye!");
-            } else {
-                println!("Invalid input, please try again.");
+                Err(e) => println!(
+                    "Error: {}, Failed to get quotes for ticker: {}",
+                    e, stock_ticker
+                ),
             }
         }
+        Err(e) => println!("Error: {}, Invalid ticker: {}", e, stock_ticker),
     }
+        
 }
