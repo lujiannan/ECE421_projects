@@ -1,8 +1,8 @@
 # Our Stock Querying Program
-ECE421 Group Project 1, due Feb 16, 2024  
-Program Name: Our Stock Querying Program  
-Version: 1.0.0 
-Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu  
+- ECE421 Group Project 1, due Feb 16, 2024  
+- Program Name: Our Stock Querying Program  
+- Version: 1.0.0 
+- Authors: Prabh Kooner, Brandon Hoynick, Jiannan Lu  
 
 ## Crates Used
 - `chrono`: This crate is used for handling date and time data (like converting unix timestamps).  https://crates.io/crates/chrono
@@ -22,7 +22,7 @@ As per the project requirements:
 - Additionally, our programs prompts and calls are setup to prevent crashes (i.e. they include error checkers).
 
 ## Charting Setup
-We used the `plotly` crate to create a chart of both line and candlestick traces for the stock data. The line chart shows the daily closing prices, while the candlestick represents volatile days. The x-axis represents the date and the y-axis represents the stock price (in $USD). We enabled autoscaling for the y-axis to ensure that all data points are visible in the chart. The program generates an interactive "plot.html" file. The interactivity of the chart allows the user to show/hide traces, and zoom into date ranges.
+We used the `plotly` crate to create a chart of both line and candlestick traces for the stock data. The line trace shows the daily closing prices, while the candlestick trace represents volatile days. The x-axis represents the date and the y-axis represents the stock price (in $USD). We enabled autoscaling for the y-axis to ensure that all data points are visible in the chart. The program generates an interactive `plot_<stock_ticker>.html` file. The interactivity of the chart allows the user to show/hide traces, and zoom into date ranges.
 
 ## Project Setup
 To build the program:
@@ -39,10 +39,17 @@ To run the compiled binary build:
 3. (Optional) Open the help menu: `stock_monitor --help`
 
 ## Usage Instructions
-After running the program:
+After running the program via executable args:
 1. Open the generated `plot_<stock_ticker>.html` file (in the same directory).
 2. Navigate browser chart; clicking on the top-right options (e.g. zoom) allows you to select spots on the chart to enhance (e.g. zoom: allows you to select a smaller range of dates to zoom into); Selecting the legends will show/hide the 'daily closing price' and 'volatile day' traces.
 3. The terminal will also display the dates of the highest and lowest closing prices for the last 6-months.
+
+After running the program without executable args:
+1. The program will prompt you to enter a stock ticker. e.g.: `aapl` or `GOOGL`
+- If there is a valid stock ticker, it will check for data and generate a plot via html (or error if not valid);
+2. Open the generated `plot_<stock_ticker>.html` file (in the same directory).
+3. Navigate browser chart; clicking on the top-right options (e.g. zoom) allows you to select spots on the chart to enhance (e.g. zoom: allows you to select a smaller range of dates to zoom into); Selecting the legends will show/hide the 'daily closing price' and 'volatile day' traces.
+4. The terminal will also display the dates of the highest and lowest closing prices for the last 6-months.
 
 ## References
 - plotly examples - https://github.com/igiagkiozis/plotly/blob/master/examples/financial_charts/src/main.rs ; https://docs.rs/plotly/latest/plotly/plot/struct.Plot.html ; https://blog.logrocket.com/plotting-rust-projects-plotly/

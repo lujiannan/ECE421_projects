@@ -6,14 +6,10 @@ Version: 1.0.0
 Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu
 */
 
-use chrono::prelude::{DateTime, NaiveDateTime, Utc}; // for date and time unix conversion
-use clap::App; // for command line argument parser
-
 // Program Description:
 const ABOUT_TEXT: &str = r#"
 This program queries stock tickers from Yahoo Finance 
 and displays it's historical data in an interactive chart.
-
 
 There are two ways to use this program:
 
