@@ -1,7 +1,7 @@
 # Our Stock Querying Program
 ECE421 Group Project 1, due Feb 16, 2024  
 Program Name: Our Stock Querying Program  
-Version: 0.1.0 
+Version: 1.0.0 
 Author: Prabh Kooner, Brandon Hoynick, Jiannan Lu  
 
 ## Crates Used
@@ -26,16 +26,17 @@ We used the `plotly` crate to create a chart of both line and candlestick traces
 
 ## Project Setup
 To build the program:
-1. Extract any saved release (v0.1.0) zip/folder to desired location, or, 
+
+1. Extract any saved release (v1.0.0) zip/folder to desired location, or, 
 1. Clone the repository: `git clone https://github.com/kooner27/421_projects.git` 
 2. Navigate within the project directory to the src parent folder: `cd 421_projects/stock_monitor/`
 3. Build the project: `cargo build --release`
-4. (Optional) To directly build AND run the program, run the command: `cargo run --release -- --ticker <stock_ticker>`
-5. (Optional) To directly build, run, and open the help menu: `cargo run --release -- --help`
+4. (Optional) To directly build AND run the program, run the command: `cargo run --release -- --ticker <stock_ticker>` or `cargo run --release`
+5. (Optional) To directly build AND run the help menu: `cargo run --release -- --help`
 
 To run the compiled binary build:
 1. Navigate to the executable directory: `cd target/release/`
-2. Run the executable: `stock_monitor --ticker <stock_ticker>`
+2. Run the executable: `stock_monitor --ticker <stock_ticker>` or `stock_monitor`
 3. (Optional) Open the help menu: `stock_monitor --help`
 
 ## Usage Instructions
