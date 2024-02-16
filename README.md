@@ -26,6 +26,7 @@ We used the `plotly` crate to create a chart of both line and candlestick traces
 
 ## Project Setup
 To build the program:
+
 1. Extract any saved release (v1.0.0) zip/folder to desired location, or, 
 1. Clone the repository: `git clone https://github.com/kooner27/421_projects.git` 
 2. Navigate within the project directory to the src parent folder: `cd 421_projects/stock_monitor/`

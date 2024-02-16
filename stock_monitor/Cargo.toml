@@ -3,12 +3,17 @@ name = "stock_monitor"
 version = "1.0.0"
 edition = "2021"
 
+[profile.dev]  # for faster compilation
+opt-level = 0
+
+[profile.release] # for faster execution (the final version)
+opt-level = 3
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-# clap = { version = "4.5.0", features = ["derive"] } # for command line argument parsing (like '--help'), used 3.0.1 version since it has easy access to App
+clap = { version = "4.5.0", features = ["derive"] } # for command line argument parsing (like '--help')
 chrono = "0.4.34"                                   # for date and time
-clap = "3.0.1"                                    # for command line argument parsing (like '--help'), used 3.0.1 version since it has easy access to App
 plotly = "0.8.4"                                    # for plotting
 tokio = { version = "1.36.0", features = ["full"] } # for async
 yahoo_finance_api = "2.1.0"                         # for fetching stock data
