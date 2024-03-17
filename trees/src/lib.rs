@@ -148,6 +148,7 @@ pub mod rbtree {
             Some(node_left)
         }
 
+        
         pub fn rr_rotate(node: &Tree) -> RedBlackTree {
             let node_right = node.borrow().right.clone()?;
             let node_right_left = node_right.borrow().left.clone();
@@ -205,12 +206,6 @@ pub mod rbtree {
         }
 
 
-
-        
-        
-
-
-
         pub fn get_parent_key(&self) -> Option<u32> {
             // Attempt to upgrade the Weak pointer to a strong reference
             if let Some(parent_weak) = &self.parent {
@@ -264,7 +259,77 @@ pub mod rbtree {
             self.pretty_print(String::new(), false);
         }
 
+        
+        pub fn count_number_of_leaves(node: &Tree) -> usize {
+            let mut count = 0;
 
+            let node_borrowed = node.borrow();
+            if node_borrowed.left.is_none() {
+                count += 1;
+                println!("left none {}, count: {}",node_borrowed.key , count);
+            } else if let Some(ref left_child) = node_borrowed.left {
+                count += TreeNode::count_number_of_leaves(left_child);
+            }
+            if node_borrowed.right.is_none() {
+                count += 1;
+                println!("right none {}, count: {}",node_borrowed.key , count);
+            } else if let Some(ref right_child) = node_borrowed.right {
+                count += TreeNode::count_number_of_leaves(right_child);
+            }
+            count
+        }
+        
+        pub fn is_tree_empty(node: &Tree) -> bool {
+            node.borrow().left.is_none() && node.borrow().right.is_none()
+        }
+
+        // pub fn get_height_of_tree (node: &Tree) -> usize {
+        //     let mut height = 0;
+        //     let node_borrowed = node.borrow();
+        //     if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
+        //         return 1;
+        //     }
+        //     if let Some(ref left_child) = node_borrowed.left {
+        //         height = 1 + TreeNode::get_height_of_tree(left_child);
+        //     }
+        //     if let Some(ref right_child) = node_borrowed.right {
+        //         height = 1 + TreeNode::get_height_of_tree(right_child);
+        //     }
+        //     height
+        // }
+
+        // pub fn get_height_of_tree(node: &Tree) -> usize {
+        //     let mut height = 0;
+        //     let node_borrowed = node.borrow();
+        //     if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
+        //         return 1;
+        //     }
+        //     if let Some(ref left_child) = node_borrowed.left {
+        //         height = 1 + TreeNode::get_height_of_tree(left_child);
+        //     }
+        //     if let Some(ref right_child) = node_borrowed.right {
+        //         height = std::cmp::max(height, 1 + TreeNode::get_height_of_tree(right_child));
+        //     }
+        //     height
+        // }
+
+        pub fn get_height_of_tree (node: &Tree) -> usize {
+            let mut height = 1;
+            let mut height_left = 0;
+            let mut height_right = 0;
+            let node_borrowed = node.borrow();
+            if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
+                return height
+            }
+            if let Some(ref left_child) = node_borrowed.left {
+                height_left = height + TreeNode::get_height_of_tree(left_child);
+            }
+            if let Some(ref right_child) = node_borrowed.right {
+                height_right = height + TreeNode::get_height_of_tree(right_child);
+            }
+            height = std::cmp::max(height_left, height_right);
+            height
+        }
         
     }
 }
