@@ -12,6 +12,12 @@ pub mod rbtree {
         Black,
     }
 
+    pub enum ChildPosition {
+        Left,
+        Right,
+        None,
+    }
+
     type Tree = Rc<RefCell<TreeNode<u32>>>;
     type WeakTree = Weak<RefCell<TreeNode<u32>>>;
     type RedBlackTree = Option<Tree>;
@@ -23,10 +29,11 @@ pub mod rbtree {
         pub key: T,
         pub parent: WeakRedBlackTree, // Weak references for cyclic stuff to prevent memory leaks
         pub left: RedBlackTree,
-        right: RedBlackTree,
+        pub right: RedBlackTree,
     }
 
     impl TreeNode<u32> {
+        
 
         // used for creating root in RBtree implementation
         // notice tree type. returns pointer to the root that we can borrow and mutate
@@ -51,6 +58,27 @@ pub mod rbtree {
                 left: None,
                 right: None,
             })))
+        }
+        
+        pub fn child_position(&self) -> ChildPosition {
+            if let Some(parent_weak) = &self.parent {
+                if let Some(parent) = parent_weak.upgrade() {
+                    let parent_borrowed = parent.borrow();
+
+                    if let Some(ref left_child) = parent_borrowed.left {
+                        if left_child.borrow().key == self.key {
+                            return ChildPosition::Left;
+                        }
+                    }
+
+                    if let Some(ref right_child) = parent_borrowed.right {
+                        if right_child.borrow().key == self.key {
+                            return ChildPosition::Right;
+                        }
+                    }
+                }
+            }
+            ChildPosition::None
         }
 
         // insert new node and set the parent which is a weak reference to the previous node
@@ -88,7 +116,7 @@ pub mod rbtree {
         }
 
 
-        pub fn ll_rotate(node: &Tree) ->RedBlackTree {
+        pub fn ll_rotate(node: &Tree) -> RedBlackTree  {
             let node_left = node.borrow().left.clone()?;
             let node_left_right = node_left.borrow().right.clone();
             node_left.borrow_mut().right = Some(node.clone()); // move node up. node's left right child = node
@@ -103,16 +131,16 @@ pub mod rbtree {
             // If the original node had a parent, update its child pointer
             if let Some(parent_weak) = node_left.borrow().parent.as_ref() {
                 if let Some(parent) = parent_weak.upgrade() {
-                    if Rc::ptr_eq(&parent.borrow().left.as_ref().unwrap(), node) {
-                        parent.borrow_mut().left = Some(node_left.clone());
-                    } else {
-                        parent.borrow_mut().right = Some(node_left.clone());
+                    match node.borrow().child_position() {
+                        ChildPosition::Left => {
+                            parent.borrow_mut().left = Some(node_left.clone());
+                        },
+                        ChildPosition::Right => {
+                            parent.borrow_mut().right = Some(node_left.clone());
+                        },
+                        _ => {} // original node did not have parent
                     }
                 }
-            } else {
-                // If there is no parent, this node was the root
-                // so we need to return a some() indicating the root changed
-                // println!("The original node was the root node.");
             }
             let node_color = node.borrow().color.clone();
             node.borrow_mut().color = node_left.borrow().color.clone();
@@ -123,33 +151,60 @@ pub mod rbtree {
         pub fn rr_rotate(node: &Tree) -> RedBlackTree {
             let node_right = node.borrow().right.clone()?;
             let node_right_left = node_right.borrow().left.clone();
-            node_right.borrow_mut().left = Some(node.clone()); // Move node up. node's right left child = node
-            node_right.borrow_mut().parent = node.borrow().parent.clone(); // node_right parent = current node's parent
-            node.borrow_mut().parent = Some(Rc::downgrade(&node_right)); // Change the parent of the original node to be the right node
-            // If there was a right left child of the original node, move it to the current node's right
-            node.borrow_mut().right = node_right_left; // Set node_right_left as the new right child
-            // Update the parent pointer of the new right child (if it exists) to point back to `node`
-            if let Some(ref right_left) = node.borrow().right {
-                right_left.borrow_mut().parent = Some(Rc::downgrade(&node));
+        
+            // Move node down and to the left, making the node's right child the new root of this subtree
+            node_right.borrow_mut().left = Some(node.clone());
+            node_right.borrow_mut().parent = node.borrow().parent.clone();
+            node.borrow_mut().parent = Some(Rc::downgrade(&node_right));
+        
+            // If there was a right-left child, it becomes the right child of the node
+            node.borrow_mut().right = node_right_left.clone();
+            if let Some(ref new_right_child) = node_right_left {
+                new_right_child.borrow_mut().parent = Some(Rc::downgrade(node));
             }
-            // If the original node had a parent, update its child pointer
+        
+            // Update the original node's parent to point to the new top node of the subtree
             if let Some(parent_weak) = node_right.borrow().parent.as_ref() {
                 if let Some(parent) = parent_weak.upgrade() {
-                    if Rc::ptr_eq(&parent.borrow().left.as_ref().unwrap(), node) {
-                        parent.borrow_mut().left = Some(node_right.clone());
-                    } else {
-                        parent.borrow_mut().right = Some(node_right.clone());
+                    match node.borrow().child_position() {
+                        ChildPosition::Left => {
+                            parent.borrow_mut().left = Some(node_right.clone());
+                        },
+                        ChildPosition::Right => {
+                            parent.borrow_mut().right = Some(node_right.clone());
+                        },
+                        _ => {} // original node did not have a parent
                     }
                 }
-            } else {
-                // If there is no parent, this node was the root
-                // so we need to return Some() indicating the root changed
             }
+        
+            // Swap colors of node and node_right to maintain red-black properties
             let node_color = node.borrow().color.clone();
             node.borrow_mut().color = node_right.borrow().color.clone();
             node_right.borrow_mut().color = node_color;
+        
             Some(node_right)
         }
+        
+
+        pub fn lr_rotate(node: &Tree) -> RedBlackTree {
+            // Safety check: ensure the node has a left child
+            if node.borrow().left.is_none() {
+                return None;
+            }
+            // println!("here");
+            // Step 1: Perform RR rotation on the node's left child
+            let left_child = node.borrow().left.clone().unwrap();
+            let step1 = TreeNode::rr_rotate(&left_child);
+            println!("step1");
+            // step1.unwrap().borrow().print_tree();
+
+    
+            // Step 2: Perform LL rotation on the node itself; ll rotate will return new node on top
+            TreeNode::ll_rotate(node)
+        }
+
+
 
         
         
