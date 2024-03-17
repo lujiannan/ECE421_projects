@@ -196,7 +196,7 @@ pub mod rbtree {
             // Step 1: Perform RR rotation on the node's left child
             let left_child = node.borrow().left.clone().unwrap();
             let step1 = TreeNode::rr_rotate(&left_child);
-            println!("step1");
+            // println!("step1");
             // step1.unwrap().borrow().print_tree();
 
     

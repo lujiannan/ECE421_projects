@@ -8,18 +8,19 @@ fn main() {
     let pointer = TreeNode::regular_insert(&root, 50, NodeColor::Black);
     TreeNode::regular_insert(&root, 25, NodeColor::Red);
     TreeNode::regular_insert(&root, 100, NodeColor::Black);
+    TreeNode::regular_insert(&root, 5, NodeColor::Black);
     TreeNode::regular_insert(&root, 40, NodeColor::Red);
+
+    TreeNode::regular_insert(&root, 39, NodeColor::Black);
+    TreeNode::regular_insert(&root, 41, NodeColor::Black);
+
     
-    // let p1 = TreeNode::regular_insert(&root, 50, NodeColor::Black);
-    // let p2 = TreeNode::regular_insert(&root, 40, NodeColor::Red);
-    // TreeNode::regular_insert(&root, 100, NodeColor::Black);
-    // TreeNode::regular_insert(&root,25, NodeColor::Red);
+    
     
 
     let lr = TreeNode::lr_rotate(&pointer.unwrap());
     // lr.unwrap().borrow().print_tree();
     root.borrow().print_tree();
-    // root.borrow().print_tree();
     
 
 
