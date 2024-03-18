@@ -60,6 +60,7 @@ pub mod rbtree {
             })))
         }
         
+        // determines whether node is the left or right child of parent
         pub fn child_position(&self) -> ChildPosition {
             if let Some(parent_weak) = &self.parent {
                 if let Some(parent) = parent_weak.upgrade() {
@@ -114,6 +115,110 @@ pub mod rbtree {
                 }
             }
         }
+
+        pub fn is_parent_red(&self) -> bool {
+            if let Some(parent_weak) = &self.parent {
+                if let Some(parent) = parent_weak.upgrade() {
+                    return parent.borrow().color == NodeColor::Red;
+                }
+            }
+            false
+        }
+        pub fn get_parent(&self) -> Option<Tree> {
+            self.parent.as_ref()?.upgrade()
+        }
+        pub fn get_grandparent(&self) -> Option<Tree> {
+            self.get_parent()?.borrow().get_parent()
+        }
+        pub fn get_sibling(&self) -> Option<Tree> {
+            if let Some(parent) = self.get_parent() {
+                let parent_borrow = parent.borrow();
+                match self.child_position() {
+                    ChildPosition::Left => parent_borrow.right.clone(),
+                    ChildPosition::Right => parent_borrow.left.clone(),
+                    ChildPosition::None => None, // This should technically never happen if the tree is properly structured.
+                }
+            } else {
+                None // This node has no parent, hence no sibling.
+            }
+        }
+
+        pub fn get_uncle(&self) -> Option<Tree> {
+            self.get_parent()?.borrow().get_sibling()
+        }
+        pub fn is_uncle_red(&self) -> bool {
+            if let Some(uncle) = self.get_uncle() {
+                return uncle.borrow().color == NodeColor::Red;
+            }
+            false
+        }
+        pub fn is_uncle_black(&self) -> bool {
+            if let Some(uncle) = self.get_uncle() {
+                return uncle.borrow().color == NodeColor::Black;
+            }
+            true // No uncle is considered as black in red-black trees.
+        }
+        pub fn determine_rotation(&self) -> String {
+            let parent_pos = self.get_parent().map_or(ChildPosition::None, |p| p.borrow().child_position());
+            let node_pos = self.child_position();
+    
+            match (parent_pos, node_pos) {
+                (ChildPosition::Left, ChildPosition::Left) => "LL".to_string(),
+                (ChildPosition::Right, ChildPosition::Right) => "RR".to_string(),
+                (ChildPosition::Left, ChildPosition::Right) => "LR".to_string(),
+                (ChildPosition::Right, ChildPosition::Left) => "RL".to_string(),
+                _ => "None".to_string(),
+            }
+        }
+        pub fn determine_case(&self) -> String {
+            if let Some(parent) = self.get_parent() {
+                // Root node or parent is black
+                if parent.borrow().parent.is_none() || !self.is_parent_red() {
+                    return "Nothing".to_string();
+                }
+                // Parent is red
+                if self.is_parent_red() {
+                    if self.is_uncle_red() {
+                        // Uncle is red -> Recolor
+                        return "Recolor".to_string();
+                    } else {
+                        // Uncle is black, determine rotation
+                        return self.determine_rotation();
+                    }
+                }
+            } else {
+                // Node is root
+                return "Nothing".to_string();
+            }
+            // Default case, although we should cover all scenarios above
+            "Undefined".to_string()
+        }
+
+
+        pub fn print_node(&self) {
+            // Determine the parent key if available
+            let parent_key = self.get_parent().map_or("None".to_string(), |parent| {
+                parent.borrow().key.to_string()
+            });
+    
+            // Determine the color as a string
+            let color = match self.color {
+                NodeColor::Red => "Red",
+                NodeColor::Black => "Black",
+            };
+    
+            // Determine the keys of left and right children if available
+            let left_key = self.left.as_ref().map_or("None".to_string(), |left| {
+                left.borrow().key.to_string()
+            });
+            let right_key = self.right.as_ref().map_or("None".to_string(), |right| {
+                right.borrow().key.to_string()
+            });
+    
+            // Print the node information
+            println!("Node Key: {}, Color: {}, Parent Key: {}, Left Child Key: {}, Right Child Key: {}", self.key, color, parent_key, left_key, right_key);
+        }
+        
 
 
         pub fn ll_rotate(node: &Tree) -> RedBlackTree  {
@@ -193,16 +298,20 @@ pub mod rbtree {
             if node.borrow().left.is_none() {
                 return None;
             }
-            // println!("here");
-            // Step 1: Perform RR rotation on the node's left child
             let left_child = node.borrow().left.clone().unwrap();
             let step1 = TreeNode::rr_rotate(&left_child);
-            // println!("step1");
-            // step1.unwrap().borrow().print_tree();
-
-    
             // Step 2: Perform LL rotation on the node itself; ll rotate will return new node on top
             TreeNode::ll_rotate(node)
+        }
+        pub fn rl_rotate(node: &Tree) -> RedBlackTree {
+            // Safety check: ensure the node has a left child
+            if node.borrow().right.is_none() {
+                return None;
+            }
+            let right_child = node.borrow().right.clone().unwrap();
+            let step1 = TreeNode::ll_rotate(&right_child);
+            // Step 2: Perform LL rotation on the node itself; ll rotate will return new node on top
+            TreeNode::rr_rotate(node)
         }
 
 
