@@ -441,6 +441,45 @@ pub mod rbtree {
         }
         
     }
+
+    pub struct RBTree{
+        root: RedBlackTree,
+    }
+
+    impl RBTree {
+        pub fn new() -> RBTree {
+            RBTree {root: None}
+        }
+
+        pub fn get_root(&self) -> RedBlackTree {
+            self.root.clone()
+        }
+
+        pub fn insert(&mut self, key: u32) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    // tree is not empty do insertion
+                    TreeNode::regular_insert(root, key, NodeColor::Red)
+                    // do recoloring up the tree if needed return new node
+                    // perform rotation if needed (we will only need to do 1 rotation at most);
+                    // rotation returns new root of subtree
+                    // compare returned with current root
+                    // update root
+                },
+                None => {
+                    // if tree is empty create a new new node and set as root
+                    self.root = TreeNode::new_rb(key, NodeColor::Black);
+                    self.get_root()
+                }
+            }
+        }
+
+        pub fn print_tree(&self) {
+            if let Some(ref root) = self.root {
+                root.borrow().print_tree();
+            } 
+        }
+    }
 }
 // // avl tree implementation here
 // i guess we take out the stuff that we need for both and put it outside hte

@@ -1,18 +1,30 @@
 extern crate trees; // 
-use trees::rbtree::{NodeColor, TreeNode};
+use trees::rbtree::{NodeColor, TreeNode, RBTree};
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
 fn main() {
     // Create the root of the tree with a specific key
-    let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(50);
-    TreeNode::regular_insert(&root, 25, NodeColor::Red);
-    TreeNode::regular_insert(&root, 100, NodeColor::Red);
-    let new = TreeNode::regular_insert(&root, 200, NodeColor::Red);
+    let mut root = RBTree::new();
+    root.insert(50);
+    root.insert(25);
+    root.insert(100);
+    let pointer = root.insert(200);
+    root.print_tree();
+    
+    let case = pointer.unwrap().borrow().determine_case();
+    println!("{}", case);
+
+
+
+    // let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(50);
+    // TreeNode::regular_insert(&root, 25, NodeColor::Red);
+    // TreeNode::regular_insert(&root, 100, NodeColor::Red);
+    // let new = TreeNode::regular_insert(&root, 200, NodeColor::Red);
 
     // let result = TreeNode::rl_rotate(&root);
-    let case = new.unwrap().borrow().determine_case();
-    println!("{}", case);
+    // let case = new.unwrap().borrow().determine_case();
+    // println!("{}", case);
     // result.unwrap().borrow().print_tree();
     // let result = new.unwrap().borrow().determine_rotation();
     // println!("{}", result);
