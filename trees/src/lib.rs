@@ -33,7 +33,13 @@ pub mod rbtree {
     }
 
     impl TreeNode<u32> {
-        
+        fn get_root(node: &Tree) -> RedBlackTree {
+            let parent = node.borrow().parent.clone();
+            match parent {
+                Some(p) => Self::get_root(&p.upgrade().unwrap()),
+                None => Some(node.clone()),
+            }
+        }
 
         // used for creating root in RBtree implementation
         // notice tree type. returns pointer to the root that we can borrow and mutate
@@ -486,82 +492,165 @@ pub mod rbtree {
         }
 
         // remove a node from the tree
-        pub fn delete_node(node: &Tree) {
-            let node_left = node.borrow().left.clone();
-            let node_right = node.borrow().right.clone();
+        pub fn delete_node(node: &Tree) -> RedBlackTree{
+            let node_left = node.borrow_mut().left.clone();
+            let node_right = node.borrow_mut().right.clone();
             let node_parent = node.borrow().parent.clone();
             let node_left_exist = node_left.is_some();
             let node_right_exist = node_right.is_some();
 
-            if let Some(parent_weak) = &node_parent {
-                if let Some(parent) = parent_weak.upgrade() {
-                    let child_position = node.borrow().child_position();
-                    // set child of the parent of the node depending on child of the node
-                    match child_position {
-                        ChildPosition::Left => {
-                            if node_left_exist && node_right_exist {
-                                // delete node with two child
-                                let successor = TreeNode::find_successor(&node);
-                                if let Some(ref successor_node) = successor {
-                                    // Replace the current node with its successor
-                                    std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                                    let successor_parent_mut = successor_node.borrow_mut().parent.clone();
-                                    if let Some(successor_parent_weak) = successor_parent_mut {
-                                        if let Some(successor_parent) = successor_parent_weak.upgrade() {
-                                            successor_parent.borrow_mut().left = None;
-                                        }
+            let child_position = node.borrow().child_position();
+            // set child of the parent of the node depending on child of the node
+            match child_position {
+                ChildPosition::Left => {
+                    if node_left_exist && node_right_exist {
+                        // delete node with two child
+                        let successor = TreeNode::find_successor(&node);
+                        if let Some(ref successor_node) = successor {
+                            // Replace the current node with its successor
+                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            TreeNode::delete_node(successor_node);
+                        }
+                    } else {
+                        // delete node with one or no child
+                        if node.borrow().color == NodeColor::Red {
+                            // current node is red
+                            node_parent.unwrap().upgrade().unwrap().borrow_mut().left = None;
+                        } else {
+                            // current node is black
+                            if node_left_exist && !node_right_exist {
+                                let node_left_cp = node_left.unwrap();
+                                // Black + left red case
+                                match node_parent {
+                                    None => {
+                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_left_cp.borrow_mut().parent = None;
+                                        return Some(node_left_cp);
                                     }
-                                    successor_node.borrow_mut().parent = None;
+                                    Some(node_parent) => {
+                                        // node is left child of parent
+                                        node_parent.upgrade().unwrap().borrow_mut().left = Some(node_left_cp.clone());
+                                        node_left_cp.borrow_mut().parent = Some(node_parent.clone());
+                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                    }
+                                }
+                            } else if !node_left_exist && node_right_exist {
+                                let node_right_cp = node_right.unwrap();
+                                // Black + right red case
+                                match node_parent {
+                                    None => {
+                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_right_cp.borrow_mut().parent = None;
+                                        return Some(node_right_cp);
+                                    }
+                                    Some(node_parent) => {
+                                        // node is left child of parent
+                                        node_parent.upgrade().unwrap().borrow_mut().left = Some(node_right_cp.clone());
+                                        node_right_cp.borrow_mut().parent = Some(node_parent.clone());
+                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                    }
                                 }
                             } else {
-                                // delete node with one or no child
-                                if node_left_exist && !node_right_exist {
-                                    parent.borrow_mut().left = node_left;
-                                } else if node_right_exist && !node_left_exist {
-                                    parent.borrow_mut().left = node_right;
-                                } else if !node_left_exist && !node_right_exist{
-                                    parent.borrow_mut().left = None;
-                                }
-
-                                if let Some(ref left) = node.borrow().left {
-                                    left.borrow_mut().parent = Some(Rc::downgrade(&parent));
+                                // black + no children case
+                                match node_parent {
+                                    None => return None,
+                                    Some(node_parent) => {
+                                        TreeNode::delete_maintain(&node.clone());
+                                        node_parent.upgrade().unwrap().borrow_mut().left = None;
+                                        node.borrow_mut().parent = None;
+                                    }
                                 }
                             }
                         }
-                        ChildPosition::Right => {
-                            if node_left_exist && node_right_exist {
-                                // delete node with two child
-                                let successor = TreeNode::find_successor(&node);
-                                if let Some(ref successor_node) = successor {
-                                    // Replace the current node with its successor
-                                    std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                                    let successor_parent_mut = successor_node.borrow_mut().parent.clone();
-                                    if let Some(successor_parent_weak) = successor_parent_mut {
-                                        if let Some(successor_parent) = successor_parent_weak.upgrade() {
-                                            successor_parent.borrow_mut().left = None;
-                                        }
+                    }
+                }
+                ChildPosition::Right => {
+                    if node_left_exist && node_right_exist {
+                        // delete node with two child
+                        let successor = TreeNode::find_successor(&node);
+                        if let Some(ref successor_node) = successor {
+                            // Replace the current node with its successor
+                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            TreeNode::delete_node(successor_node);
+                        }
+                    } else {
+                        // delete node with one or no child
+                        if node.borrow().color == NodeColor::Red {
+                            // current node is red
+                            node_parent.unwrap().upgrade().unwrap().borrow_mut().right = None;
+                        } else {
+                            // current node is black
+                            if node_left_exist && !node_right_exist {
+                                let node_left_cp = node_left.unwrap();
+                                // Black + left red case
+                                match node_parent {
+                                    None => {
+                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_left_cp.borrow_mut().parent = None;
+                                        return Some(node_left_cp);
                                     }
-                                    successor_node.borrow_mut().parent = None;
+                                    Some(node_parent) => {
+                                        // node is right child of parent
+                                        node_parent.upgrade().unwrap().borrow_mut().right = Some(node_left_cp.clone());
+                                        node_left_cp.borrow_mut().parent = Some(node_parent.clone());
+                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                    }
+                                }
+                            } else if !node_left_exist && node_right_exist {
+                                let node_right_cp = node_right.unwrap();
+                                // Black + right red case
+                                match node_parent {
+                                    None => {
+                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_right_cp.borrow_mut().parent = None;
+                                        return Some(node_right_cp);
+                                    }
+                                    Some(node_parent) => {
+                                        // node is left child of parent
+                                        node_parent.upgrade().unwrap().borrow_mut().right = Some(node_right_cp.clone());
+                                        node_right_cp.borrow_mut().parent = Some(node_parent.clone());
+                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                    }
                                 }
                             } else {
-                                // delete node with one or no child
-                                if node_left_exist && !node_right_exist {
-                                    parent.borrow_mut().right = node_left;
-                                } else if node_right_exist && !node_left_exist {
-                                    parent.borrow_mut().right = node_right;
-                                } else if !node_left_exist && !node_right_exist{
-                                    parent.borrow_mut().right = None;
-                                }
-
-                                if let Some(ref right) = node.borrow().right {
-                                    right.borrow_mut().parent = Some(Rc::downgrade(&parent));
+                                // black + no children case
+                                match node_parent {
+                                    None => return None,
+                                    Some(node_parent) => {
+                                        TreeNode::delete_maintain(&node.clone());
+                                        node_parent.upgrade().unwrap().borrow_mut().right = None;
+                                        node.borrow_mut().parent = None;
+                                    }
                                 }
                             }
                         }
-                        _ => {}
+                    }
+                }
+                _ => {
+                    // delete root
+                    if node_left_exist && !node_right_exist {
+                        let node_left_cp = node_left.unwrap();
+                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                        node_left_cp.borrow_mut().parent = None;
+                        return Some(node_left_cp);
+                    } else if !node_left_exist && node_right_exist {
+                        let node_right_cp = node_right.unwrap();
+                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                        node_right_cp.borrow_mut().parent = None;
+                        return Some(node_right_cp);
+                    } else if node_left_exist && node_right_exist {
+                        // TODO:
+
+                    } else {
+                        return None;
                     }
                 }
             }
+            Self::get_root(node)
+        }
+
+        fn delete_maintain(node: &Tree) {
+            // TODO:
         }
     }
 
@@ -653,20 +742,20 @@ pub mod rbtree {
             }
         }
 
-        pub fn delete(&mut self, key: u32) {
+        pub fn delete(&mut self, key: u32) -> RedBlackTree{
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
-                        TreeNode::delete_node(&node_to_delete);
+                        TreeNode::delete_node(&node_to_delete)
                     } else {
                         println!("Cannot find the node in the RBTree, please check");
-                        self.get_root();
+                        self.get_root()
                     }
                 },
                 None => {
                     // if tree is empty 
                     println!("The RBTree is empty, no deletion required");
-                    self.get_root();
+                    self.get_root()
                 }
             }
         }
