@@ -234,15 +234,25 @@ pub mod rbtree {
 
         pub fn recolor(node: &Tree) -> RedBlackTree {
             // perform 1 iteration of recoloring and return the grandparent
-            let parent = node.borrow().get_parent()?;
-            parent.borrow_mut().color = NodeColor::Black;
-            let uncle = node.borrow().get_uncle()?;
-            uncle.borrow_mut().color = NodeColor::Black;
-            let grandparent = node.borrow().get_grandparent()?;
-            if grandparent.borrow().get_grandparent().is_some() {
-                grandparent.borrow_mut().color = NodeColor::Red;
+
+            if let Some(parent) = node.borrow().get_parent() {
+                parent.borrow_mut().color = NodeColor::Black;
+                if let Some(uncle) = node.borrow().get_uncle() {
+                    uncle.borrow_mut().color = NodeColor::Black;
+                }
             }
-            Some(grandparent)
+        
+            // 2: Set grandparent to red unless it is the root (root does not have a parent)
+            if let Some(grandparent) = node.borrow().get_grandparent() {
+                // Check if grandparent is not the root by confirming it has a parent
+                if grandparent.borrow().get_parent().is_some() {
+                    grandparent.borrow_mut().color = NodeColor::Red;
+                }
+                return Some(grandparent);
+            }
+        
+            // If there's no grandparent, return None
+            None
         }
 
         pub fn ll_rotate(node: &Tree) -> RedBlackTree {
@@ -685,7 +695,10 @@ pub mod rbtree {
                     while new_node.borrow().determine_case() == "Recolor" {
                         new_node = TreeNode::recolor(&new_node)?;
                     }
-                    root.borrow().print_tree();
+
+                    
+                    
+
                     // new_node.borrow().print_tree();
                     // we may hae a node higher up in the tree depending on how many time recoloring ran
                     // 3: check if need rotation -> perform rotation. 
@@ -712,7 +725,7 @@ pub mod rbtree {
                         _ => None, // Catch-all case, unlikely to be reached
                     };
 
-                    // rotated_root.unwrap().borrow().print_node();
+                    // // rotated_root.unwrap().borrow().print_node();
                     if let Some(sub_root) = rotated_root {
                         if sub_root.borrow().parent.is_none() {
                             self.root = Some(sub_root.clone());
