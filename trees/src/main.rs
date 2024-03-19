@@ -1,5 +1,5 @@
 extern crate trees; // 
-use trees::rbtree::{NodeColor, TreeNode, RBTree};
+use trees::rbtree::*;
 
 // Assuming RBTree is structured properly and has an `insert` method.
 

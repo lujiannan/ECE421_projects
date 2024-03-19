@@ -804,22 +804,36 @@ pub mod rbtree {
         }
     }
 }
+
+
+
+
 // // avl tree implementation here
-// i guess we take out the stuff that we need for both and put it outside hte
+// // i guess we take out the stuff that we need for both and put it outside hte
 // pub mod avltree { 
 //     // our public red black tree module, so we can publish crate, and use in main
 //     use std::cell::RefCell; // interior mutability
 //     use std::rc::{Rc, Weak}; // rc for multiple references
 //                              // weak is for parent pointers because we can't have cyclic strong references
 //                              // we can upgrade the parent pointers temporarily if we need to change parent values    
-//     pub struct AVLTree{
-//         root: AVLnodeTree,
+    
+//     #[derive(Clone, Debug, PartialEq)]
+//     pub enum NodeColor { // * delete after updating old functions (with colour) below, to without colour
+//         Red,
+//         Black,
 //     }
 
-//     type AVLnodeTree = Option<Tree>;
+//     pub enum ChildPosition {
+//         Left,
+//         Right,
+//         None,
+//     }
+
+    
 //     type Tree = Rc<RefCell<TreeNode<u32>>>;  
-//     type WeakAVLnodeTree = Option<WeakTree>;
 //     type WeakTree = Weak<RefCell<TreeNode<u32>>>;
+//     type AVLnodeTree = Option<Tree>;
+//     type WeakAVLnodeTree = Option<WeakTree>;
 
 //     #[derive(Clone, Debug)] // had to remove Partialeq because it can't be used on weak references. we can implement ourself if needed
 //     pub struct TreeNode<T> {
@@ -829,17 +843,42 @@ pub mod rbtree {
 //         pub left: AVLnodeTree,
 //         pub right: AVLnodeTree,
 //     }     
-    
-//     pub enum ChildPosition {
-//         Left,
-//         Right,
-//         None,
+
+//     pub struct AVLTree{
+//         root: AVLnodeTree,
 //     }
 
-//     #[derive(Clone, Debug, PartialEq)]
-//     pub enum NodeColor { // * delete after updating old functions (with colour) below, to without colour
-//         Red,
-//         Black,
+//     impl TreeNode<u32> {
+//         fn get_root(node: &Tree) -> AVLnodeTree {
+//             let parent = node.borrow().parent.clone();
+//             match parent {
+//                 Some(p) => Self::get_root(&p.upgrade().unwrap()),
+//                 None => Some(node.clone()),
+//             }
+//         }
+
+//         // used for creating root in RBtree implementation
+//         // notice tree type. returns pointer to the root that we can borrow and mutate
+//         pub fn new(key: u32) -> Tree {
+//             // create a new node
+//             Rc::new(RefCell::new(TreeNode {
+//                 height: 1,
+//                 key,
+//                 left: None,
+//                 right: None,
+//             }))
+//         }
+
+
+//         // used in insert function. we return full RedBlackTree type. so we dont need to wrap Tree in some everytime
+//         pub fn new_rb(key: u32, c: NodeColor) -> AVLnodeTree { //new_avl
+//             Some(Rc::new(RefCell::new(TreeNode {
+//                 height: 1, //?confirm?
+//                 key,
+//                 left: None,
+//                 right: None,
+//             })))
+//         }
 //     }
 
 //     impl AVLTree {
@@ -944,6 +983,51 @@ pub mod rbtree {
 //             }
 //         }
 
+//         pub fn count_number_of_leaves(&self) -> usize {
+//             let mut count = 0;
+//             if let Some(ref node) = self.root {
+//                 count = TreeNode::node_count_number_of_leaves(node)
+//             } 
+//             println!("count_number_of_leaves: {}", count);
+//             count
+//         }
+        
+//         pub fn is_tree_empty(&self) -> bool {
+//             let mut state = true;
+//             if let Some(ref node) = self.root {
+//                 state = TreeNode::node_is_tree_empty(node)
+//             } else {
+//                 state = true;
+//             }
+//             println!("is_tree_empty: {}", state);
+//             state
+//         }
+
+//         pub fn get_height_of_tree(&self) -> usize {
+//             let mut height = 0;
+//             if let Some(ref node) = self.root {
+//                 height = TreeNode::node_get_height_of_tree(node)
+//             } 
+//             println!("get_height_of_tree: {}", height);
+//             height
+//         }
+
+//         pub fn print_in_order_traversal(&self) {
+//             println!("In order traversal: ");
+//             if let Some(ref node) = self.root {
+//                 TreeNode::node_print_in_order_traversal(&node.borrow());
+//             }
+//             println!();
+//         }
+
+//         pub fn print_pre_order_traversal(&self) {
+//             println!("Pre order traversal: ");
+//             if let Some(ref node) = self.root {
+//                 TreeNode::node_print_pre_order_traversal(&node.borrow());
+//             } 
+//             println!();
+//         }
+
 //         pub fn print_tree(&self) {
 //             if let Some(ref root) = self.root {
 //                 root.borrow().print_tree();
@@ -951,37 +1035,6 @@ pub mod rbtree {
 //         }
 //     }
 
-//     impl TreeNode<u32> {
-//         fn get_root(node: &Tree) -> AVLnodeTree {
-//             let parent = node.borrow().parent.clone();
-//             match parent {
-//                 Some(p) => Self::get_root(&p.upgrade().unwrap()),
-//                 None => Some(node.clone()),
-//             }
-//         }
 
-//         // used for creating root in RBtree implementation
-//         // notice tree type. returns pointer to the root that we can borrow and mutate
-//         pub fn new(key: u32) -> Tree {
-//             // create a new node
-//             Rc::new(RefCell::new(TreeNode {
-//                 height: 1,
-//                 key,
-//                 left: None,
-//                 right: None,
-//             }))
-//         }
-
-
-//         // used in insert function. we return full RedBlackTree type. so we dont need to wrap Tree in some everytime
-//         pub fn new_rb(key: u32, c: NodeColor) -> AVLnodeTree { //new_avl
-//             Some(Rc::new(RefCell::new(TreeNode {
-//                 height: 1, //?confirm?
-//                 key,
-//                 left: None,
-//                 right: None,
-//             })))
-//         }
-//     }
 
 // }
