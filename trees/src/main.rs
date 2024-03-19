@@ -29,12 +29,33 @@ fn main() {
     let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(20);
     TreeNode::regular_insert(&root, 10, NodeColor::Black);
     let p1 = TreeNode::regular_insert(&root, 30, NodeColor::Black);
-    let p2 = TreeNode::regular_insert(&root, 50, NodeColor::Red);
     TreeNode::regular_insert(&root, 40, NodeColor::Red);
-    // root.borrow().print_tree(); need to perform RL rotation after inserting 40
-    // RR on 50, LL on 30
-    TreeNode::ll_rotate(&p1.unwrap());
+    TreeNode::regular_insert(&root, 50, NodeColor::Red);
+    TreeNode::rr_rotate(&p1.unwrap()); // need rotations to work for all cases
     root.borrow().print_tree();
+    
+    
+    
+}
+
+fn main2() {
+    // Create the root of the tree with a specific key
+    
+
+    let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(20);
+    TreeNode::regular_insert(&root, 10, NodeColor::Black);
+    let p1 = TreeNode::regular_insert(&root, 30, NodeColor::Black);
+    let p2 = TreeNode::regular_insert(&root, 50, NodeColor::Red);
+    let p3 = TreeNode::regular_insert(&root, 40, NodeColor::Red);
+    // root.borrow().print_tree(); need to perform RL rotation after inserting 40
+    // need to do LL on 50 and then RR on 30. 
+    if let Some(p2) = p2 {
+        TreeNode::ll_rotate(&p2);
+        TreeNode::rr_rotate(&p1.unwrap());
+        root.borrow().print_tree();
+
+    }
+    
     
 }
     
