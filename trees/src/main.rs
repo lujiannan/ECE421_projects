@@ -39,10 +39,15 @@ fn main() {
     root.insert(12);
     root.insert(5);
     // root.print_tree();
-    root.delete(20);
+    // root.delete(20);
+    // root.print_tree();
+    // root.delete(50);
     root.print_tree();
-    root.delete(50);
-    root.print_tree();
+    root.count_number_of_leaves();
+    root.get_height_of_tree();
+    root.is_tree_empty();
+    root.print_in_order_traversal();
+    root.print_pre_order_traversal();
 }
 
 fn main2() {
@@ -105,11 +110,11 @@ fn main4() {
     let result = TreeNode::ll_rotate(&root);
     result.unwrap().borrow().print_tree();
 
-    println!("number of leaves tree1 : {}", TreeNode::count_number_of_leaves(&root));
-    println!("is tree1 empty: {}", TreeNode::is_tree_empty(&root));
-    let root2: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(998);
-    println!("is tree2 empty: {}", TreeNode::is_tree_empty(&root2));
-    println!("height of tree1: {}", TreeNode::get_height_of_tree(&root));
-    println!("height of tree2: {}", TreeNode::get_height_of_tree(&root2));
+    // println!("number of leaves tree1 : {}", TreeNode::count_number_of_leaves(&root));
+    // println!("is tree1 empty: {}", TreeNode::is_tree_empty(&root));
+    // let root2: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(998);
+    // println!("is tree2 empty: {}", TreeNode::is_tree_empty(&root2));
+    // println!("height of tree1: {}", TreeNode::get_height_of_tree(&root));
+    // println!("height of tree2: {}", TreeNode::get_height_of_tree(&root2));
     
 }
