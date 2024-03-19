@@ -493,8 +493,8 @@ pub mod rbtree {
 
         // remove a node from the tree
         pub fn delete_node(node: &Tree) -> RedBlackTree{
-            let node_left = node.borrow_mut().left.clone();
-            let node_right = node.borrow_mut().right.clone();
+            let node_left = node.borrow().left.clone();
+            let node_right = node.borrow().right.clone();
             let node_parent = node.borrow().parent.clone();
             let node_left_exist = node_left.is_some();
             let node_right_exist = node_right.is_some();
