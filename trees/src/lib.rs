@@ -12,6 +12,7 @@ pub mod rbtree {
         Black,
     }
 
+    #[derive(PartialEq)]
     pub enum ChildPosition {
         Left,
         Right,
@@ -463,13 +464,13 @@ pub mod rbtree {
                 Some(node.clone())
             } else if key < node.borrow().key {
                 if let Some(left_child) = &node.borrow().left {
-                    TreeNode::find_node(left_child, key)
+                    Self::find_node(left_child, key)
                 } else {
                     None
                 }
             } else {
                 if let Some(right_child) = &node.borrow().right {
-                    TreeNode::find_node(right_child, key)
+                    Self::find_node(right_child, key)
                 } else {
                     None
                 }
@@ -505,11 +506,11 @@ pub mod rbtree {
                 ChildPosition::Left => {
                     if node_left_exist && node_right_exist {
                         // delete node with two child
-                        let successor = TreeNode::find_successor(&node);
+                        let successor = Self::find_successor(&node);
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
                             std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                            TreeNode::delete_node(successor_node);
+                            Self::delete_node(successor_node);
                         }
                     } else {
                         // delete node with one or no child
@@ -555,7 +556,7 @@ pub mod rbtree {
                                 match node_parent {
                                     None => return None,
                                     Some(node_parent) => {
-                                        TreeNode::delete_maintain(&node.clone());
+                                        Self::delete_maintain(&node.clone());
                                         node_parent.upgrade().unwrap().borrow_mut().left = None;
                                         node.borrow_mut().parent = None;
                                     }
@@ -567,11 +568,11 @@ pub mod rbtree {
                 ChildPosition::Right => {
                     if node_left_exist && node_right_exist {
                         // delete node with two child
-                        let successor = TreeNode::find_successor(&node);
+                        let successor = Self::find_successor(&node);
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
                             std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                            TreeNode::delete_node(successor_node);
+                            Self::delete_node(successor_node);
                         }
                     } else {
                         // delete node with one or no child
@@ -617,7 +618,7 @@ pub mod rbtree {
                                 match node_parent {
                                     None => return None,
                                     Some(node_parent) => {
-                                        TreeNode::delete_maintain(&node.clone());
+                                        Self::delete_maintain(&node.clone());
                                         node_parent.upgrade().unwrap().borrow_mut().right = None;
                                         node.borrow_mut().parent = None;
                                     }
@@ -639,8 +640,13 @@ pub mod rbtree {
                         node_right_cp.borrow_mut().parent = None;
                         return Some(node_right_cp);
                     } else if node_left_exist && node_right_exist {
-                        // TODO:
-
+                        // delete root with two child
+                        let successor = Self::find_successor(&node);
+                        if let Some(ref successor_node) = successor {
+                            // Replace the current node with its successor
+                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            Self::delete_node(successor_node);
+                        }
                     } else {
                         return None;
                     }
@@ -649,8 +655,62 @@ pub mod rbtree {
             Self::get_root(node)
         }
 
+        fn get_color(node: &RedBlackTree) -> NodeColor {
+            // a None node returns black color
+            match node {
+                None => NodeColor::Black,
+                Some(node) => node.borrow().color.clone(),
+            }
+        }
+
         fn delete_maintain(node: &Tree) {
-            // TODO:
+            // maintain rbtree property after delete a black node with no children (& not root)
+            let parent = node.borrow().parent.clone();
+            match parent {
+                None => return,
+                Some(parent) => {
+                    let parent = parent.upgrade().unwrap();
+                    let sibling = Self::get_sibling(&node.clone().borrow());
+                    let node_position = node.borrow().child_position();
+                    match sibling {
+                        None => return,
+                        Some(sibling) => {
+                            // sibling is black
+                            if sibling.borrow().color == NodeColor::Black {
+                                let sibling_cclose; // sibling's cloest child to node
+                                let sibling_cfar;   // sibling's distant child to node
+                                if node_position == ChildPosition::Left {
+                                    sibling_cclose = sibling.borrow().left.clone();
+                                    sibling_cfar = sibling.borrow().right.clone();
+                                } else {
+                                    sibling_cclose = sibling.borrow().right.clone();
+                                    sibling_cfar = sibling.borrow().left.clone();
+                                }
+                                if Self::get_color(&sibling_cclose) == NodeColor::Black && Self::get_color(&sibling_cfar) == NodeColor::Black {
+                                    // close and distant are black
+                                    if parent.borrow().color == NodeColor::Black {
+                                        // parent is also black
+                                        sibling.borrow_mut().color = NodeColor::Red;
+                                        Self::delete_maintain(&parent.clone());
+                                    } else {
+                                        // parent is red
+                                        sibling.borrow_mut().color = NodeColor::Red;
+                                        parent.borrow_mut().color = NodeColor::Black;
+                                    }
+                                } else if Self::get_color(&sibling_cclose) == NodeColor::Red && Self::get_color(&sibling_cfar) == NodeColor::Black {
+                                    // close is red, distant is black
+                                    if node_position == ChildPosition::Left {
+                                        Self::
+                                    }
+                                }
+                            } else {
+                                // sibling is red
+
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
