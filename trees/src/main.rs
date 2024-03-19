@@ -38,7 +38,7 @@ fn main() {
     root.insert(17);
     root.insert(12);
     root.insert(5);
-    root.print_tree();
+    // root.print_tree();
     root.delete(25);
     root.print_tree();
     root.delete(15);
