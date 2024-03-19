@@ -3,7 +3,7 @@ use trees::rbtree::{NodeColor, TreeNode, RBTree};
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
-fn main() {
+fn main5() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
     root.r_insert(20, NodeColor::Black);
@@ -26,7 +26,7 @@ fn main() {
     // root.print_tree();
 }
 
-fn main5() {
+fn main() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
     root.insert(50);
