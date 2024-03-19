@@ -3,15 +3,19 @@ use trees::rbtree::{NodeColor, TreeNode, RBTree};
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
-fn main0() {
+fn main() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
-    root.insert(10);
-    root.insert(20);
-    root.insert(30);
-    root.insert(50);
-    root.print_tree();
-    // root.insert(40);
+    root.r_insert(20, NodeColor::Black);
+    root.r_insert(10, NodeColor::Black);
+    root.r_insert(40, NodeColor::Red);
+    root.r_insert(30, NodeColor::Black);
+    root.r_insert(60, NodeColor::Black);
+    root.r_insert(50, NodeColor::Black);
+    root.r_insert(70, NodeColor::Black);
+    root.insert(80);
+    // root.insert(4);
+    // root.insert(8);
     // root.print_tree();
     // root.insert(40);
     // root.insert(60);
@@ -22,23 +26,24 @@ fn main0() {
     // root.print_tree();
 }
 
-fn main() {
+fn main2() {
     // Create the root of the tree with a specific key
     
 
     let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(20);
     TreeNode::regular_insert(&root, 10, NodeColor::Black);
     let p1 = TreeNode::regular_insert(&root, 30, NodeColor::Black);
+    let p2 = TreeNode::regular_insert(&root, 50, NodeColor::Red);
     TreeNode::regular_insert(&root, 40, NodeColor::Red);
-    TreeNode::regular_insert(&root, 50, NodeColor::Red);
-    TreeNode::rr_rotate(&p1.unwrap()); // need rotations to work for all cases
+    TreeNode::ll_rotate(&p2.unwrap());
+    TreeNode::rr_rotate(&p1.unwrap());  // need rr rotation to work for all cases not just when there
     root.borrow().print_tree();
     
     
     
 }
 
-fn main2() {
+fn main3() {
     // Create the root of the tree with a specific key
     
 
@@ -61,7 +66,7 @@ fn main2() {
     
 
 
-fn main3() {
+fn main4() {
     // Create the root of the tree with a specific key
     let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(50);
     let pointer = TreeNode::regular_insert(&root, 25, NodeColor::Red);
