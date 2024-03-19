@@ -100,7 +100,7 @@ pub mod rbtree {
                     current.left = new_node.clone();
                     new_node
                 }
-            } else {
+            } else if key > current.key {
                 if let Some(ref right_child) = current.right {
                     // Continue searching in the right subtree
                     TreeNode::regular_insert(right_child, key, color)
@@ -113,6 +113,9 @@ pub mod rbtree {
                     current.right = new_node.clone();
                     new_node
                 }
+            } else {
+                // duplicate
+                Some(node.clone())
             }
         }
 
@@ -218,8 +221,19 @@ pub mod rbtree {
             // Print the node information
             println!("Node Key: {}, Color: {}, Parent Key: {}, Left Child Key: {}, Right Child Key: {}", self.key, color, parent_key, left_key, right_key);
         }
-        
 
+        pub fn recolor(node: &Tree) -> RedBlackTree {
+            // perform 1 iteration of recoloring and return the grandparent
+            let parent = node.borrow().get_parent()?;
+            parent.borrow_mut().color = NodeColor::Black;
+            let uncle = node.borrow().get_uncle()?;
+            uncle.borrow_mut().color = NodeColor::Black;
+            let grandparent = node.borrow().get_grandparent()?;
+            if grandparent.borrow().get_grandparent().is_some() {
+                grandparent.borrow_mut().color = NodeColor::Red;
+            }
+            Some(grandparent)
+        }
 
         pub fn ll_rotate(node: &Tree) -> RedBlackTree  {
             let node_left = node.borrow().left.clone()?;
@@ -283,6 +297,7 @@ pub mod rbtree {
                     }
                 }
             }
+
         
             // Swap colors of node and node_right to maintain red-black properties
             let node_color = node.borrow().color.clone();
@@ -454,17 +469,71 @@ pub mod rbtree {
         pub fn get_root(&self) -> RedBlackTree {
             self.root.clone()
         }
+        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    // tree is not empty do insertion
+                    TreeNode::regular_insert(root, key, color)
+
+                },
+                None => {
+                    // if tree is empty create a new new node and set as root
+                    self.root = TreeNode::new_rb(key, NodeColor::Black);
+                    self.get_root()
+                }
+            }
+        }
 
         pub fn insert(&mut self, key: u32) -> RedBlackTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
-                    TreeNode::regular_insert(root, key, NodeColor::Red)
-                    // do recoloring up the tree if needed return new node
-                    // perform rotation if needed (we will only need to do 1 rotation at most);
-                    // rotation returns new root of subtree
-                    // compare returned with current root
-                    // update root
+
+                    // 1: do regular insert
+                    let mut new_node = TreeNode::regular_insert(root, key, NodeColor::Red)?;
+
+                    // 2: recolor up the tree. recolor -> check if need to recolor on grandparent -> recolor and so on
+                    while new_node.borrow().determine_case() == "Recolor" {
+                        new_node = TreeNode::recolor(&new_node)?;
+                    }
+                    // we may hae a node higher up in the tree depending on how many time recoloring ran
+                    // 3: check if need rotation -> perform rotation. 
+                    // determine case on current node. but our rotations take in the top node so we need to get grandparent
+                    let rotation_case = new_node.borrow().determine_rotation();
+                    let rotated_root = match rotation_case.as_str() {
+                        "LL" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::ll_rotate(&top)
+                        },
+                        "RR" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::rr_rotate(&top)
+                        },
+                        "LR" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::lr_rotate(&top)
+                        },
+                        "RL" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::rl_rotate(&top)
+                        },
+                        "None" => None, // No rotation needed, or handle as appropriate
+                        _ => None, // Catch-all case, unlikely to be reached
+                    };
+
+                    // rotated_root.unwrap().borrow().print_node();
+                    if let Some(sub_root) = rotated_root {
+                        if sub_root.borrow().parent.is_none() {
+                            self.root = Some(sub_root.clone());
+                        }
+                    }
+
+                    
+                    // 4: rotation might change the root. if root of new subtree has no parent then it is the new root
+                    
+
+                    
+                    None
                 },
                 None => {
                     // if tree is empty create a new new node and set as root
