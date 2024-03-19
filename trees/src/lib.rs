@@ -700,7 +700,7 @@ pub mod rbtree {
                                 } else if Self::get_color(&sibling_cclose) == NodeColor::Red && Self::get_color(&sibling_cfar) == NodeColor::Black {
                                     // close is red, distant is black
                                     if node_position == ChildPosition::Left {
-                                        Self::
+                                        
                                     }
                                 }
                             } else {
