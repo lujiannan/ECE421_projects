@@ -694,22 +694,45 @@ pub mod rbtree {
                                     // close and distant are black
                                     if parent.borrow().color == NodeColor::Black {
                                         // parent is also black
-                                        sibling.borrow_mut().color = NodeColor::Red;
+                                        sibling.clone().borrow_mut().color = NodeColor::Red;
                                         Self::delete_maintain(&parent.clone());
                                     } else {
                                         // parent is red
-                                        sibling.borrow_mut().color = NodeColor::Red;
-                                        parent.borrow_mut().color = NodeColor::Black;
+                                        sibling.clone().borrow_mut().color = NodeColor::Red;
+                                        parent.clone().borrow_mut().color = NodeColor::Black;
                                     }
                                 } else if Self::get_color(&sibling_cclose) == NodeColor::Red && Self::get_color(&sibling_cfar) == NodeColor::Black {
                                     // close is red, distant is black
                                     if node_position == ChildPosition::Left {
-                                        
+                                        Self::rr_rotate(&sibling.clone());
+                                    } else {
+                                        Self::ll_rotate(&sibling.clone());
                                     }
+                                    sibling.clone().borrow_mut().color = NodeColor::Red;
+                                    sibling_cclose.clone().unwrap().borrow_mut().color = NodeColor::Black;
+                                    Self::delete_maintain(&node.clone());
+                                } else if Self::get_color(&sibling_cfar) == NodeColor::Red {
+                                    // distant is red
+                                    if node_position == ChildPosition::Left {
+                                        Self::ll_rotate(&parent.clone());
+                                    } else {
+                                        Self::rr_rotate(&parent.clone());
+                                    }
+                                    sibling.clone().borrow_mut().color = parent.borrow().color.clone();
+                                    parent.clone().borrow_mut().color = NodeColor::Black;
+                                    sibling_cfar.clone().unwrap().borrow_mut().color = NodeColor::Black;
                                 }
                             } else {
                                 // sibling is red
-
+                                if node_position == ChildPosition::Left {
+                                    Self::ll_rotate(&parent.clone());
+                                } else {
+                                    let result = Self::rr_rotate(&parent.clone());
+                                    result.unwrap().borrow().print_tree();
+                                }
+                                parent.clone().borrow_mut().color = NodeColor::Red;
+                                sibling.clone().borrow_mut().color = NodeColor::Black;
+                                Self::delete_maintain(&node.clone());
                             }
                         }
                     }
