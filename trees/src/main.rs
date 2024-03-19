@@ -9,11 +9,21 @@ fn main() {
     root.insert(50);
     root.insert(25);
     root.insert(100);
-    let pointer = root.insert(200);
+    root.insert(15);
+    root.insert(10);
+    root.insert(20);
+    root.insert(17);
+    root.insert(12);
+    root.insert(5);
+    // let pointer = root.insert(200);
+    root.print_tree();
+    root.delete(25);
+    root.print_tree();
+    root.delete(15);
     root.print_tree();
     
-    let case = pointer.unwrap().borrow().determine_case();
-    println!("{}", case);
+    // let case = pointer.unwrap().borrow().determine_case();
+    // println!("{}", case);
 
 
 

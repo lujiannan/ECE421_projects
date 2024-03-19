@@ -314,7 +314,6 @@ pub mod rbtree {
             TreeNode::rr_rotate(node)
         }
 
-
         pub fn get_parent_key(&self) -> Option<u32> {
             // Attempt to upgrade the Weak pointer to a strong reference
             if let Some(parent_weak) = &self.parent {
@@ -439,7 +438,108 @@ pub mod rbtree {
             height = std::cmp::max(height_left, height_right);
             height
         }
-        
+
+        // find a node with a given key
+        pub fn find_node(node: &Tree, key: u32) -> Option<Tree> {
+            if node.borrow().key == key {
+                Some(node.clone())
+            } else if key < node.borrow().key {
+                if let Some(left_child) = &node.borrow().left {
+                    TreeNode::find_node(left_child, key)
+                } else {
+                    None
+                }
+            } else {
+                if let Some(right_child) = &node.borrow().right {
+                    TreeNode::find_node(right_child, key)
+                } else {
+                    None
+                }
+            }
+        }
+
+        // find the successor of a node in the tree
+        fn find_successor(node: &Tree) -> Option<Tree> {
+            let mut current = node.borrow().right.clone();
+            while current.is_some() {
+                let next = current.clone().unwrap().borrow().left.clone();
+                if next.is_none() {
+                    break;
+                } else {
+                    current = next;
+                }
+            }
+            // println!("{:#?}", current);
+            current
+        }
+
+        // remove a node from the tree
+        pub fn delete_node(node: &Tree) {
+            let node_left = node.borrow().left.clone();
+            let node_right = node.borrow().right.clone();
+            let node_left_exist = node_left.is_some();
+            let node_right_exist = node_right.is_some();
+
+            if let Some(parent_weak) = &node.borrow().parent {
+                if let Some(parent) = parent_weak.upgrade() {
+                    // set child of the parent of the node depending on child of the node
+                    match node.borrow().child_position() {
+                        ChildPosition::Left => {
+                            if node_left_exist && node_right_exist {
+                                // deleted node has two child
+                                let successor = TreeNode::find_successor(&node);
+                                if let Some(ref successor_node) = successor {
+                                    // Replace the current node with its successor
+                                    std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                                    println!("{:#?}", &successor_node);
+                                    // TreeNode::delete_node();
+                                    // node.borrow_mut().right = new_right;
+                                }
+                            } else {
+                                // deleted node has one or no child
+                                if node_left_exist && !node_right_exist {
+                                    parent.borrow_mut().left = node_left;
+                                } else if node_right_exist && !node_left_exist {
+                                    parent.borrow_mut().left = node_right;
+                                } else if !node_left_exist && !node_right_exist{
+                                    parent.borrow_mut().left = None;
+                                }
+
+                                if let Some(ref left) = node.borrow().left {
+                                    left.borrow_mut().parent = Some(Rc::downgrade(&parent));
+                                }
+                            }
+                        }
+                        ChildPosition::Right => {
+                            if node_left_exist && !node_right_exist {
+                                parent.borrow_mut().right = node_left;
+                            } else if node_right_exist && !node_left_exist {
+                                parent.borrow_mut().right = node_right;
+                            } else if node_left_exist && node_right_exist {
+                                println!("jesus");
+                                // deleted node has two child
+                                let successor = TreeNode::find_successor(&node.borrow().right.clone().unwrap());
+                                if let Some(ref successor_node) = successor {
+                                    // Replace the current node with its successor
+                                    std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                                    println!("{:#?}", node.borrow_mut().key);
+                                    // TreeNode::delete_node();
+                                    // node.borrow_mut().right = new_right;
+                                }
+                            } else {
+                                // deleted node has no child
+                                parent.borrow_mut().left = None;
+                            }
+
+                            if let Some(ref right) = node.borrow().right {
+                                right.borrow_mut().parent = Some(Rc::downgrade(&parent));
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
     }
 
     pub struct RBTree{
@@ -474,10 +574,29 @@ pub mod rbtree {
             }
         }
 
+        pub fn delete(&mut self, key: u32) {
+            match self.root {
+                Some(ref root) => {
+                    if let Some(node_to_delete) = TreeNode::find_node(root, key) {
+                        TreeNode::delete_node(&node_to_delete);
+                    } else {
+                        println!("Cannot find the node in the RBTree, please check");
+                        self.get_root();
+                    }
+                },
+                None => {
+                    // if tree is empty 
+                    println!("The RBTree is empty, no deletion required");
+                    self.get_root();
+                }
+            }
+        }
+
         pub fn print_tree(&self) {
             if let Some(ref root) = self.root {
                 root.borrow().print_tree();
-            } 
+            }
+            println!();
         }
     }
 }
