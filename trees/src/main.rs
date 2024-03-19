@@ -29,8 +29,14 @@ fn main5() {
 fn main() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
+    // root.is_tree_empty();
+    // root.print_tree();
     root.insert(50);
+    // root.is_tree_empty();
+    // root.print_tree();
     root.insert(25);
+    // root.is_tree_empty();
+    // root.print_tree();
     root.insert(100);
     root.insert(15);
     root.insert(10);
@@ -38,6 +44,7 @@ fn main() {
     root.insert(17);
     root.insert(12);
     root.insert(5);
+
     // root.print_tree();
     // root.delete(20);
     // root.print_tree();
