@@ -6,6 +6,29 @@ use trees::rbtree::{NodeColor, TreeNode, RBTree};
 fn main() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
+    root.r_insert(20, NodeColor::Black);
+    root.r_insert(10, NodeColor::Black);
+    root.r_insert(40, NodeColor::Red);
+    root.r_insert(30, NodeColor::Black);
+    root.r_insert(60, NodeColor::Black);
+    root.r_insert(50, NodeColor::Black);
+    root.r_insert(70, NodeColor::Black);
+    root.insert(80);
+    // root.insert(4);
+    // root.insert(8);
+    // root.print_tree();
+    // root.insert(40);
+    // root.insert(60);
+    // root.insert(70);
+    // root.insert(80);
+    // root.insert(4);
+    // root.insert(8);
+    // root.print_tree();
+}
+
+fn main5() {
+    // Create the root of the tree with a specific key
+    let mut root = RBTree::new();
     root.insert(50);
     root.insert(25);
     root.insert(100);
@@ -15,30 +38,11 @@ fn main() {
     root.insert(17);
     root.insert(12);
     root.insert(5);
-    // let pointer = root.insert(200);
     root.print_tree();
     root.delete(25);
     root.print_tree();
     root.delete(15);
     root.print_tree();
-    
-    // let case = pointer.unwrap().borrow().determine_case();
-    // println!("{}", case);
-
-
-
-    // let root: std::rc::Rc<std::cell::RefCell<TreeNode<u32>>> = TreeNode::new(50);
-    // TreeNode::regular_insert(&root, 25, NodeColor::Red);
-    // TreeNode::regular_insert(&root, 100, NodeColor::Red);
-    // let new = TreeNode::regular_insert(&root, 200, NodeColor::Red);
-
-    // let result = TreeNode::rl_rotate(&root);
-    // let case = new.unwrap().borrow().determine_case();
-    // println!("{}", case);
-    // result.unwrap().borrow().print_tree();
-    // let result = new.unwrap().borrow().determine_rotation();
-    // println!("{}", result);
-
 }
 
 fn main3() {
