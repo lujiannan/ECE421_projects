@@ -33,6 +33,10 @@ pub mod rbtree {
         pub right: RedBlackTree,
     }
 
+    pub struct RBTree{
+        root: RedBlackTree,
+    }
+
     impl TreeNode<u32> {
         fn get_root(node: &Tree) -> RedBlackTree {
             let parent = node.borrow().parent.clone();
@@ -231,15 +235,25 @@ pub mod rbtree {
 
         pub fn recolor(node: &Tree) -> RedBlackTree {
             // perform 1 iteration of recoloring and return the grandparent
-            let parent = node.borrow().get_parent()?;
-            parent.borrow_mut().color = NodeColor::Black;
-            let uncle = node.borrow().get_uncle()?;
-            uncle.borrow_mut().color = NodeColor::Black;
-            let grandparent = node.borrow().get_grandparent()?;
-            if grandparent.borrow().get_grandparent().is_some() {
-                grandparent.borrow_mut().color = NodeColor::Red;
+
+            if let Some(parent) = node.borrow().get_parent() {
+                parent.borrow_mut().color = NodeColor::Black;
+                if let Some(uncle) = node.borrow().get_uncle() {
+                    uncle.borrow_mut().color = NodeColor::Black;
+                }
             }
-            Some(grandparent)
+        
+            // 2: Set grandparent to red unless it is the root (root does not have a parent)
+            if let Some(grandparent) = node.borrow().get_grandparent() {
+                // Check if grandparent is not the root by confirming it has a parent
+                if grandparent.borrow().get_parent().is_some() {
+                    grandparent.borrow_mut().color = NodeColor::Red;
+                }
+                return Some(grandparent);
+            }
+        
+            // If there's no grandparent, return None
+            None
         }
 
         pub fn ll_rotate(node: &Tree) -> RedBlackTree {
@@ -387,60 +401,30 @@ pub mod rbtree {
             println!();
         }
         
-        pub fn count_number_of_leaves(node: &Tree) -> usize {
+        pub fn node_count_number_of_leaves(node: &Tree) -> usize {
             let mut count = 0;
 
             let node_borrowed = node.borrow();
             if node_borrowed.left.is_none() {
                 count += 1;
-                println!("left none {}, count: {}",node_borrowed.key , count);
+                // println!("left none {}, count: {}",node_borrowed.key , count);
             } else if let Some(ref left_child) = node_borrowed.left {
-                count += TreeNode::count_number_of_leaves(left_child);
+                count += TreeNode::node_count_number_of_leaves(left_child);
             }
             if node_borrowed.right.is_none() {
                 count += 1;
-                println!("right none {}, count: {}",node_borrowed.key , count);
+                // println!("right none {}, count: {}",node_borrowed.key , count);
             } else if let Some(ref right_child) = node_borrowed.right {
-                count += TreeNode::count_number_of_leaves(right_child);
+                count += TreeNode::node_count_number_of_leaves(right_child);
             }
             count
         }
         
-        pub fn is_tree_empty(node: &Tree) -> bool {
-            node.borrow().left.is_none() && node.borrow().right.is_none()
-        }
-
-        // pub fn get_height_of_tree (node: &Tree) -> usize {
-        //     let mut height = 0;
-        //     let node_borrowed = node.borrow();
-        //     if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
-        //         return 1;
-        //     }
-        //     if let Some(ref left_child) = node_borrowed.left {
-        //         height = 1 + TreeNode::get_height_of_tree(left_child);
-        //     }
-        //     if let Some(ref right_child) = node_borrowed.right {
-        //         height = 1 + TreeNode::get_height_of_tree(right_child);
-        //     }
-        //     height
+        // pub fn node_is_tree_empty(node: &Tree) -> bool {
+        //     node.borrow().left.is_none() && node.borrow().right.is_none()
         // }
 
-        // pub fn get_height_of_tree(node: &Tree) -> usize {
-        //     let mut height = 0;
-        //     let node_borrowed = node.borrow();
-        //     if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
-        //         return 1;
-        //     }
-        //     if let Some(ref left_child) = node_borrowed.left {
-        //         height = 1 + TreeNode::get_height_of_tree(left_child);
-        //     }
-        //     if let Some(ref right_child) = node_borrowed.right {
-        //         height = std::cmp::max(height, 1 + TreeNode::get_height_of_tree(right_child));
-        //     }
-        //     height
-        // }
-
-        pub fn get_height_of_tree (node: &Tree) -> usize {
+        pub fn node_get_height_of_tree (node: &Tree) -> usize {
             let mut height = 1;
             let mut height_left = 0;
             let mut height_right = 0;
@@ -449,13 +433,33 @@ pub mod rbtree {
                 return height
             }
             if let Some(ref left_child) = node_borrowed.left {
-                height_left = height + TreeNode::get_height_of_tree(left_child);
+                height_left = height + TreeNode::node_get_height_of_tree(left_child);
             }
             if let Some(ref right_child) = node_borrowed.right {
-                height_right = height + TreeNode::get_height_of_tree(right_child);
+                height_right = height + TreeNode::node_get_height_of_tree(right_child);
             }
             height = std::cmp::max(height_left, height_right);
             height
+        }
+
+        pub fn node_print_in_order_traversal(&self) {
+            if let Some(ref left) = self.left {
+                left.borrow().node_print_in_order_traversal();
+            }
+            print!("{:?} ", self.key);
+            if let Some(ref right) = self.right {
+                right.borrow().node_print_in_order_traversal();
+            }
+        }
+
+        pub fn node_print_pre_order_traversal(&self) {
+            print!("{:?} ", self.key);
+            if let Some(ref left) = self.left {
+                left.borrow().node_print_pre_order_traversal();
+            }
+            if let Some(ref right) = self.right {
+                right.borrow().node_print_pre_order_traversal();
+            }
         }
 
         // find a node with a given key
@@ -714,9 +718,7 @@ pub mod rbtree {
         }
     }
 
-    pub struct RBTree{
-        root: RedBlackTree,
-    }
+
 
     impl RBTree {
         pub fn new() -> RBTree {
@@ -753,7 +755,10 @@ pub mod rbtree {
                     while new_node.borrow().determine_case() == "Recolor" {
                         new_node = TreeNode::recolor(&new_node)?;
                     }
-                    root.borrow().print_tree();
+
+                    
+                    
+
                     // new_node.borrow().print_tree();
                     // we may hae a node higher up in the tree depending on how many time recoloring ran
                     // 3: check if need rotation -> perform rotation. 
@@ -780,7 +785,7 @@ pub mod rbtree {
                         _ => None, // Catch-all case, unlikely to be reached
                     };
 
-                    // rotated_root.unwrap().borrow().print_node();
+                    // // rotated_root.unwrap().borrow().print_node();
                     if let Some(sub_root) = rotated_root {
                         if sub_root.borrow().parent.is_none() {
                             self.root = Some(sub_root.clone());
@@ -820,6 +825,52 @@ pub mod rbtree {
             }
         }
 
+        pub fn count_number_of_leaves(&self) -> usize {
+            let mut count = 0;
+            if let Some(ref node) = self.root {
+                count = TreeNode::node_count_number_of_leaves(node)
+            } 
+            println!("count_number_of_leaves: {}", count);
+            count
+        }
+        
+        pub fn is_tree_empty(&self) -> bool {
+            let mut state = true;
+            if let Some(ref node) = self.root {
+                // state = TreeNode::node_is_tree_empty(node)
+                state = false
+            } else {
+                state = true;
+            }
+            println!("is_tree_empty: {}", state);
+            state
+        }
+
+        pub fn get_height_of_tree(&self) -> usize {
+            let mut height = 0;
+            if let Some(ref node) = self.root {
+                height = TreeNode::node_get_height_of_tree(node)
+            } 
+            println!("get_height_of_tree: {}", height);
+            height
+        }
+
+        pub fn print_in_order_traversal(&self) {
+            println!("In order traversal: ");
+            if let Some(ref node) = self.root {
+                TreeNode::node_print_in_order_traversal(&node.borrow());
+            }
+            println!();
+        }
+
+        pub fn print_pre_order_traversal(&self) {
+            println!("Pre order traversal: ");
+            if let Some(ref node) = self.root {
+                TreeNode::node_print_pre_order_traversal(&node.borrow());
+            } 
+            println!();
+        }
+
         pub fn print_tree(&self) {
             if let Some(ref root) = self.root {
                 root.borrow().print_tree();
@@ -827,6 +878,10 @@ pub mod rbtree {
         }
     }
 }
+
+
+
+
 // // avl tree implementation here
-// i guess we take out the stuff that we need for both and put it outside hte
-// // pub mod avltree { ... }
+// // i guess we take out the stuff that we need for both and put it outside hte
+// pub mod avltree {}
