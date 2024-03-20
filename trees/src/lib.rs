@@ -861,7 +861,7 @@ pub mod tree {
                     if let Some(node_new_right) = &node_new_right {
                         if balance_factor < -1 as i32{
                             let balance_factor_right = Self::get_balance_factor(node_new_right) as i32;
-                            if balance_factor_right >= 0 as i32 {
+                            if balance_factor_right <= 0 as i32 {
                                 return Self::left_rotate(&node_new);
                             } else {
                                 return Self::rl_rotate(&node_new);
