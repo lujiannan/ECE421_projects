@@ -133,10 +133,10 @@ pub mod tree {
         //--------------AVL AVL AVL
 
         pub fn determine_unbalance_case(&self) -> Option<String> {
-            let balance_factor = self.get_balance_factor();
+            let balance_factor = self.get_self_balance_factor();
             if balance_factor > 1 {
                 // Node is left-heavy, check if it's LL or LR
-                let left_child_balance = self.left.as_ref()?.borrow().get_balance_factor();
+                let left_child_balance = self.left.as_ref()?.borrow().get_self_balance_factor();
                 if left_child_balance >= 0 {
                     Some("LL".to_string())
                 } else {
@@ -144,7 +144,7 @@ pub mod tree {
                 }
             } else if balance_factor < -1 {
                 // Node is right-heavy, check if it's RR or RL
-                let right_child_balance = self.right.as_ref()?.borrow().get_balance_factor();
+                let right_child_balance = self.right.as_ref()?.borrow().get_self_balance_factor();
                 if right_child_balance <= 0 {
                     Some("RR".to_string())
                 } else {
@@ -166,7 +166,7 @@ pub mod tree {
         }
 
 
-        pub fn get_balance_factor(&self) -> i32 {
+        pub fn get_self_balance_factor(&self) -> i32 {
             let left_height = self.left.as_ref().map_or(0, |n| n.borrow().height);
             let right_height = self.right.as_ref().map_or(0, |n| n.borrow().height);
             left_height as i32 - right_height as i32

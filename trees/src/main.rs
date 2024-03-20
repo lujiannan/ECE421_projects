@@ -7,7 +7,7 @@ use trees::tree::AVLTree;
 // Assuming RBTree is structured properly and has an `insert` method.
 
 fn main() {
-    avl();
+    passed_avl_example();
     // main2001();
     // main2002();
     // main2003();
@@ -33,7 +33,21 @@ fn avl() {
     root.print_tree();
 }
 
-fn passed_example2() {
+fn passed_avl_example() {
+    // Create the root of the tree with a specific key
+    let mut root = AVLTree::new();
+    root.insert(20);
+    root.insert(10);
+    root.insert(30);
+    root.insert(25);
+    root.insert(28);
+    root.insert(27);
+    root.insert(5);
+    
+    root.print_tree();
+}
+
+fn passed_rb_example() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
     root.insert(10);
