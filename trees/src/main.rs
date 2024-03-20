@@ -548,11 +548,11 @@ fn main2005() {
     mytree.insert(40);
     mytree.insert(50);
 
-    mytree.count_number_of_leaves(); // should be: 6
-    mytree.get_height_of_tree(); // should be: 3
-    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
-    mytree.is_tree_empty(); // should be: false
-    mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
+    // mytree.count_number_of_leaves(); // should be: 6
+    // mytree.get_height_of_tree(); // should be: 3
+    // mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    // mytree.is_tree_empty(); // should be: false
+    // mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
     mytree.print_tree();
     // should be:
     /*
@@ -587,4 +587,50 @@ fn main2005() {
     │   └── 20(2)
     │       └── 10(1)
         */
+    mytree.insert(33);
+    mytree.insert(34);
+    mytree.insert(35);
+    mytree.insert(36);
+    mytree.insert(39);
+    mytree.insert(38);
+    mytree.insert(37);
+    mytree.insert(49);
+    mytree.insert(48);
+    mytree.insert(47);
+    mytree.insert(41);
+    mytree.insert(42);
+    mytree.insert(43);
+    mytree.insert(44);
+    mytree.print_in_order_traversal(); // should be: 10 20 30 33 34 35 36 37 38 39 40 41 42 43 44 47 48 49 50 60 70 80 90 100 110
+    mytree.print_pre_order_traversal(); // should be: 40 33 20 10 30 36 35 34 38 37 39 49 43 42 41 47 44 48 80 60 50 70 100 90 110
+    mytree.print_tree();
+    // should be:
+    /*
+                    ┌── 110(1)
+                ┌── 100(2)
+                │   └── 90(1)
+            ┌── 80(3)
+            │   │   ┌── 70(1)
+            │   └── 60(2)
+            │       └── 50(1)
+        ┌── 49(4)
+        │   │       ┌── 48(1)
+        │   │   ┌── 47(2)
+        │   │   │   └── 44(1)
+        │   └── 43(3)
+        │       └── 42(2)
+        │           └── 41(1)
+    ┌── 40(5)
+    │   │           ┌── 39(1)
+    │   │       ┌── 38(2)
+    │   │       │   └── 37(1)
+    │   │   ┌── 36(3)
+    │   │   │   └── 35(2)
+    │   │   │       └── 34(1)
+    │   └── 33(4)
+    │       │   ┌── 30(1)
+    │       └── 20(2)
+    │           └── 10(1)
+        */
+
 }
