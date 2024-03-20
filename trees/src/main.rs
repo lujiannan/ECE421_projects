@@ -1,28 +1,13 @@
 extern crate trees;
 
 //
-use trees::rbtree::*;
-use trees::rbtree::AVLTree;
+use trees::tree::*;
+use trees::tree::AVLTree;
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
 fn main() {
-    // let mut root = RBTree::new();
-    // root.insert(50);
-    // root.insert(25);
-    // root.insert(100);
-    // root.insert(15);
-    // root.insert(10);
-    // root.insert(20);
-    // root.insert(17);
-    // root.insert(12);
-    // root.insert(16);
-    // root.print_tree();
-
-    let mut avl = AVLTree::new();
-    avl.r_insert(10, NodeColor::Black);
-    avl.print_tree();
-
+    main1();
 }
 
 fn passed_example2() {
@@ -43,7 +28,7 @@ fn passed_example2() {
 
 fn main1() {
     // Create the root of the tree with a specific key
-    let mut root = RBTree::new();
+    let mut root = AVLTree::new();
     // root.is_tree_empty();
     // root.print_tree();
     root.insert(50);
