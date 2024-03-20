@@ -7,7 +7,7 @@ use trees::tree::AVLTree;
 // Assuming RBTree is structured properly and has an `insert` method.
 
 fn main() {
-    passed_avl_example();
+    main1007();
     // main2001();
     // main2002();
     // main2003();
@@ -281,7 +281,7 @@ fn main1007() {
         }
         let mut while_stage_holder_2 = true;
         if tree_type_holder == "avl" {
-            let mut myavltree = RBTree::new();
+            let mut myavltree = AVLTree::new();
             while while_stage_holder_2 {
                 println!("What would you like to do with this AVL tree: ");
                 println!(
