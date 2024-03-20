@@ -52,7 +52,7 @@ pub mod rbtree {
                 parent: None,
                 left: None,
                 right: None,
-                height: 0,
+                height: 1,
             }))
         }
 
@@ -65,7 +65,7 @@ pub mod rbtree {
                 parent: None,
                 left: None,
                 right: None,
-                height: 0,
+                height: 1,
             })))
         }
         
