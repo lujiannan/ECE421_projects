@@ -368,40 +368,59 @@ pub mod tree {
             }
         }
 
-        pub fn pretty_print(&self, prefix: String, is_left: bool,) {
+        pub fn pretty_print(&self, prefix: String, is_left: bool, is_avl: bool) {
             if let Some(right_child) = &self.right {
                 right_child.borrow().pretty_print(
                     format!("{}{}", prefix, if is_left { "│   " } else { "    " }),
                     false,
+                    is_avl, // Pass is_avl down to child calls
                 );
             }
-
+        
+            // Determine color string based on whether the tree is AVL or not.
+            let color_string = if is_avl {
+                String::new() // If it's an AVL tree, don't display color information.
+            } else {
+                // For non-AVL trees, include color information.
+                match self.color {
+                    NodeColor::Red => " (Red)".to_string(),
+                    NodeColor::Black => " (Black)".to_string(),
+                }
+            };
+        
+            // Determine parent key string
+            let parent_key_string = match self.get_parent_key() {
+                Some(parent_key) => format!(" ({})", parent_key), // Format with parentheses
+                None => "".to_string(), // No parent key available
+            };
+        
             println!(
                 "{}{}── {}{}{}",
                 prefix,
                 if is_left { "└" } else { "┌" },
                 self.key,
-                match self.color {
-                    NodeColor::Red => " (Red)",
-                    NodeColor::Black => " (Black)",
-                },
-                match self.get_parent_key() {
-                    Some(parent_key) => parent_key.to_string(),
-                    None => "".to_string(), // No parent key available
-                }
+                color_string,
+                parent_key_string
             );
-
+        
             if let Some(left_child) = &self.left {
                 left_child.borrow().pretty_print(
                     format!("{}{}", prefix, if is_left { "    " } else { "│   " }),
                     true,
+                    is_avl, // Pass is_avl down to child calls
                 );
             }
         }
+        
 
         // Helper method to start the pretty printing process
         pub fn print_tree(&self) {
-            self.pretty_print(String::new(), false);
+            self.pretty_print(String::new(), false, false);
+            println!();
+        }
+
+        pub fn avl_print_tree(&self) {
+            self.pretty_print(String::new(), false, true);
             println!();
         }
         
@@ -934,8 +953,8 @@ pub mod tree {
     }
 
     impl AVLTree {
-        pub fn new() -> RBTree {
-            RBTree {root: None}
+        pub fn new() -> AVLTree {
+            AVLTree {root: None}
         }
 
         pub fn get_root(&self) -> OptionTree {
@@ -1090,7 +1109,7 @@ pub mod tree {
 
         pub fn print_tree(&self) {
             if let Some(ref root) = self.root {
-                root.borrow().print_tree();
+                root.borrow().avl_print_tree();
             }
         }
 
