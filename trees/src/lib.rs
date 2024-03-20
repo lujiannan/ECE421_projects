@@ -1,4 +1,4 @@
-pub mod rbtree {
+pub mod tree {
     // our public red black tree module, so we can publish crate, and use in main
     use std::cell::RefCell;
     // interior mutability

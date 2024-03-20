@@ -18,7 +18,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rand::Rng;
 
 extern crate trees;
-use trees::rbtree::*;
+use trees::tree::*;
 
 fn criterion_benchmark(c: &mut Criterion) {
     // change the num_limit to 10,000, 40,000, 70,000, 100,000, 130,000
