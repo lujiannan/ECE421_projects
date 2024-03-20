@@ -131,6 +131,20 @@ pub mod tree {
 
 
         //--------------AVL AVL AVL
+        pub fn fix_heights(node: &Tree) {
+            // Direct access to the node, no need to check for Some()
+            // Recursively fix heights of the left subtree
+            if let Some(ref left_child) = node.borrow().left {
+                Self::fix_heights(left_child);
+            }
+            // Recursively fix heights of the right subtree
+            if let Some(ref right_child) = node.borrow().right {
+                Self::fix_heights(right_child);
+            }
+            // Update the height of the current node
+            Self::update_height_single_node(node);
+        }
+    
 
         pub fn determine_unbalance_case(&self) -> Option<String> {
             let balance_factor = self.get_self_balance_factor();
@@ -983,7 +997,10 @@ pub mod tree {
 
             // maintain avl functionality
             match node_new {
-                None => None,
+                None => {
+                    println!("None");
+                    None
+                },
                 Some(node_new) => {
                     let height_left = Self::node_get_height_of_left_tree(&node_new) as u32;
                     let height_right = Self::node_get_height_of_right_tree(&node_new) as u32;
@@ -1335,24 +1352,35 @@ pub mod tree {
         }
 
         pub fn delete(&mut self, key: u32) -> OptionTree{
-            match self.root {
-                Some(ref root) => {
-                    // the deletion for avl also implemented find node itself
-                    if let Some(result) = TreeNode::delete_node_avl(&root, key) {
-                        self.root = Some(result);
-                        None
-                    } else {
-                        self.root = None;
-                        println!("AVLTree has no {}", key);
+            let check = self.find(key);
+            if let Some(found) = check {
+                match self.root {
+                    Some(ref root) => {
+                        if let Some(result) = TreeNode::delete_node_avl(&root, key) {
+                            // result is the new root and it has a value
+                            TreeNode::fix_heights(&result);
+                            self.root = Some(result);
+                            
+                            None
+                        } else {
+                            self.root = None;
+                            println!("AVLTree has no {}", key);
+                            self.get_root()
+                        }
+                    },
+                    None => {
+                        // if tree is empty 
+                        println!("The AVLTree is empty, no deletion required");
                         self.get_root()
                     }
-                },
-                None => {
-                    // if tree is empty 
-                    println!("The AVLTree is empty, no deletion required");
-                    self.get_root()
                 }
+                
+            } else {
+                println!("Not Found");
+                None
             }
+
+            
         }
 
         pub fn count_number_of_leaves(&self) -> usize {

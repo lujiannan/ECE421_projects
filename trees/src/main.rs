@@ -337,17 +337,8 @@ fn main1007() {
                                 continue;
                             }
                         };
-                        let result = myavltree.delete(num);
-                        match result {
-                            Some(ref node) => {
-                                // if tree contains the key
-                                println!("Found node: {:?}, deleting.", node.borrow().key);
-                            },
-                            None => {
-                                // if tree doesn't contain the key
-                                println!("Cannot find the {} node in the tree.", num);
-                            }
-                        }
+                        myavltree.delete(num);
+                        
                     }
                     "leaves" => {
                         myavltree.print_count_number_of_leaves();
