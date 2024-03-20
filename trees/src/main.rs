@@ -13,16 +13,14 @@ fn main() {
 fn avl() {
     // Create the root of the tree with a specific key
     let mut root = AVLTree::new();
-    root.insert(10);
     root.insert(20);
+    root.insert(10);
     root.insert(30);
-    root.insert(50);
-    root.insert(40);
-    root.insert(60);
-    root.insert(70);
-    root.insert(80);
-    root.insert(4);
-    root.insert(8);
+    root.insert(25);
+    root.insert(28);
+    root.insert(27);
+    root.insert(5);
+    
     root.print_tree();
 }
 
