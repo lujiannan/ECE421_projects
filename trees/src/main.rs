@@ -246,6 +246,10 @@ fn main1005() {
 }
 
 fn main1006() {
+    // use a blank main when running criterion benchmark tests
+}
+
+fn main1007() {
     // tester for CLI program with inputs
     println!("Welcome to our AVL or red-black tree tester program!");
     let mut program_on = true;
