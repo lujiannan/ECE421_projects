@@ -129,6 +129,137 @@ pub mod tree {
             }
         }
 
+
+        //--------------AVL AVL AVL
+
+        pub fn determine_unbalance_case(&self) -> Option<String> {
+            let balance_factor = self.get_self_balance_factor();
+            if balance_factor > 1 {
+                // Node is left-heavy, check if it's LL or LR
+                let left_child_balance = self.left.as_ref()?.borrow().get_self_balance_factor();
+                if left_child_balance >= 0 {
+                    Some("LL".to_string())
+                } else {
+                    Some("LR".to_string())
+                }
+            } else if balance_factor < -1 {
+                // Node is right-heavy, check if it's RR or RL
+                let right_child_balance = self.right.as_ref()?.borrow().get_self_balance_factor();
+                if right_child_balance <= 0 {
+                    Some("RR".to_string())
+                } else {
+                    Some("RL".to_string())
+                }
+            } else {
+                // The tree is balanced or the node is not an unbalanced node we're interested in
+                None
+            }
+        }
+
+        pub fn update_height_single_node(node: &Tree) {
+            let mut node_borrow = node.borrow_mut();
+            let left_height = node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
+            let right_height = node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
+    
+            // Update the node's height. The height of a node is 1 plus the maximum of its children's heights
+            node_borrow.height = std::cmp::max(left_height, right_height) + 1;
+        }
+
+
+        pub fn get_self_balance_factor(&self) -> i32 {
+            let left_height = self.left.as_ref().map_or(0, |n| n.borrow().height);
+            let right_height = self.right.as_ref().map_or(0, |n| n.borrow().height);
+            left_height as i32 - right_height as i32
+        }
+
+        pub fn update_heights_and_balance(node: &Tree) -> Option<Tree> {
+            let mut current = Some(node.clone());
+            while let Some(curr_node) = current {
+                let mut curr_node_borrow = curr_node.borrow_mut();
+                let left_height = curr_node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
+                let right_height = curr_node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
+        
+                // 1: Update the current node's height
+                curr_node_borrow.height = std::cmp::max(left_height, right_height) + 1;
+        
+                // 2: Calculate balance factor
+                let balance_factor = left_height as i32 - right_height as i32;
+        
+                // 3: if it is unbalanced, return this node
+                if balance_factor.abs() > 1 {
+                    // Instead of printing, return the unbalanced node
+                    return Some(curr_node.clone());
+                }
+        
+                // Move to the parent node
+                current = match curr_node_borrow.parent.as_ref() {
+                    Some(parent_weak) => parent_weak.upgrade(),
+                    None => None,
+                };
+            }
+            // If no unbalanced nodes were found, return None
+            None
+        }
+
+        // called after inserting with the newly inserted node
+        pub fn update_heights_and_balance1(node: &Tree) {
+            let mut current = Some(node.clone());
+            while let Some(curr_node) = current {
+                let mut curr_node_borrow = curr_node.borrow_mut();
+                let left_height = curr_node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
+                let right_height = curr_node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
+    
+                // 1: Update the current newly inserted node's height
+                curr_node_borrow.height = std::cmp::max(left_height, right_height) + 1;
+    
+                // 2: Calculate balance factor
+                let balance_factor = left_height as i32 - right_height as i32;
+                // println!("Node Key: {}, Balance Factor: {}", curr_node_borrow.key, balance_factor);
+
+                // 3: if it is unbalanced, perform the correct rotation and make sure fix height after rotation
+                if balance_factor.abs() > 1 {
+                    println!("Unbalanced at Node Key: {}, Balance Factor: {}", curr_node_borrow.key, balance_factor);
+                    // let case = curr_node_borrow.determine_rotation();
+                }
+    
+                // Move to the parent node
+                current = match curr_node_borrow.parent.as_ref() {
+                    Some(parent_weak) => parent_weak.upgrade(),
+                    None => None,
+                };
+            }
+        }
+
+        fn fix_height(node: &Tree) {
+            let left_height = node.borrow().left.as_ref().map_or(0, |n| n.borrow().height);
+            let right_height = node.borrow().right.as_ref().map_or(0, |n| n.borrow().height);
+            node.borrow_mut().height = std::cmp::max(left_height, right_height) + 1;
+        }
+
+        pub fn update_height(node: &Tree) {
+            let mut current = node.borrow_mut();
+            let left_height = current.left.as_ref().map_or(0, |n| n.borrow().height);
+            let right_height = current.right.as_ref().map_or(0, |n| n.borrow().height);
+            current.height = 1 + std::cmp::max(left_height, right_height);
+    
+            // If this node has a parent, update the parent's height as well
+            if let Some(parent_weak) = &current.parent {
+                if let Some(parent) = parent_weak.upgrade() {
+                    TreeNode::update_height(&parent);
+                }
+            }
+        }
+        pub fn balance_factor(node: &Tree) -> i32 {
+            let current = node.borrow();
+            let left_height = current.left.as_ref().map_or(0, |n| n.borrow().height) as i32;
+            let right_height = current.right.as_ref().map_or(0, |n| n.borrow().height) as i32;
+            left_height - right_height
+        }
+        
+
+
+        //--------------AVL AVL AVL
+
         pub fn is_parent_red(&self) -> bool {
             if let Some(parent_weak) = &self.parent {
                 if let Some(parent) = parent_weak.upgrade() {
@@ -281,6 +412,10 @@ pub mod tree {
                 }
                 // parent.borrow().print_tree();
             }
+            TreeNode::fix_height(&node); // Update height of the original node
+            TreeNode::fix_height(&node_left); // Update height of the new parent node
+
+
         
             Some(node_left) // Return the new root of the subtree
         }
@@ -311,6 +446,8 @@ pub mod tree {
                 }
                 // parent.borrow().print_tree();
             }
+            TreeNode::fix_height(&node); // Update height of the original node
+            TreeNode::fix_height(&node_right); // Update height of the new parent node
             Some(node_right) // Return the new root of the subtree
         }
 
@@ -378,31 +515,38 @@ pub mod tree {
                 );
             }
         
-            // Determine color string based on whether the tree is AVL or not.
-            let color_string = if is_avl {
-                String::new() // If it's an AVL tree, don't display color information.
-            } else {
-                // For non-AVL trees, include color information.
-                match self.color {
-                    NodeColor::Red => " (Red)".to_string(),
-                    NodeColor::Black => " (Black)".to_string(),
-                }
+                    // For non-AVL trees, include color information and possibly parent key.
+            let color_string = match self.color {
+                NodeColor::Red => " (Red)",
+                NodeColor::Black => " (Black)",
             };
-        
-            // Determine parent key string
+
             let parent_key_string = match self.get_parent_key() {
-                Some(parent_key) => format!(" ({})", parent_key), // Format with parentheses
-                None => "".to_string(), // No parent key available
+                Some(parent_key) => format!(" ({})", parent_key),
+                None => "".to_string(),
             };
+
+            if is_avl {
+                // For AVL trees, print without color and parent key information, but include height.
+                println!(
+                    "{}{}── {}({})",
+                    prefix,
+                    if is_left { "└" } else { "┌" },
+                    self.key,
+                    self.height
+                );
+            } else {
+                // For non-AVL trees, print with color and optionally with parent key, but not height.
+                println!(
+                    "{}{}── {}{}",
+                    prefix,
+                    if is_left { "└" } else { "┌" },
+                    self.key,
+                    color_string,
+                    // parent_key_string
+                );
+            }
         
-            println!(
-                "{}{}── {}{}{}",
-                prefix,
-                if is_left { "└" } else { "┌" },
-                self.key,
-                color_string,
-                parent_key_string
-            );
         
             if let Some(left_child) = &self.left {
                 left_child.borrow().pretty_print(
@@ -1089,60 +1233,76 @@ pub mod tree {
             }
         }
 
+        // AVL TREE Insertion
         pub fn insert(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
-
-                    // 1: do regular insert
+                    // 1: do regular insert and get the new node
                     let mut new_node = TreeNode::regular_insert(root, key, NodeColor::Red)?;
-
-                    // 2: recolor up the tree. recolor -> check if need to recolor on grandparent -> recolor and so on
-                    while new_node.borrow().determine_case() == "Recolor" {
-                        new_node = TreeNode::recolor(&new_node)?;
-                    }
-
                     
+                    let mut current = Some(new_node.clone());
+                    while let Some(curr_node) = current {
+                        // Update the height of the current node
+                        TreeNode::update_height_single_node(&curr_node);
+                        
+                        // Check if the current node is unbalanced
+                        let balance_case = curr_node.borrow().determine_unbalance_case();
+
+                        // unbalanced
+                        if let Some(case) = balance_case {
+
+                            // fix
+                            let rotated_root = match case.as_str() {
+                                "LL" => {
+                                    TreeNode::ll_rotate(&curr_node)
+                                },
+                                "RR" => {
                     
+                                    TreeNode::rr_rotate(&curr_node)
+                                },
+                                "LR" => {
+                                    TreeNode::lr_rotate(&curr_node)
+                                },
+                                "RL" => {
+                                    TreeNode::rl_rotate(&curr_node)
+                                },
+                                _ => None, // Catch-all case, unlikely to be reached
+                            };
 
-                    // new_node.borrow().print_tree();
-                    // we may hae a node higher up in the tree depending on how many time recoloring ran
-                    // 3: check if need rotation -> perform rotation. 
-                    // determine case on current node. but our rotations take in the top node so we need to get grandparent
-                    let rotation_case = new_node.borrow().determine_case();
-                    let rotated_root = match rotation_case.as_str() {
-                        "LL" => {
-                            let top = new_node.borrow().get_grandparent()?;
-                            TreeNode::ll_rotate(&top)
-                        },
-                        "RR" => {
-                            let top = new_node.borrow().get_grandparent()?;
-                            TreeNode::rr_rotate(&top)
-                        },
-                        "LR" => {
-                            let top = new_node.borrow().get_grandparent()?;
-                            TreeNode::lr_rotate(&top)
-                        },
-                        "RL" => {
-                            let top = new_node.borrow().get_grandparent()?;
-                            TreeNode::rl_rotate(&top)
-                        },
-                        "None" => None, // No rotation needed, or handle as appropriate
-                        _ => None, // Catch-all case, unlikely to be reached
-                    };
+                            // adjust root if needed
+                            if let Some(sub_root) = rotated_root {
+                                if sub_root.borrow().parent.is_none() {
+                                    self.root = Some(sub_root.clone());
+                                }
+                            }
 
-                    // // rotated_root.unwrap().borrow().print_node();
-                    if let Some(sub_root) = rotated_root {
-                        if sub_root.borrow().parent.is_none() {
-                            self.root = Some(sub_root.clone());
+
                         }
+                        
+                        // Move up to the parent for the next iteration
+                        current = curr_node.borrow().parent.as_ref().and_then(|p| p.upgrade());
                     }
+                    
+                    // TreeNode::lr_rotate(imbalance_node)
 
-                    
-                    // 4: rotation might change the root. if root of new subtree has no parent then it is the new root
+                    // 2: update heights and calculate balance, returns imbalance or none
+                    // TreeNode::update_heights_and_balance1(&new_node);
+                    // 3: if none do nothing, if some then imbalance found
+                    // if imbalance, determine case, apply rotations with height adjustment,
+                    // call update on new nood
+
+
+                    // node.determineavlcase -> apply rotation ->
+                    // if let Some (result) = result {
+                    //     let first = result.borrow().get_balance_factor();
+                    //     let child = result.borrow().left.clone()?;
+                    //     let second = child.borrow().get_balance_factor();
+                    //     println!("{}", first);
+                    //     println!("{}", second);
+                    // }
                     
 
-                    
                     None
                 },
                 None => {
