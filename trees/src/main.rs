@@ -8,6 +8,11 @@ use trees::tree::AVLTree;
 
 fn main() {
     avl();
+    // main2001();
+    // main2002();
+    // main2003();
+    // main2004();
+    // main2005();
 }
 
 fn avl() {
@@ -405,4 +410,181 @@ fn main1007() {
             }
         }
     }
+}
+
+fn main2001() {
+    // tester for LL case , avl tree
+    //works
+
+    let mut mytree = AVLTree::new();
+    mytree.insert(20);
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(5);
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 30(1)
+    ┌── 20(3)
+    │   └── 10(2)
+    │       └── 5(1)
+            */
+    mytree.insert(4);
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 30(1)
+    ┌── 20(3)
+    │   │   ┌── 10(1)
+    │   └── 5(2)
+    │       └── 4(1)
+            */
+}
+
+fn main2002() {
+    // tester for RR case, avl tree
+    //works
+
+    let mut mytree = AVLTree::new();
+    mytree.insert(20);
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(40);
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 40(1)
+        ┌── 30(2)
+    ┌── 20(3)
+    │   └── 10(1)
+            */
+    mytree.insert(50);
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 50(1)
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+            */
+}
+
+fn main2003() {
+    // tester for LR case, avl tree
+    //works
+
+    let mut mytree = AVLTree::new();
+    mytree.insert(20);
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(5);
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 30(1)
+    ┌── 20(3)
+    │   └── 10(2)
+    │       └── 5(1)
+            */
+    mytree.insert(6);
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 30(1)
+    ┌── 20(3)
+    │   │   ┌── 10(1)
+    │   └── 6(2)
+    │       └── 5(1)
+            */
+}
+
+fn main2004() {
+    // tester for RL case, avl tree
+    //works
+
+    let mut mytree = AVLTree::new();
+    mytree.insert(20);
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(40);
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 40(1)
+        ┌── 30(2)
+    ┌── 20(3)
+    │   └── 10(1)
+            */
+    mytree.insert(35);
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 40(1)
+        ┌── 35(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+            */
+}
+
+fn main2005() {
+    // avl tree //works
+    // tester for meta info functions (leave count, empty, height, in order traversal, pre order traversal)
+    
+    // 3- Count the number of leaves in a tree.
+    // 4- Return the height of a tree.
+    // 5- Print In-order traversal of the tree.
+    // 6- Check if the tree is empty.
+    // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
+
+    let mut mytree = AVLTree::new();
+    mytree.find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
+    mytree.is_tree_empty(); // should be: true
+    mytree.insert(20);
+    mytree.is_tree_empty(); // should be: false
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(40);
+    mytree.insert(50);
+
+    mytree.count_number_of_leaves(); // should be: 6
+    mytree.get_height_of_tree(); // should be: 3
+    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    mytree.is_tree_empty(); // should be: false
+    mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 50(1)
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+        */
+    mytree.find(30); // should be: Found node: 30
+    mytree.find(22); // should be: Cannot find the 22 node in the RBTree.
+    mytree.insert(60);
+    mytree.insert(70);
+    mytree.insert(80);
+    mytree.insert(90);
+    mytree.insert(100);
+    mytree.insert(110);
+    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50 60 70 80 90 100 110
+    mytree.print_pre_order_traversal(); // should be: 40 20 10 30 80 60 50 70 100 90 110 // not needed (extra feature; prints root first, then left, then right)
+    mytree.print_tree();
+    // should be:
+    /*
+                ┌── 110(1)
+            ┌── 100(2)
+            │   └── 90(1)
+        ┌── 80(3)
+        │   │   ┌── 70(1)
+        │   └── 60(2)
+        │       └── 50(1)
+    ┌── 40(4)
+    │   │   ┌── 30(1)
+    │   └── 20(2)
+    │       └── 10(1)
+        */
 }
