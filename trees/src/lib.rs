@@ -348,7 +348,7 @@ pub mod rbtree {
                 return None;
             }
             let right_child = node.borrow().right.clone().unwrap();
-            let step1 = TreeNode::ll_rotate(&right_child);
+            TreeNode::ll_rotate(&right_child);
             // Step 2: Perform LL rotation on the node itself; ll rotate will return new node on top
             TreeNode::rr_rotate(node)
         }
@@ -733,8 +733,7 @@ pub mod rbtree {
                                 if node_position == ChildPosition::Left {
                                     Self::left_rotate(&parent.clone());
                                 } else {
-                                    let result = Self::right_rotate(&parent.clone());
-                                    // result.unwrap().borrow().print_tree();
+                                    Self::right_rotate(&parent.clone());
                                 }
                                 parent.clone().borrow_mut().color = NodeColor::Red;
                                 sibling.clone().borrow_mut().color = NodeColor::Black;
