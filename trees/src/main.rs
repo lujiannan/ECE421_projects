@@ -54,8 +54,8 @@ fn main() {
     root.insert(5);
 
     root.print_tree();
-    root.delete(20);
-    root.print_tree();
+    // root.delete(20);
+    // root.print_tree();
     root.delete(50);
     root.print_tree();
     // root.count_number_of_leaves();

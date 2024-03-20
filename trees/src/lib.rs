@@ -257,6 +257,7 @@ pub mod rbtree {
         }
 
         pub fn ll_rotate(node: &Tree) -> RedBlackTree {
+            // special case for right rotation (include recoloring, for insertion use)
             let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
             let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
             let parent = node.borrow().get_parent();
@@ -289,10 +290,39 @@ pub mod rbtree {
         
             Some(node_left) // Return the new root of the subtree
         }
-        
 
+        pub fn right_rotate(node: &Tree) -> RedBlackTree {
+            let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
+            let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
+            let parent = node.borrow().get_parent();
+            let pos = node.borrow().child_position(); // Get child position before making changes
+        
+            node_left.borrow_mut().right = Some(node.clone()); // Move the node down. node's left right child = node
+            node_left.borrow_mut().parent = node.borrow().parent.clone(); // node_left's parent = current node's parent
+            node.borrow_mut().parent = Some(Rc::downgrade(&node_left)); // Change the parent of the original node to be the left node
+            // If there was a left right child of the original node, move it to the current node's left
+            node.borrow_mut().left = node_left_right; // Set node_left_right as the new left child
+        
+            // Update the parent pointer of the new left child (if it exists) to point back to `node`
+            if let Some(ref left_right) = node.borrow().left {
+                left_right.borrow_mut().parent = Some(Rc::downgrade(&node));
+            }
+        
+            // Update the child pointer of the node's parent
+            if let Some(parent) = parent {
+                match pos {
+                    ChildPosition::Left => parent.borrow_mut().left = Some(node_left.clone()),
+                    ChildPosition::Right => parent.borrow_mut().right = Some(node_left.clone()),
+                    _ => {}
+                }
+                // parent.borrow().print_tree();
+            }
+        
+            Some(node_left) // Return the new root of the subtree
+        }
         
         pub fn rr_rotate(node: &Tree) -> RedBlackTree {
+            // special case for left rotation (include recoloring, for insertion use)
             let node_right = node.borrow().right.clone()?; // Get the right child of the node
             let node_right_left = node_right.borrow().left.clone(); // Get the left child of the node's right child
             let parent = node.borrow().get_parent();
@@ -324,6 +354,34 @@ pub mod rbtree {
             Some(node_right) // Return the new root of the subtree
         }
 
+        pub fn left_rotate(node: &Tree) -> RedBlackTree {
+            let node_right = node.borrow().right.clone()?; // Get the right child of the node
+            let node_right_left = node_right.borrow().left.clone(); // Get the left child of the node's right child
+            let parent = node.borrow().get_parent();
+            let pos = node.borrow().child_position(); // need to get child postion before we make any changes that might mess stuff
+
+            node_right.borrow_mut().left = Some(node.clone()); // Move node up. node's right left child = node
+            node_right.borrow_mut().parent = node.borrow().parent.clone(); // node_right parent = current node's parent
+            node.borrow_mut().parent = Some(Rc::downgrade(&node_right)); // Change the parent of the original node to be the right node
+            // If there was a right left child of the original node, move it to the current node's right
+            node.borrow_mut().right = node_right_left; // Set node_right_left as the new right child
+
+            // Update the parent pointer of the new right child (if it exists) to point back to `node`
+            if let Some(ref right_left) = node.borrow().right {
+                right_left.borrow_mut().parent = Some(Rc::downgrade(&node));
+            }
+
+            // update child pointer of node's parent
+            if let Some(parent) = parent {
+                match pos {
+                    ChildPosition::Left => parent.borrow_mut().left = Some(node_right.clone()),
+                    ChildPosition::Right => parent.borrow_mut().right = Some(node_right.clone()),
+                    _ => {}
+                }
+                // parent.borrow().print_tree();
+            }
+            Some(node_right) // Return the new root of the subtree
+        }
         
         pub fn lr_rotate(node: &Tree) -> RedBlackTree {
             // Safety check: ensure the node has a left child
@@ -704,9 +762,9 @@ pub mod rbtree {
                                 } else if Self::get_color(&sibling_cclose) == NodeColor::Red && Self::get_color(&sibling_cfar) == NodeColor::Black {
                                     // close is red, distant is black
                                     if node_position == ChildPosition::Left {
-                                        Self::rr_rotate(&sibling.clone());
+                                        Self::right_rotate(&sibling.clone());
                                     } else {
-                                        Self::ll_rotate(&sibling.clone());
+                                        Self::left_rotate(&sibling.clone());
                                     }
                                     sibling.clone().borrow_mut().color = NodeColor::Red;
                                     sibling_cclose.clone().unwrap().borrow_mut().color = NodeColor::Black;
@@ -714,9 +772,9 @@ pub mod rbtree {
                                 } else if Self::get_color(&sibling_cfar) == NodeColor::Red {
                                     // distant is red
                                     if node_position == ChildPosition::Left {
-                                        Self::ll_rotate(&parent.clone());
+                                        Self::left_rotate(&parent.clone());
                                     } else {
-                                        Self::rr_rotate(&parent.clone());
+                                        Self::right_rotate(&parent.clone());
                                     }
                                     sibling.clone().borrow_mut().color = parent.borrow().color.clone();
                                     parent.clone().borrow_mut().color = NodeColor::Black;
@@ -725,10 +783,10 @@ pub mod rbtree {
                             } else {
                                 // sibling is red
                                 if node_position == ChildPosition::Left {
-                                    Self::ll_rotate(&parent.clone());
+                                    Self::left_rotate(&parent.clone());
                                 } else {
-                                    let result = Self::rr_rotate(&parent.clone());
-                                    result.unwrap().borrow().print_tree();
+                                    let result = Self::right_rotate(&parent.clone());
+                                    // result.unwrap().borrow().print_tree();
                                 }
                                 parent.clone().borrow_mut().color = NodeColor::Red;
                                 sibling.clone().borrow_mut().color = NodeColor::Black;
@@ -834,7 +892,9 @@ pub mod rbtree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
-                        TreeNode::delete_node(&node_to_delete)
+                        let result = TreeNode::delete_node(&node_to_delete);
+                        self.root = result;
+                        None
                     } else {
                         println!("Cannot find the node in the RBTree, please check");
                         self.get_root()
