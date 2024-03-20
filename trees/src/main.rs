@@ -221,6 +221,7 @@ fn main1005() {
     // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
 
     let mut myrbtree = RBTree::new();
+    // myrbtree.find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
     myrbtree.is_tree_empty(); // should be: true
     myrbtree.insert(20);
     myrbtree.is_tree_empty(); // should be: false
@@ -237,12 +238,14 @@ fn main1005() {
     myrbtree.print_tree();
     // should be:
     /*
-                    ┌── 50 (Red)40
+            ┌── 50 (Red)40
         ┌── 40 (Black)20
         │   └── 30 (Red)40
     ┌── 20 (Black)
     │   └── 10 (Black)20
         */
+    // myrbtree.find(30); // should be: Found node: 30
+    // myrbtree.find(22); // should be: Cannot find the 22 node in the RBTree.
 }
 
 fn main1006() {

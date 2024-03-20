@@ -906,6 +906,25 @@ pub mod rbtree {
                 root.borrow().print_tree();
             }
         }
+
+        pub fn find(&mut self, key: u32) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    if let Some(node_to_find) = TreeNode::find_node(root, key) {
+                        println!("Found node: {:?}", node_to_find.borrow().key);
+                        Some(node_to_find)
+                    } else {
+                        println!("Cannot find the {} node in the RBTree.", key);
+                        self.get_root()
+                    }
+                },
+                None => {
+                    // if tree is empty 
+                    println!("Cannot find the {} node, the RBTree is empty, no nodes in tree.", key);
+                    self.get_root()
+                }
+            }
+        }
     }
 }
 

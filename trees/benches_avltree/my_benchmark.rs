@@ -26,7 +26,7 @@ harness = false
      // change the num_limit to 10,000, 40,000, 70,000, 100,000, 130,000
      let num_limit = 10000; // 10,000, 40,000, 70,000, 100,000, 130,000
      let mut rng = rand::thread_rng();
-     let mut test_values: Vec<i64> = (0..num_limit)
+     let mut test_values: Vec<u32> = (0..num_limit)
          .map(|_| rng.gen_range(1..num_limit))
          .collect();
  
@@ -54,15 +54,15 @@ harness = false
      // 'known' means they are for sure in the tree)
      let mut lower_test_values_known = test_values.clone();
      lower_test_values_known.sort();
-     lower_test_values_known
+     let lower_test_values_known: Vec<_> = lower_test_values_known
          .iter()
-         .take(num_limit / 10)
+         .take((num_limit / 10).try_into().unwrap())
          .cloned()
          .collect();
      c.bench_function("RBTree search known: ", |b| {
          b.iter(|| {
              for &item in &lower_test_values_known {
-                 rbtree.find_node(item); // needs to be implemented in lib
+                 rbtree.find(item);
              }
          })
      });
@@ -78,13 +78,13 @@ harness = false
      // (option of known or unknown values:
      // 'unknown' means they may not all be in the tree,
      // 'known' means they are for sure in the tree)
-     let mut lower_test_values_unknown: Vec<i64> = (0..(num_limit / 10))
+     let mut lower_test_values_unknown: Vec<u32> = (0..(num_limit / 10))
          .map(|_| rng.gen_range(1..(num_limit / 10)))
          .collect();
      c.bench_function("RBTree search unknown: ", |b| {
          b.iter(|| {
              for &item in &lower_test_values_unknown {
-                 rbtree.find_node(item); // needs to be implemented in lib
+                 rbtree.find(item);
              }
          })
      });
