@@ -31,12 +31,8 @@ pub mod rbtree {
         pub parent: WeakRedBlackTree, // Weak references for cyclic stuff to prevent memory leaks
         pub left: RedBlackTree,
         pub right: RedBlackTree,
+        pub height: u32,
     }
-
-    pub struct RBTree{
-        root: RedBlackTree,
-    }
-
     impl TreeNode<u32> {
         fn get_root(node: &Tree) -> RedBlackTree {
             let parent = node.borrow().parent.clone();
@@ -56,6 +52,7 @@ pub mod rbtree {
                 parent: None,
                 left: None,
                 right: None,
+                height: 0,
             }))
         }
 
@@ -68,6 +65,7 @@ pub mod rbtree {
                 parent: None,
                 left: None,
                 right: None,
+                height: 0,
             })))
         }
         
@@ -370,7 +368,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn pretty_print(&self, prefix: String, is_left: bool) {
+        pub fn pretty_print(&self, prefix: String, is_left: bool,) {
             if let Some(right_child) = &self.right {
                 right_child.borrow().pretty_print(
                     format!("{}{}", prefix, if is_left { "│   " } else { "    " }),
@@ -746,6 +744,9 @@ pub mod rbtree {
         }
     }
 
+    pub struct RBTree{
+        root: RedBlackTree,
+    }
 
 
     impl RBTree {
@@ -756,6 +757,191 @@ pub mod rbtree {
         pub fn get_root(&self) -> RedBlackTree {
             self.root.clone()
         }
+        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    // tree is not empty do insertion
+                    TreeNode::regular_insert(root, key, color)
+
+                },
+                None => {
+                    // if tree is empty create a new new node and set as root
+                    self.root = TreeNode::new_rb(key, NodeColor::Black);
+                    self.get_root()
+                }
+            }
+        }
+
+        pub fn insert(&mut self, key: u32) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    // tree is not empty do insertion
+
+                    // 1: do regular insert
+                    let mut new_node = TreeNode::regular_insert(root, key, NodeColor::Red)?;
+
+                    // 2: recolor up the tree. recolor -> check if need to recolor on grandparent -> recolor and so on
+                    while new_node.borrow().determine_case() == "Recolor" {
+                        new_node = TreeNode::recolor(&new_node)?;
+                    }
+
+                    
+                    
+
+                    // new_node.borrow().print_tree();
+                    // we may hae a node higher up in the tree depending on how many time recoloring ran
+                    // 3: check if need rotation -> perform rotation. 
+                    // determine case on current node. but our rotations take in the top node so we need to get grandparent
+                    let rotation_case = new_node.borrow().determine_case();
+                    let rotated_root = match rotation_case.as_str() {
+                        "LL" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::ll_rotate(&top)
+                        },
+                        "RR" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::rr_rotate(&top)
+                        },
+                        "LR" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::lr_rotate(&top)
+                        },
+                        "RL" => {
+                            let top = new_node.borrow().get_grandparent()?;
+                            TreeNode::rl_rotate(&top)
+                        },
+                        "None" => None, // No rotation needed, or handle as appropriate
+                        _ => None, // Catch-all case, unlikely to be reached
+                    };
+
+                    // // rotated_root.unwrap().borrow().print_node();
+                    if let Some(sub_root) = rotated_root {
+                        if sub_root.borrow().parent.is_none() {
+                            self.root = Some(sub_root.clone());
+                        }
+                    }
+
+                    
+                    // 4: rotation might change the root. if root of new subtree has no parent then it is the new root
+                    
+
+                    
+                    None
+                },
+                None => {
+                    // if tree is empty create a new new node and set as root
+                    self.root = TreeNode::new_rb(key, NodeColor::Black);
+                    self.get_root()
+                }
+            }
+        }
+
+        pub fn delete(&mut self, key: u32) -> RedBlackTree{
+            match self.root {
+                Some(ref root) => {
+                    if let Some(node_to_delete) = TreeNode::find_node(root, key) {
+                        let result = TreeNode::delete_node(&node_to_delete);
+                        self.root = result;
+                        None
+                    } else {
+                        println!("Cannot find the node in the RBTree, please check");
+                        self.get_root()
+                    }
+                },
+                None => {
+                    // if tree is empty 
+                    println!("The RBTree is empty, no deletion required");
+                    self.get_root()
+                }
+            }
+        }
+
+        pub fn count_number_of_leaves(&self) -> usize {
+            let mut count = 0;
+            if let Some(ref node) = self.root {
+                count = TreeNode::node_count_number_of_leaves(node)
+            } 
+            println!("count_number_of_leaves: {}", count);
+            count
+        }
+        
+        pub fn is_tree_empty(&self) -> bool {
+            let mut state = true;
+            if let Some(ref node) = self.root {
+                // state = TreeNode::node_is_tree_empty(node)
+                state = false
+            } else {
+                state = true;
+            }
+            println!("is_tree_empty: {}", state);
+            state
+        }
+
+        pub fn get_height_of_tree(&self) -> usize {
+            let mut height = 0;
+            if let Some(ref node) = self.root {
+                height = TreeNode::node_get_height_of_tree(node)
+            } 
+            println!("get_height_of_tree: {}", height);
+            height
+        }
+
+        pub fn print_in_order_traversal(&self) {
+            println!("In order traversal: ");
+            if let Some(ref node) = self.root {
+                TreeNode::node_print_in_order_traversal(&node.borrow());
+            }
+            println!();
+        }
+
+        pub fn print_pre_order_traversal(&self) {
+            println!("Pre order traversal: ");
+            if let Some(ref node) = self.root {
+                TreeNode::node_print_pre_order_traversal(&node.borrow());
+            } 
+            println!();
+        }
+
+        pub fn print_tree(&self) {
+            if let Some(ref root) = self.root {
+                root.borrow().print_tree();
+            }
+        }
+
+        pub fn find(&mut self, key: u32) -> RedBlackTree {
+            match self.root {
+                Some(ref root) => {
+                    if let Some(node_to_find) = TreeNode::find_node(root, key) {
+                        println!("Found node: {:?}", node_to_find.borrow().key);
+                        Some(node_to_find)
+                    } else {
+                        println!("Cannot find the {} node in the RBTree.", key);
+                        self.get_root()
+                    }
+                },
+                None => {
+                    // if tree is empty 
+                    println!("Cannot find the {} node, the RBTree is empty, no nodes in tree.", key);
+                    self.get_root()
+                }
+            }
+        }
+    }
+
+    pub struct AVLTree{
+        root: RedBlackTree,
+    }
+
+    impl AVLTree {
+        pub fn new() -> RBTree {
+            RBTree {root: None}
+        }
+
+        pub fn get_root(&self) -> RedBlackTree {
+            self.root.clone()
+        }
+
+        // regular insert
         pub fn r_insert(&mut self, key: u32, color: NodeColor) -> RedBlackTree {
             match self.root {
                 Some(ref root) => {
