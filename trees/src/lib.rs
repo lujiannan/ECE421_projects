@@ -519,8 +519,8 @@ pub mod tree {
             current
         }
 
-        // remove a node from the tree
-        pub fn delete_node(node: &Tree) -> OptionTree{
+        // remove a node from the rb tree
+        pub fn delete_node_rb(node: &Tree) -> OptionTree {
             let node_left = node.borrow().left.clone();
             let node_right = node.borrow().right.clone();
             let node_parent = node.borrow().parent.clone();
@@ -537,7 +537,7 @@ pub mod tree {
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
                             std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                            Self::delete_node(successor_node);
+                            Self::delete_node_rb(successor_node);
                         }
                     } else {
                         // delete node with one or no child
@@ -583,7 +583,7 @@ pub mod tree {
                                 match node_parent {
                                     None => return None,
                                     Some(node_parent) => {
-                                        Self::delete_maintain(&node.clone());
+                                        Self::delete_maintain_rb(&node.clone());
                                         node_parent.upgrade().unwrap().borrow_mut().left = None;
                                         node.borrow_mut().parent = None;
                                     }
@@ -599,7 +599,7 @@ pub mod tree {
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
                             std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                            Self::delete_node(successor_node);
+                            Self::delete_node_rb(successor_node);
                         }
                     } else {
                         // delete node with one or no child
@@ -645,7 +645,7 @@ pub mod tree {
                                 match node_parent {
                                     None => return None,
                                     Some(node_parent) => {
-                                        Self::delete_maintain(&node.clone());
+                                        Self::delete_maintain_rb(&node.clone());
                                         node_parent.upgrade().unwrap().borrow_mut().right = None;
                                         node.borrow_mut().parent = None;
                                     }
@@ -672,7 +672,7 @@ pub mod tree {
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
                             std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                            Self::delete_node(successor_node);
+                            Self::delete_node_rb(successor_node);
                         }
                     } else {
                         return None;
@@ -690,7 +690,7 @@ pub mod tree {
             }
         }
 
-        fn delete_maintain(node: &Tree) {
+        fn delete_maintain_rb(node: &Tree) {
             // maintain rbtree property after delete a black node with no children (& not root)
             let parent = node.borrow().parent.clone();
             match parent {
@@ -718,7 +718,7 @@ pub mod tree {
                                     if parent.borrow().color == NodeColor::Black {
                                         // parent is also black
                                         sibling.clone().borrow_mut().color = NodeColor::Red;
-                                        Self::delete_maintain(&parent.clone());
+                                        Self::delete_maintain_rb(&parent.clone());
                                     } else {
                                         // parent is red
                                         sibling.clone().borrow_mut().color = NodeColor::Red;
@@ -733,7 +733,7 @@ pub mod tree {
                                     }
                                     sibling.clone().borrow_mut().color = NodeColor::Red;
                                     sibling_cclose.clone().unwrap().borrow_mut().color = NodeColor::Black;
-                                    Self::delete_maintain(&node.clone());
+                                    Self::delete_maintain_rb(&node.clone());
                                 } else if Self::get_color(&sibling_cfar) == NodeColor::Red {
                                     // distant is red
                                     if node_position == ChildPosition::Left {
@@ -754,12 +754,17 @@ pub mod tree {
                                 }
                                 parent.clone().borrow_mut().color = NodeColor::Red;
                                 sibling.clone().borrow_mut().color = NodeColor::Black;
-                                Self::delete_maintain(&node.clone());
+                                Self::delete_maintain_rb(&node.clone());
                             }
                         }
                     }
                 }
             }
+        }
+
+        // remove a node from the tree
+        pub fn delete_node_avl(node: &Tree) -> OptionTree {
+            Self::get_root(node)
         }
     }
 
@@ -859,7 +864,7 @@ pub mod tree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
-                        let result = TreeNode::delete_node(&node_to_delete);
+                        let result = TreeNode::delete_node_rb(&node_to_delete);
                         self.root = result;
                         None
                     } else {
@@ -1045,17 +1050,17 @@ pub mod tree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
-                        let result = TreeNode::delete_node(&node_to_delete);
+                        let result = TreeNode::delete_node_avl(&node_to_delete);
                         self.root = result;
                         None
                     } else {
-                        println!("Cannot find the node in the RBTree, please check");
+                        println!("Cannot find the node in the AVLTree, please check");
                         self.get_root()
                     }
                 },
                 None => {
                     // if tree is empty 
-                    println!("The RBTree is empty, no deletion required");
+                    println!("The AVLTree is empty, no deletion required");
                     self.get_root()
                 }
             }
@@ -1120,13 +1125,13 @@ pub mod tree {
                         println!("Found node: {:?}", node_to_find.borrow().key);
                         Some(node_to_find)
                     } else {
-                        println!("Cannot find the {} node in the RBTree.", key);
+                        println!("Cannot find the {} node in the AVLTree.", key);
                         self.get_root()
                     }
                 },
                 None => {
                     // if tree is empty 
-                    println!("Cannot find the {} node, the RBTree is empty, no nodes in tree.", key);
+                    println!("Cannot find the {} node, the AVLTree is empty, no nodes in tree.", key);
                     self.get_root()
                 }
             }
