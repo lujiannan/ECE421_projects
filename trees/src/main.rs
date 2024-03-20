@@ -5,7 +5,7 @@ use trees::rbtree::*;
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
-fn main1() {
+fn main() {
     let mut root = RBTree::new();
     root.insert(50);
     root.insert(25);
@@ -35,7 +35,7 @@ fn passed_example2() {
     root.print_tree();
 }
 
-fn main() {
+fn main1() {
     // Create the root of the tree with a specific key
     let mut root = RBTree::new();
     // root.is_tree_empty();
