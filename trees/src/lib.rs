@@ -514,32 +514,38 @@ pub mod tree {
                 );
             }
         
-            // Determine color string based on whether the tree is AVL or not.
-            let color_string = if is_avl {
-                String::new() // If it's an AVL tree, don't display color information.
-            } else {
-                // For non-AVL trees, include color information.
-                match self.color {
-                    NodeColor::Red => " (Red)".to_string(),
-                    NodeColor::Black => " (Black)".to_string(),
-                }
+                    // For non-AVL trees, include color information and possibly parent key.
+            let color_string = match self.color {
+                NodeColor::Red => " (Red)",
+                NodeColor::Black => " (Black)",
             };
-        
-            // Determine parent key string
+
             let parent_key_string = match self.get_parent_key() {
-                Some(parent_key) => format!(" ({})", parent_key), // Format with parentheses
-                None => "".to_string(), // No parent key available
+                Some(parent_key) => format!(" ({})", parent_key),
+                None => "".to_string(),
             };
+
+            if is_avl {
+                // For AVL trees, print without color and parent key information, but include height.
+                println!(
+                    "{}{}── {}({})",
+                    prefix,
+                    if is_left { "└" } else { "┌" },
+                    self.key,
+                    self.height
+                );
+            } else {
+                // For non-AVL trees, print with color and optionally with parent key, but not height.
+                println!(
+                    "{}{}── {}{}",
+                    prefix,
+                    if is_left { "└" } else { "┌" },
+                    self.key,
+                    color_string,
+                    // parent_key_string
+                );
+            }
         
-            println!(
-                "{}{}── {}{}({})",
-                prefix,
-                if is_left { "└" } else { "┌" },
-                self.key,
-                color_string,
-                // parent_key_string
-                self.height
-            );
         
             if let Some(left_child) = &self.left {
                 left_child.borrow().pretty_print(
