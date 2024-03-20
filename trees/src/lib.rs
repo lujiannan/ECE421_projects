@@ -1136,20 +1136,23 @@ pub mod tree {
             if let Some(ref node) = self.root {
                 count = TreeNode::node_count_number_of_leaves(node)
             } 
-            println!("count_number_of_leaves: {}", count);
             count
+        }
+
+        pub fn print_count_number_of_leaves(&self) {
+            println!("count_number_of_leaves: {}", self.count_number_of_leaves());
         }
         
         pub fn is_tree_empty(&self) -> bool {
             let mut state = true;
-            if let Some(ref node) = self.root {
-                // state = TreeNode::node_is_tree_empty(node)
-                state = false
-            } else {
-                state = true;
+            if let Some(_node) = &self.root {
+                state = false;
             }
-            println!("is_tree_empty: {}", state);
             state
+        }
+
+        pub fn print_is_tree_empty(&self) {
+            println!("is_tree_empty: {}", self.is_tree_empty());
         }
 
         pub fn get_height_of_tree(&self) -> usize {
@@ -1157,8 +1160,11 @@ pub mod tree {
             if let Some(ref node) = self.root {
                 height = TreeNode::node_get_height_of_tree(node)
             } 
-            println!("get_height_of_tree: {}", height);
             height
+        }
+
+        pub fn print_get_height_of_tree(&self) {
+            println!("get_height_of_tree: {}", self.get_height_of_tree());
         }
 
         pub fn print_in_order_traversal(&self) {
@@ -1187,17 +1193,32 @@ pub mod tree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_find) = TreeNode::find_node(root, key) {
-                        println!("Found node: {:?}", node_to_find.borrow().key);
+                        // if tree has key, return it
                         Some(node_to_find)
                     } else {
-                        println!("Cannot find the {} node in the RBTree.", key);
-                        self.get_root()
+                        // if tree doesn't have key, return None
+                        // self.get_root()
+                        None
                     }
                 },
                 None => {
-                    // if tree is empty 
-                    println!("Cannot find the {} node, the RBTree is empty, no nodes in tree.", key);
-                    self.get_root()
+                    // if tree is empty, return None
+                    // self.get_root()
+                    None
+                }
+            }
+        }
+
+        pub fn print_find(&mut self, key: u32) {
+            let result = self.find(key);
+            match result {
+                Some(ref node) => {
+                    // if tree contains the key
+                    println!("Found node: {:?}", node.borrow().key);
+                },
+                None => {
+                    // if tree doesn't contain the key
+                    println!("Cannot find the {} node in the tree.", key);
                 }
             }
         }
@@ -1322,7 +1343,7 @@ pub mod tree {
                         None
                     } else {
                         self.root = None;
-                        println!("AVLTree empty");
+                        println!("AVLTree has no {}", key);
                         self.get_root()
                     }
                 },
@@ -1339,20 +1360,23 @@ pub mod tree {
             if let Some(ref node) = self.root {
                 count = TreeNode::node_count_number_of_leaves(node)
             } 
-            println!("count_number_of_leaves: {}", count);
             count
+        }
+
+        pub fn print_count_number_of_leaves(&self) {
+            println!("count_number_of_leaves: {}", self.count_number_of_leaves());
         }
         
         pub fn is_tree_empty(&self) -> bool {
             let mut state = true;
-            if let Some(ref node) = self.root {
-                // state = TreeNode::node_is_tree_empty(node)
-                state = false
-            } else {
-                state = true;
+            if let Some(_node) = &self.root {
+                state = false;
             }
-            println!("is_tree_empty: {}", state);
             state
+        }
+
+        pub fn print_is_tree_empty(&self) {
+            println!("is_tree_empty: {}", self.is_tree_empty());
         }
 
         pub fn get_height_of_tree(&self) -> usize {
@@ -1360,8 +1384,11 @@ pub mod tree {
             if let Some(ref node) = self.root {
                 height = TreeNode::node_get_height_of_tree(node)
             } 
-            println!("get_height_of_tree: {}", height);
             height
+        }
+
+        pub fn print_get_height_of_tree(&self) {
+            println!("get_height_of_tree: {}", self.get_height_of_tree());
         }
 
         pub fn print_in_order_traversal(&self) {
@@ -1390,17 +1417,32 @@ pub mod tree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_find) = TreeNode::find_node(root, key) {
-                        println!("Found node: {:?}", node_to_find.borrow().key);
+                        // if tree has key, return it
                         Some(node_to_find)
                     } else {
-                        println!("Cannot find the {} node in the AVLTree.", key);
-                        self.get_root()
+                        // if tree doesn't have key, return None
+                        // self.get_root()
+                        None
                     }
                 },
                 None => {
-                    // if tree is empty 
-                    println!("Cannot find the {} node, the AVLTree is empty, no nodes in tree.", key);
-                    self.get_root()
+                    // if tree is empty, return None
+                    // self.get_root()
+                    None
+                }
+            }
+        }
+
+        pub fn print_find(&mut self, key: u32) {
+            let result = self.find(key);
+            match result {
+                Some(ref node) => {
+                    // if tree contains the key
+                    println!("Found node: {:?}", node.borrow().key);
+                },
+                None => {
+                    // if tree doesn't contain the key
+                    println!("Cannot find the {} node in the tree.", key);
                 }
             }
         }

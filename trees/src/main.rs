@@ -2,17 +2,19 @@ extern crate trees;
 
 //
 use trees::tree::*;
-use trees::tree::AVLTree;
+// use trees::tree::AVLTree;
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
 fn main() {
+    // passed_avl_example();
     main1007();
     // main2001();
     // main2002();
     // main2003();
     // main2004();
     // main2005();
+    // main1005();
 }
 
 fn avl() {
@@ -216,18 +218,18 @@ fn main1005() {
 
     let mut myrbtree = RBTree::new();
     // myrbtree.find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
-    myrbtree.is_tree_empty(); // should be: true
+    myrbtree.print_is_tree_empty(); // should be: true
     myrbtree.insert(20);
-    myrbtree.is_tree_empty(); // should be: false
+    myrbtree.print_is_tree_empty(); // should be: false
     myrbtree.insert(10);
     myrbtree.insert(30);
     myrbtree.insert(40);
     myrbtree.insert(50);
 
-    myrbtree.count_number_of_leaves(); // should be: 6
-    myrbtree.get_height_of_tree(); // should be: 3
+    myrbtree.print_count_number_of_leaves(); // should be: 6
+    myrbtree.print_get_height_of_tree(); // should be: 3
     myrbtree.print_in_order_traversal(); // should be: 10 20 30 40 50
-    myrbtree.is_tree_empty(); // should be: false
+    myrbtree.print_is_tree_empty(); // should be: false
     myrbtree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
     myrbtree.print_tree();
     // should be:
@@ -285,7 +287,7 @@ fn main1007() {
             while while_stage_holder_2 {
                 println!("What would you like to do with this AVL tree: ");
                 println!(
-                    "Commands are: insert <value>, delete <value>, leaves (i.e. count leaves),"
+                    "Commands are: insert <value>, find <value>, delete <value>, leaves (i.e. count leaves),"
                 );
                 println!("height (i.e. get tree height), inorder (i.e. prints in order traversal), preorder (i.e. prints pre order traversal),");
                 println!("ifempty (i.e. check if tree is empty), print (i.e. print tree in structured format), exit");
@@ -309,6 +311,20 @@ fn main1007() {
                         myavltree.insert(num);
                         println!("Inserted {}", num);
                     }
+                    "find" => {
+                        if parts.len() < 2 {
+                            println!("Expected a number after 'find'");
+                            continue;
+                        }
+                        let num = match parts[1].parse::<u32>() {
+                            Ok(num) => num,
+                            Err(_) => {
+                                println!("Invalid input, please enter a number.");
+                                continue;
+                            }
+                        };
+                        myavltree.print_find(num);
+                    }
                     "delete" => {
                         if parts.len() < 2 {
                             println!("Expected a number after 'delete'");
@@ -321,14 +337,23 @@ fn main1007() {
                                 continue;
                             }
                         };
-                        myavltree.delete(num);
-                        println!("Deleted {}", num);
+                        let result = myavltree.delete(num);
+                        match result {
+                            Some(ref node) => {
+                                // if tree contains the key
+                                println!("Found node: {:?}, deleting.", node.borrow().key);
+                            },
+                            None => {
+                                // if tree doesn't contain the key
+                                println!("Cannot find the {} node in the tree.", num);
+                            }
+                        }
                     }
                     "leaves" => {
-                        myavltree.count_number_of_leaves();
+                        myavltree.print_count_number_of_leaves();
                     }
                     "height" => {
-                        myavltree.get_height_of_tree();
+                        myavltree.print_get_height_of_tree();
                     }
                     "inorder" => {
                         myavltree.print_in_order_traversal();
@@ -337,7 +362,7 @@ fn main1007() {
                         myavltree.print_pre_order_traversal();
                     }
                     "ifempty" => {
-                        myavltree.is_tree_empty();
+                        myavltree.print_is_tree_empty();
                     }
                     "print" => {
                         myavltree.print_tree();
@@ -355,7 +380,7 @@ fn main1007() {
             while while_stage_holder_2 {
                 println!("What would you like to do with this Red-Black tree: ");
                 println!(
-                    "Commands are: insert <value>, delete <value>, leaves (i.e. count leaves),"
+                    "Commands are: insert <value>, find <value>, delete <value>, leaves (i.e. count leaves),"
                 );
                 println!("height (i.e. get tree height), inorder (i.e. prints in order traversal), preorder (i.e. prints pre order traversal),");
                 println!("ifempty (i.e. check if tree is empty), print (i.e. print tree in structured format), exit");
@@ -379,6 +404,20 @@ fn main1007() {
                         myrbtree.insert(num);
                         println!("Inserted {}", num);
                     }
+                    "find" => {
+                        if parts.len() < 2 {
+                            println!("Expected a number after 'find'");
+                            continue;
+                        }
+                        let num = match parts[1].parse::<u32>() {
+                            Ok(num) => num,
+                            Err(_) => {
+                                println!("Invalid input, please enter a number.");
+                                continue;
+                            }
+                        };
+                        myrbtree.print_find(num);
+                    }
                     "delete" => {
                         if parts.len() < 2 {
                             println!("Expected a number after 'delete'");
@@ -391,14 +430,23 @@ fn main1007() {
                                 continue;
                             }
                         };
-                        myrbtree.delete(num);
-                        println!("Deleted {}", num);
+                        let result = myrbtree.delete(num);
+                        match result {
+                            Some(ref node) => {
+                                // if tree contains the key
+                                println!("Found node: {:?}, deleting.", node.borrow().key);
+                            },
+                            None => {
+                                // if tree doesn't contain the key
+                                println!("Cannot find the {} node in the tree.", num);
+                            }
+                        }
                     }
                     "leaves" => {
-                        myrbtree.count_number_of_leaves();
+                        myrbtree.print_count_number_of_leaves();
                     }
                     "height" => {
-                        myrbtree.get_height_of_tree();
+                        myrbtree.print_get_height_of_tree();
                     }
                     "inorder" => {
                         myrbtree.print_in_order_traversal();
@@ -407,7 +455,7 @@ fn main1007() {
                         myrbtree.print_pre_order_traversal();
                     }
                     "ifempty" => {
-                        myrbtree.is_tree_empty();
+                        myrbtree.print_is_tree_empty();
                     }
                     "print" => {
                         myrbtree.print_tree();
@@ -551,10 +599,10 @@ fn main2005() {
     // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
 
     let mut mytree = AVLTree::new();
-    mytree.find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
-    mytree.is_tree_empty(); // should be: true
+    mytree.print_find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
+    mytree.print_is_tree_empty(); // should be: true
     mytree.insert(20);
-    mytree.is_tree_empty(); // should be: false
+    mytree.print_is_tree_empty(); // should be: false
     mytree.insert(10);
     mytree.insert(30);
     mytree.insert(40);
@@ -574,8 +622,8 @@ fn main2005() {
     ┌── 20(3)
     │   └── 10(1)
         */
-    mytree.find(30); // should be: Found node: 30
-    mytree.find(22); // should be: Cannot find the 22 node in the RBTree.
+    mytree.print_find(30); // should be: Found node: 30
+    mytree.print_find(22); // should be: Cannot find the 22 node in the RBTree.
     mytree.insert(60);
     mytree.insert(70);
     mytree.insert(80);
