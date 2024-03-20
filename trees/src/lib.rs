@@ -21,20 +21,20 @@ pub mod rbtree {
 
     type Tree = Rc<RefCell<TreeNode<u32>>>;
     type WeakTree = Weak<RefCell<TreeNode<u32>>>;
-    type RedBlackTree = Option<Tree>;
-    type WeakRedBlackTree = Option<WeakTree>;
+    type OptionTree = Option<Tree>;
+    type WeakOptionTree = Option<WeakTree>;
 
     #[derive(Clone, Debug)] // had to remove Partialeq because it can't be used on weak references. we can implement ourself if needed
     pub struct TreeNode<T> {
         pub color: NodeColor,
         pub key: T,
-        pub parent: WeakRedBlackTree, // Weak references for cyclic stuff to prevent memory leaks
-        pub left: RedBlackTree,
-        pub right: RedBlackTree,
+        pub parent: WeakOptionTree, // Weak references for cyclic stuff to prevent memory leaks
+        pub left: OptionTree,
+        pub right: OptionTree,
         pub height: u32,
     }
     impl TreeNode<u32> {
-        fn get_root(node: &Tree) -> RedBlackTree {
+        fn get_root(node: &Tree) -> OptionTree {
             let parent = node.borrow().parent.clone();
             match parent {
                 Some(p) => Self::get_root(&p.upgrade().unwrap()),
@@ -58,7 +58,7 @@ pub mod rbtree {
 
 
         // used in insert function. we return full RedBlackTree type. so we dont need to wrap Tree in some everytime
-        pub fn new_rb(key: u32, c: NodeColor) -> RedBlackTree {
+        pub fn new_rb(key: u32, c: NodeColor) -> OptionTree {
             Some(Rc::new(RefCell::new(TreeNode {
                 color: c,
                 key,
@@ -93,7 +93,7 @@ pub mod rbtree {
 
         // insert new node and set the parent which is a weak reference to the previous node
         // need to handle all the cases after insertion
-        pub fn regular_insert(node: &Tree, key: u32, color: NodeColor) -> RedBlackTree {
+        pub fn regular_insert(node: &Tree, key: u32, color: NodeColor) -> OptionTree {
             let mut current = node.borrow_mut();
 
             if key < current.key {
@@ -231,7 +231,7 @@ pub mod rbtree {
             println!("Node Key: {}, Color: {}, Parent Key: {}, Left Child Key: {}, Right Child Key: {}", self.key, color, parent_key, left_key, right_key);
         }
 
-        pub fn recolor(node: &Tree) -> RedBlackTree {
+        pub fn recolor(node: &Tree) -> OptionTree {
             // perform 1 iteration of recoloring and return the grandparent
 
             if let Some(parent) = node.borrow().get_parent() {
@@ -254,7 +254,7 @@ pub mod rbtree {
             None
         }
 
-        pub fn right_rotate(node: &Tree) -> RedBlackTree {
+        pub fn right_rotate(node: &Tree) -> OptionTree {
             let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
             let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
             let parent = node.borrow().get_parent();
@@ -284,7 +284,7 @@ pub mod rbtree {
             Some(node_left) // Return the new root of the subtree
         }
 
-        pub fn left_rotate(node: &Tree) -> RedBlackTree {
+        pub fn left_rotate(node: &Tree) -> OptionTree {
             let node_right = node.borrow().right.clone()?; // Get the right child of the node
             let node_right_left = node_right.borrow().left.clone(); // Get the left child of the node's right child
             let parent = node.borrow().get_parent();
@@ -313,7 +313,7 @@ pub mod rbtree {
             Some(node_right) // Return the new root of the subtree
         }
 
-        pub fn ll_rotate(node: &Tree) -> RedBlackTree {
+        pub fn ll_rotate(node: &Tree) -> OptionTree {
             let node_color = node.borrow().color.clone();
             let subnode = Self::right_rotate(node).unwrap();
             node.borrow_mut().color = subnode.borrow().color.clone(); // Swap the colors of the node and its left child
@@ -321,7 +321,7 @@ pub mod rbtree {
             Some(subnode)
         }
 
-        pub fn rr_rotate(node: &Tree) -> RedBlackTree {
+        pub fn rr_rotate(node: &Tree) -> OptionTree {
             let node_color = node.borrow().color.clone();
             let subnode = Self::left_rotate(node).unwrap();
             node.borrow_mut().color = subnode.borrow().color.clone(); // Swap the colors of the node and its right child
@@ -329,7 +329,7 @@ pub mod rbtree {
             Some(subnode)
         }
         
-        pub fn lr_rotate(node: &Tree) -> RedBlackTree {
+        pub fn lr_rotate(node: &Tree) -> OptionTree {
             // Safety check: ensure the node has a left child
             if node.borrow().left.is_none() {
                 return None;
@@ -340,7 +340,7 @@ pub mod rbtree {
             TreeNode::ll_rotate(node)
         }
 
-        pub fn rl_rotate(node: &Tree) -> RedBlackTree {
+        pub fn rl_rotate(node: &Tree) -> OptionTree {
             // Safety check: ensure the node has a left child
             if node.borrow().right.is_none() {
                 return None;
@@ -501,7 +501,7 @@ pub mod rbtree {
         }
 
         // remove a node from the tree
-        pub fn delete_node(node: &Tree) -> RedBlackTree{
+        pub fn delete_node(node: &Tree) -> OptionTree{
             let node_left = node.borrow().left.clone();
             let node_right = node.borrow().right.clone();
             let node_parent = node.borrow().parent.clone();
@@ -663,7 +663,7 @@ pub mod rbtree {
             Self::get_root(node)
         }
 
-        fn get_color(node: &RedBlackTree) -> NodeColor {
+        fn get_color(node: &OptionTree) -> NodeColor {
             // a None node returns black color
             match node {
                 None => NodeColor::Black,
@@ -745,7 +745,7 @@ pub mod rbtree {
     }
 
     pub struct RBTree{
-        root: RedBlackTree,
+        root: OptionTree,
     }
 
 
@@ -754,10 +754,10 @@ pub mod rbtree {
             RBTree {root: None}
         }
 
-        pub fn get_root(&self) -> RedBlackTree {
+        pub fn get_root(&self) -> OptionTree {
             self.root.clone()
         }
-        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> RedBlackTree {
+        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
@@ -772,7 +772,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn insert(&mut self, key: u32) -> RedBlackTree {
+        pub fn insert(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
@@ -836,7 +836,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn delete(&mut self, key: u32) -> RedBlackTree{
+        pub fn delete(&mut self, key: u32) -> OptionTree{
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
@@ -908,7 +908,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn find(&mut self, key: u32) -> RedBlackTree {
+        pub fn find(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_find) = TreeNode::find_node(root, key) {
@@ -928,8 +928,9 @@ pub mod rbtree {
         }
     }
 
+
     pub struct AVLTree{
-        root: RedBlackTree,
+        root: OptionTree,
     }
 
     impl AVLTree {
@@ -937,12 +938,12 @@ pub mod rbtree {
             RBTree {root: None}
         }
 
-        pub fn get_root(&self) -> RedBlackTree {
+        pub fn get_root(&self) -> OptionTree {
             self.root.clone()
         }
 
         // regular insert
-        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> RedBlackTree {
+        pub fn r_insert(&mut self, key: u32, color: NodeColor) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
@@ -957,7 +958,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn insert(&mut self, key: u32) -> RedBlackTree {
+        pub fn insert(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
@@ -1021,7 +1022,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn delete(&mut self, key: u32) -> RedBlackTree{
+        pub fn delete(&mut self, key: u32) -> OptionTree{
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
@@ -1093,7 +1094,7 @@ pub mod rbtree {
             }
         }
 
-        pub fn find(&mut self, key: u32) -> RedBlackTree {
+        pub fn find(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_find) = TreeNode::find_node(root, key) {
