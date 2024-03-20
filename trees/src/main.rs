@@ -27,6 +27,10 @@ fn avl() {
     root.insert(5);
     
     root.print_tree();
+    root.delete(40);
+    root.print_tree();
+    root.delete(30);
+    root.print_tree();
 }
 
 fn passed_example2() {
@@ -48,14 +52,8 @@ fn passed_example2() {
 fn main1() {
     // Create the root of the tree with a specific key
     let mut root = AVLTree::new();
-    // root.is_tree_empty();
-    // root.print_tree();
     root.insert(50);
-    // root.is_tree_empty();
-    // root.print_tree();
     root.insert(25);
-    // root.is_tree_empty();
-    // root.print_tree();
     root.insert(100);
     root.insert(15);
     root.insert(10);
