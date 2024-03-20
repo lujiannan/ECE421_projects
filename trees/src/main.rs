@@ -8,7 +8,7 @@ use trees::tree::*;
 
 fn main() {
     // passed_avl_example();
-    main1007();
+    main1007(); // cli program
     // main2001();
     // main2002();
     // main2003();
