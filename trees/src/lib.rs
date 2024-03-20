@@ -256,41 +256,6 @@ pub mod rbtree {
             None
         }
 
-        pub fn ll_rotate(node: &Tree) -> RedBlackTree {
-            // special case for right rotation (include recoloring, for insertion use)
-            let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
-            let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
-            let parent = node.borrow().get_parent();
-            let pos = node.borrow().child_position(); // Get child position before making changes
-        
-            node_left.borrow_mut().right = Some(node.clone()); // Move the node down. node's left right child = node
-            node_left.borrow_mut().parent = node.borrow().parent.clone(); // node_left's parent = current node's parent
-            node.borrow_mut().parent = Some(Rc::downgrade(&node_left)); // Change the parent of the original node to be the left node
-            // If there was a left right child of the original node, move it to the current node's left
-            node.borrow_mut().left = node_left_right; // Set node_left_right as the new left child
-        
-            // Update the parent pointer of the new left child (if it exists) to point back to `node`
-            if let Some(ref left_right) = node.borrow().left {
-                left_right.borrow_mut().parent = Some(Rc::downgrade(&node));
-            }
-        
-            // Update the child pointer of the node's parent
-            if let Some(parent) = parent {
-                match pos {
-                    ChildPosition::Left => parent.borrow_mut().left = Some(node_left.clone()),
-                    ChildPosition::Right => parent.borrow_mut().right = Some(node_left.clone()),
-                    _ => {}
-                }
-                // parent.borrow().print_tree();
-            }
-        
-            let node_color = node.borrow().color.clone();
-            node.borrow_mut().color = node_left.borrow().color.clone(); // Swap the colors of the node and its left child
-            node_left.borrow_mut().color = node_color;
-        
-            Some(node_left) // Return the new root of the subtree
-        }
-
         pub fn right_rotate(node: &Tree) -> RedBlackTree {
             let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
             let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
@@ -319,39 +284,6 @@ pub mod rbtree {
             }
         
             Some(node_left) // Return the new root of the subtree
-        }
-        
-        pub fn rr_rotate(node: &Tree) -> RedBlackTree {
-            // special case for left rotation (include recoloring, for insertion use)
-            let node_right = node.borrow().right.clone()?; // Get the right child of the node
-            let node_right_left = node_right.borrow().left.clone(); // Get the left child of the node's right child
-            let parent = node.borrow().get_parent();
-            let pos = node.borrow().child_position(); // need to get child postion before we make any changes that might mess stuff
-
-            node_right.borrow_mut().left = Some(node.clone()); // Move node up. node's right left child = node
-            node_right.borrow_mut().parent = node.borrow().parent.clone(); // node_right parent = current node's parent
-            node.borrow_mut().parent = Some(Rc::downgrade(&node_right)); // Change the parent of the original node to be the right node
-            // If there was a right left child of the original node, move it to the current node's right
-            node.borrow_mut().right = node_right_left; // Set node_right_left as the new right child
-
-            // Update the parent pointer of the new right child (if it exists) to point back to `node`
-            if let Some(ref right_left) = node.borrow().right {
-                right_left.borrow_mut().parent = Some(Rc::downgrade(&node));
-            }
-
-            // update child pointer of node's parent
-            if let Some(parent) = parent {
-                match pos {
-                    ChildPosition::Left => parent.borrow_mut().left = Some(node_right.clone()),
-                    ChildPosition::Right => parent.borrow_mut().right = Some(node_right.clone()),
-                    _ => {}
-                }
-                // parent.borrow().print_tree();
-            }
-            let node_color = node.borrow().color.clone();
-            node.borrow_mut().color = node_right.borrow().color.clone(); // Swap the colors of the node and its right child
-            node_right.borrow_mut().color = node_color;
-            Some(node_right) // Return the new root of the subtree
         }
 
         pub fn left_rotate(node: &Tree) -> RedBlackTree {
@@ -382,6 +314,22 @@ pub mod rbtree {
             }
             Some(node_right) // Return the new root of the subtree
         }
+
+        pub fn ll_rotate(node: &Tree) -> RedBlackTree {
+            let node_color = node.borrow().color.clone();
+            let subnode = Self::right_rotate(node).unwrap();
+            node.borrow_mut().color = subnode.borrow().color.clone(); // Swap the colors of the node and its left child
+            subnode.borrow_mut().color = node_color;
+            Some(subnode)
+        }
+
+        pub fn rr_rotate(node: &Tree) -> RedBlackTree {
+            let node_color = node.borrow().color.clone();
+            let subnode = Self::left_rotate(node).unwrap();
+            node.borrow_mut().color = subnode.borrow().color.clone(); // Swap the colors of the node and its right child
+            subnode.borrow_mut().color = node_color;
+            Some(subnode)
+        }
         
         pub fn lr_rotate(node: &Tree) -> RedBlackTree {
             // Safety check: ensure the node has a left child
@@ -389,7 +337,7 @@ pub mod rbtree {
                 return None;
             }
             let left_child = node.borrow().left.clone().unwrap();
-            let step1 = TreeNode::rr_rotate(&left_child);
+            TreeNode::rr_rotate(&left_child);
             // Step 2: Perform LL rotation on the node itself; ll rotate will return new node on top
             TreeNode::ll_rotate(node)
         }
