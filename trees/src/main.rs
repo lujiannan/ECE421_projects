@@ -26,6 +26,8 @@ fn avl() {
     root.print_tree();
     root.delete(40);
     root.print_tree();
+    root.delete(30);
+    root.print_tree();
 }
 
 fn passed_example2() {
