@@ -1,7 +1,11 @@
 // extern crate trees;
 // use trees::tree::*;
 
-// Assuming RBTree is structured properly and has an `insert` method.
+/*
+use this main.rs to test crate functions,
+and to test the CLI program.
+
+*/
 
 // fn main() {
     // passed_avl_example();
