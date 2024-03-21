@@ -1,6 +1,6 @@
 # Our crate Set of Binary Trees (Red-Black tree and AVL tree)
 - ECE421 Group Project 2, due Mar 20, 2024  
-- Version: 1.0.0?
+- Version: 1.0.0
 - Authors: Prabh Kooner, Jiannan Lu, Brandon Hoynick
 
 ## Get Started – How to add crate to your project:
