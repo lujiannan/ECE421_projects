@@ -1148,6 +1148,23 @@ pub mod tree {
             }
         }
 
+        // * print delete could be something like this
+        // * ideally it would result a copy of the node that was deleted (not Rc copy, could be just a ::new(key) of TreeNode)
+        pub fn print_delete(&mut self, key: u32){
+            let result = self.delete(key);
+            match result {
+                Some(ref node) => {
+                    // if tree contains the key
+                    println!("Found node: {:?}, deleting.", key);
+                    // println!("Found node: {:?}, deleting.", node.borrow().key);
+                },
+                None => {
+                    // if tree doesn't contain the key
+                    println!("Cannot find the {} node in the tree.", key);
+                }
+            }
+        }
+
         pub fn count_number_of_leaves(&self) -> usize {
             let mut count = 0;
             if let Some(ref node) = self.root {

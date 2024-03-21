@@ -8,13 +8,15 @@ use trees::tree::*;
 
 fn main() {
     // passed_avl_example();
-    main1007(); // cli program
+    // main1007(); // cli program
     // main2001();
     // main2002();
     // main2003();
     // main2004();
     // main2005();
     // main1005();
+    // main1006(); // use a blank main when running criterion benchmark tests
+    passed_rb_example();
 }
 
 fn avl() {
@@ -60,6 +62,10 @@ fn passed_rb_example() {
     root.insert(60);
     root.insert(70);
     root.insert(80);
+    root.find(80);
+    root.print_find(80);
+    root.find(1000);
+    root.print_find(1000);
     root.insert(4);
     root.insert(8);
     root.print_tree();
@@ -250,7 +256,7 @@ fn main1006() {
 
 fn main1007() {
     // tester for CLI program with inputs
-    println!("Welcome to our AVL or red-black tree tester program!");
+    println!("Welcome to our AVL or Red-Black tree tester program!");
     let mut program_on = true;
     while program_on {
         let mut while_stage_holder_1 = true;
@@ -268,7 +274,7 @@ fn main1007() {
                     tree_type_holder = "avl".to_string();
                 }
                 "rb" => {
-                    println!("You have chosen red-black tree.");
+                    println!("You have chosen Red-Black tree.");
                     while_stage_holder_1 = false;
                     tree_type_holder = "rb".to_string();
                 }
