@@ -1133,7 +1133,7 @@ pub mod tree {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
                         let result = TreeNode::delete_node_rb(&node_to_delete);
-                        self.root = result;
+                        // self.root = result;
                         None
                     } else {
                         println!("Cannot find the node in the RBTree, please check");
