@@ -1132,18 +1132,21 @@ pub mod tree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
+                        let returned = Some(TreeNode::new(key));
                         let result = TreeNode::delete_node_rb(&node_to_delete);
                         // self.root = result;
-                        None
+                        returned
                     } else {
-                        println!("Cannot find the node in the RBTree, please check");
-                        self.get_root()
+                        // println!("Cannot find the node in the RBTree, please check");
+                        self.get_root();
+                        None
                     }
                 },
                 None => {
                     // if tree is empty 
-                    println!("The RBTree is empty, no deletion required");
-                    self.get_root()
+                    // println!("The RBTree is empty, no deletion required");
+                    self.get_root();
+                    None
                 }
             }
         }
@@ -1155,8 +1158,7 @@ pub mod tree {
             match result {
                 Some(ref node) => {
                     // if tree contains the key
-                    println!("Found node: {:?}, deleting.", key);
-                    // println!("Found node: {:?}, deleting.", node.borrow().key);
+                    println!("Found node: {:?}, deleting.", node.borrow().key);
                 },
                 None => {
                     // if tree doesn't contain the key
@@ -1377,18 +1379,21 @@ pub mod tree {
                             // result is the new root and it has a value
                             TreeNode::fix_heights(&result);
                             self.root = Some(result);
-                            
-                            None
+                            // None
+                            let returned = Some(TreeNode::new(key));
+                            returned
                         } else {
                             self.root = None;
-                            println!("AVLTree has no {}", key);
-                            self.get_root()
+                            // println!("AVLTree has no {}", key);
+                            self.get_root();
+                            None
                         }
                     },
                     None => {
                         // if tree is empty 
-                        println!("The AVLTree is empty, no deletion required");
-                        self.get_root()
+                        // println!("The AVLTree is empty, no deletion required");
+                        self.get_root();
+                        None
                     }
                 }
                 
@@ -1396,8 +1401,22 @@ pub mod tree {
                 println!("Not Found");
                 None
             }
+        }
 
-            
+        // * print delete could be something like this
+        // * ideally it would result a copy of the node that was deleted (not Rc copy, could be just a ::new(key) of TreeNode)
+        pub fn print_delete(&mut self, key: u32){
+            let result = self.delete(key);
+            match result {
+                Some(ref node) => {
+                    // if tree contains the key
+                    println!("Found node: {:?}, deleting.", node.borrow().key);
+                },
+                None => {
+                    // if tree doesn't contain the key
+                    println!("Cannot find the {} node in the tree.", key);
+                }
+            }
         }
 
         pub fn count_number_of_leaves(&self) -> usize {
