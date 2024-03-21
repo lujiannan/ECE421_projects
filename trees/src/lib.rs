@@ -1,11 +1,10 @@
 pub mod tree {
-    // our public red black tree module, so we can publish crate, and use in main
-    use std::cell::RefCell;
-    // interior mutability
+    // our public red black and avl tree module, so we can publish crate, and use in main
+    use std::cell::RefCell; // interior mutability
     use std::rc::{Rc, Weak}; // rc for multiple references
                              // weak is for parent pointers because we can't have cyclic strong references
                              // we can upgrade the parent pointers temporarily if we need to change parent values
-    use std::cmp::max;
+    use std::cmp::max; // for max function
 
     #[derive(Clone, Debug, PartialEq)]
     pub enum NodeColor {
@@ -35,6 +34,7 @@ pub mod tree {
         pub height: u32,
     }
     impl TreeNode<u32> {
+        // used for finding the root of the tree
         fn get_root(node: &Tree) -> OptionTree {
             let parent = node.borrow().parent.clone();
             match parent {
@@ -57,7 +57,6 @@ pub mod tree {
             }))
         }
 
-
         // used in insert function. we return full RedBlackTree type. so we dont need to wrap Tree in some everytime
         pub fn new_rb(key: u32, c: NodeColor) -> OptionTree {
             Some(Rc::new(RefCell::new(TreeNode {
@@ -69,7 +68,7 @@ pub mod tree {
                 height: 1,
             })))
         }
-        
+
         // determines whether node is the left or right child of parent
         pub fn child_position(&self) -> ChildPosition {
             if let Some(parent_weak) = &self.parent {
@@ -129,8 +128,8 @@ pub mod tree {
             }
         }
 
-
         //--------------AVL AVL AVL
+        // used to fix heights of avl tree after insertion
         pub fn fix_heights(node: &Tree) {
             // Direct access to the node, no need to check for Some()
             // Recursively fix heights of the left subtree
@@ -144,8 +143,8 @@ pub mod tree {
             // Update the height of the current node
             Self::update_height_single_node(node);
         }
-    
 
+        // checks if the tree is balanced
         pub fn determine_unbalance_case(&self) -> Option<String> {
             let balance_factor = self.get_self_balance_factor();
             if balance_factor > 1 {
@@ -170,41 +169,49 @@ pub mod tree {
             }
         }
 
+        // used to update height of a single node (in avl tree)
         pub fn update_height_single_node(node: &Tree) {
             let mut node_borrow = node.borrow_mut();
             let left_height = node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
             let right_height = node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
-    
+
             // Update the node's height. The height of a node is 1 plus the maximum of its children's heights
             node_borrow.height = std::cmp::max(left_height, right_height) + 1;
         }
 
-
+        // used to calculate balance factor of a node (avl tree)
         pub fn get_self_balance_factor(&self) -> i32 {
             let left_height = self.left.as_ref().map_or(0, |n| n.borrow().height);
             let right_height = self.right.as_ref().map_or(0, |n| n.borrow().height);
             left_height as i32 - right_height as i32
         }
 
+        // used to update height of tree and balance it
         pub fn update_heights_and_balance(node: &Tree) -> Option<Tree> {
             let mut current = Some(node.clone());
             while let Some(curr_node) = current {
                 let mut curr_node_borrow = curr_node.borrow_mut();
-                let left_height = curr_node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
-                let right_height = curr_node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
-        
+                let left_height = curr_node_borrow
+                    .left
+                    .as_ref()
+                    .map_or(0, |n| n.borrow().height);
+                let right_height = curr_node_borrow
+                    .right
+                    .as_ref()
+                    .map_or(0, |n| n.borrow().height);
+
                 // 1: Update the current node's height
                 curr_node_borrow.height = std::cmp::max(left_height, right_height) + 1;
-        
+
                 // 2: Calculate balance factor
                 let balance_factor = left_height as i32 - right_height as i32;
-        
+
                 // 3: if it is unbalanced, return this node
                 if balance_factor.abs() > 1 {
                     // Instead of printing, return the unbalanced node
                     return Some(curr_node.clone());
                 }
-        
+
                 // Move to the parent node
                 current = match curr_node_borrow.parent.as_ref() {
                     Some(parent_weak) => parent_weak.upgrade(),
@@ -220,22 +227,31 @@ pub mod tree {
             let mut current = Some(node.clone());
             while let Some(curr_node) = current {
                 let mut curr_node_borrow = curr_node.borrow_mut();
-                let left_height = curr_node_borrow.left.as_ref().map_or(0, |n| n.borrow().height);
-                let right_height = curr_node_borrow.right.as_ref().map_or(0, |n| n.borrow().height);
-    
+                let left_height = curr_node_borrow
+                    .left
+                    .as_ref()
+                    .map_or(0, |n| n.borrow().height);
+                let right_height = curr_node_borrow
+                    .right
+                    .as_ref()
+                    .map_or(0, |n| n.borrow().height);
+
                 // 1: Update the current newly inserted node's height
                 curr_node_borrow.height = std::cmp::max(left_height, right_height) + 1;
-    
+
                 // 2: Calculate balance factor
                 let balance_factor = left_height as i32 - right_height as i32;
                 // println!("Node Key: {}, Balance Factor: {}", curr_node_borrow.key, balance_factor);
 
                 // 3: if it is unbalanced, perform the correct rotation and make sure fix height after rotation
                 if balance_factor.abs() > 1 {
-                    println!("Unbalanced at Node Key: {}, Balance Factor: {}", curr_node_borrow.key, balance_factor);
+                    println!(
+                        "Unbalanced at Node Key: {}, Balance Factor: {}",
+                        curr_node_borrow.key, balance_factor
+                    );
                     // let case = curr_node_borrow.determine_rotation();
                 }
-    
+
                 // Move to the parent node
                 current = match curr_node_borrow.parent.as_ref() {
                     Some(parent_weak) => parent_weak.upgrade(),
@@ -244,18 +260,24 @@ pub mod tree {
             }
         }
 
+        // used to fix height of a node
         fn fix_height(node: &Tree) {
             let left_height = node.borrow().left.as_ref().map_or(0, |n| n.borrow().height);
-            let right_height = node.borrow().right.as_ref().map_or(0, |n| n.borrow().height);
+            let right_height = node
+                .borrow()
+                .right
+                .as_ref()
+                .map_or(0, |n| n.borrow().height);
             node.borrow_mut().height = std::cmp::max(left_height, right_height) + 1;
         }
 
+        // used to update height of a node
         pub fn update_height(node: &Tree) {
             let mut current = node.borrow_mut();
             let left_height = current.left.as_ref().map_or(0, |n| n.borrow().height);
             let right_height = current.right.as_ref().map_or(0, |n| n.borrow().height);
             current.height = 1 + std::cmp::max(left_height, right_height);
-    
+
             // If this node has a parent, update the parent's height as well
             if let Some(parent_weak) = &current.parent {
                 if let Some(parent) = parent_weak.upgrade() {
@@ -263,17 +285,18 @@ pub mod tree {
                 }
             }
         }
+
+        // used to calculate balance factor of a node
         pub fn balance_factor(node: &Tree) -> i32 {
             let current = node.borrow();
             let left_height = current.left.as_ref().map_or(0, |n| n.borrow().height) as i32;
             let right_height = current.right.as_ref().map_or(0, |n| n.borrow().height) as i32;
             left_height - right_height
         }
-        
-
 
         //--------------AVL AVL AVL
 
+        // checks if parent is red (red-black tree)
         pub fn is_parent_red(&self) -> bool {
             if let Some(parent_weak) = &self.parent {
                 if let Some(parent) = parent_weak.upgrade() {
@@ -282,12 +305,15 @@ pub mod tree {
             }
             false
         }
+        // grabs the parent of the node
         pub fn get_parent(&self) -> Option<Tree> {
             self.parent.as_ref()?.upgrade()
         }
+        // grabs the grandparent of the node
         pub fn get_grandparent(&self) -> Option<Tree> {
             self.get_parent()?.borrow().get_parent()
         }
+        // grabs the sibling of the node
         pub fn get_sibling(&self) -> Option<Tree> {
             if let Some(parent) = self.get_parent() {
                 let parent_borrow = parent.borrow();
@@ -300,26 +326,31 @@ pub mod tree {
                 None // This node has no parent, hence no sibling.
             }
         }
-
+        // grabs the uncle of the node
         pub fn get_uncle(&self) -> Option<Tree> {
             self.get_parent()?.borrow().get_sibling()
         }
+        // checks if uncle is red (red-black tree)
         pub fn is_uncle_red(&self) -> bool {
             if let Some(uncle) = self.get_uncle() {
                 return uncle.borrow().color == NodeColor::Red;
             }
             false
         }
+        // checks if uncle is black (red-black tree)
         pub fn is_uncle_black(&self) -> bool {
             if let Some(uncle) = self.get_uncle() {
                 return uncle.borrow().color == NodeColor::Black;
             }
-            true // No uncle is considered as black in red-black trees.
+            true // 'No uncle' is considered as black in red-black trees.
         }
+        // determines rotation needed for balancing the tree
         pub fn determine_rotation(&self) -> String {
-            let parent_pos = self.get_parent().map_or(ChildPosition::None, |p| p.borrow().child_position());
+            let parent_pos = self
+                .get_parent()
+                .map_or(ChildPosition::None, |p| p.borrow().child_position());
             let node_pos = self.child_position();
-    
+
             match (parent_pos, node_pos) {
                 (ChildPosition::Left, ChildPosition::Left) => "LL".to_string(),
                 (ChildPosition::Right, ChildPosition::Right) => "RR".to_string(),
@@ -328,6 +359,7 @@ pub mod tree {
                 _ => "None".to_string(),
             }
         }
+        // determines case for balancing the tree (red-black tree)
         pub fn determine_case(&self) -> String {
             if let Some(parent) = self.get_parent() {
                 // Root node or parent is black
@@ -352,31 +384,37 @@ pub mod tree {
             "Undefined".to_string()
         }
 
-
+        // used to print the node
         pub fn print_node(&self) {
             // Determine the parent key if available
-            let parent_key = self.get_parent().map_or("None".to_string(), |parent| {
-                parent.borrow().key.to_string()
-            });
-    
+            let parent_key = self
+                .get_parent()
+                .map_or("None".to_string(), |parent| parent.borrow().key.to_string());
+
             // Determine the color as a string
             let color = match self.color {
                 NodeColor::Red => "Red",
                 NodeColor::Black => "Black",
             };
-    
+
             // Determine the keys of left and right children if available
-            let left_key = self.left.as_ref().map_or("None".to_string(), |left| {
-                left.borrow().key.to_string()
-            });
-            let right_key = self.right.as_ref().map_or("None".to_string(), |right| {
-                right.borrow().key.to_string()
-            });
-    
+            let left_key = self
+                .left
+                .as_ref()
+                .map_or("None".to_string(), |left| left.borrow().key.to_string());
+            let right_key = self
+                .right
+                .as_ref()
+                .map_or("None".to_string(), |right| right.borrow().key.to_string());
+
             // Print the node information
-            println!("Node Key: {}, Color: {}, Parent Key: {}, Left Child Key: {}, Right Child Key: {}", self.key, color, parent_key, left_key, right_key);
+            println!(
+                "Node Key: {}, Color: {}, Parent Key: {}, Left Child Key: {}, Right Child Key: {}",
+                self.key, color, parent_key, left_key, right_key
+            );
         }
 
+        // used to recolor the tree after insertion (red-black tree)
         pub fn recolor(node: &Tree) -> OptionTree {
             // perform 1 iteration of recoloring and return the grandparent
 
@@ -386,7 +424,7 @@ pub mod tree {
                     uncle.borrow_mut().color = NodeColor::Black;
                 }
             }
-        
+
             // 2: Set grandparent to red unless it is the root (root does not have a parent)
             if let Some(grandparent) = node.borrow().get_grandparent() {
                 // Check if grandparent is not the root by confirming it has a parent
@@ -395,28 +433,33 @@ pub mod tree {
                 }
                 return Some(grandparent);
             }
-        
+
             // If there's no grandparent, return None
             None
         }
 
+        // performs right rotate on set of nodes
         pub fn right_rotate(node: &Tree) -> OptionTree {
-            let node_left = node.borrow().left.clone().expect("Left child must exist for LL rotation"); // Get the left child of the node
+            let node_left = node
+                .borrow()
+                .left
+                .clone()
+                .expect("Left child must exist for LL rotation"); // Get the left child of the node
             let node_left_right = node_left.borrow().right.clone(); // Get the right child of the node's left child
             let parent = node.borrow().get_parent();
             let pos = node.borrow().child_position(); // Get child position before making changes
-        
+
             node_left.borrow_mut().right = Some(node.clone()); // Move the node down. node's left right child = node
             node_left.borrow_mut().parent = node.borrow().parent.clone(); // node_left's parent = current node's parent
             node.borrow_mut().parent = Some(Rc::downgrade(&node_left)); // Change the parent of the original node to be the left node
-            // If there was a left right child of the original node, move it to the current node's left
+                                                                        // If there was a left right child of the original node, move it to the current node's left
             node.borrow_mut().left = node_left_right; // Set node_left_right as the new left child
-        
+
             // Update the parent pointer of the new left child (if it exists) to point back to `node`
             if let Some(ref left_right) = node.borrow().left {
                 left_right.borrow_mut().parent = Some(Rc::downgrade(&node));
             }
-        
+
             // Update the child pointer of the node's parent
             if let Some(parent) = parent {
                 match pos {
@@ -429,11 +472,10 @@ pub mod tree {
             TreeNode::fix_height(&node); // Update height of the original node
             TreeNode::fix_height(&node_left); // Update height of the new parent node
 
-
-        
             Some(node_left) // Return the new root of the subtree
         }
 
+        // performs left rotate on set of nodes
         pub fn left_rotate(node: &Tree) -> OptionTree {
             let node_right = node.borrow().right.clone()?; // Get the right child of the node
             let node_right_left = node_right.borrow().left.clone(); // Get the left child of the node's right child
@@ -443,7 +485,7 @@ pub mod tree {
             node_right.borrow_mut().left = Some(node.clone()); // Move node up. node's right left child = node
             node_right.borrow_mut().parent = node.borrow().parent.clone(); // node_right parent = current node's parent
             node.borrow_mut().parent = Some(Rc::downgrade(&node_right)); // Change the parent of the original node to be the right node
-            // If there was a right left child of the original node, move it to the current node's right
+                                                                         // If there was a right left child of the original node, move it to the current node's right
             node.borrow_mut().right = node_right_left; // Set node_right_left as the new right child
 
             // Update the parent pointer of the new right child (if it exists) to point back to `node`
@@ -465,6 +507,7 @@ pub mod tree {
             Some(node_right) // Return the new root of the subtree
         }
 
+        // performs right rotate actions, then recolor
         pub fn ll_rotate(node: &Tree) -> OptionTree {
             let node_color = node.borrow().color.clone();
             let subnode = Self::right_rotate(node).unwrap();
@@ -473,6 +516,7 @@ pub mod tree {
             Some(subnode)
         }
 
+        // performs left rotate actions, then recolor
         pub fn rr_rotate(node: &Tree) -> OptionTree {
             let node_color = node.borrow().color.clone();
             let subnode = Self::left_rotate(node).unwrap();
@@ -480,7 +524,8 @@ pub mod tree {
             subnode.borrow_mut().color = node_color;
             Some(subnode)
         }
-        
+
+        // performs left rotate action, then LL_rotate action
         pub fn lr_rotate(node: &Tree) -> OptionTree {
             // Safety check: ensure the node has a left child
             if node.borrow().left.is_none() {
@@ -492,6 +537,7 @@ pub mod tree {
             TreeNode::ll_rotate(node)
         }
 
+        // performs right rotate action, then RR_rotate action
         pub fn rl_rotate(node: &Tree) -> OptionTree {
             // Safety check: ensure the node has a left child
             if node.borrow().right.is_none() {
@@ -503,6 +549,7 @@ pub mod tree {
             TreeNode::rr_rotate(node)
         }
 
+        // gets the parent key of the node
         pub fn get_parent_key(&self) -> Option<u32> {
             // Attempt to upgrade the Weak pointer to a strong reference
             if let Some(parent_weak) = &self.parent {
@@ -520,6 +567,7 @@ pub mod tree {
             }
         }
 
+        // performs structured print of the tree
         pub fn pretty_print(&self, prefix: String, is_left: bool, is_avl: bool) {
             if let Some(right_child) = &self.right {
                 right_child.borrow().pretty_print(
@@ -528,8 +576,8 @@ pub mod tree {
                     is_avl, // Pass is_avl down to child calls
                 );
             }
-        
-                    // For non-AVL trees, include color information and possibly parent key.
+
+            // For non-AVL trees, include color information and possibly parent key.
             let color_string = match self.color {
                 NodeColor::Red => " (Red)",
                 NodeColor::Black => " (Black)",
@@ -560,8 +608,7 @@ pub mod tree {
                     // parent_key_string
                 );
             }
-        
-        
+
             if let Some(left_child) = &self.left {
                 left_child.borrow().pretty_print(
                     format!("{}{}", prefix, if is_left { "    " } else { "│   " }),
@@ -570,7 +617,6 @@ pub mod tree {
                 );
             }
         }
-        
 
         // Helper method to start the pretty printing process
         pub fn print_tree(&self) {
@@ -578,11 +624,13 @@ pub mod tree {
             println!();
         }
 
+        // does pretty printing for AVL tree
         pub fn avl_print_tree(&self) {
             self.pretty_print(String::new(), false, true);
             println!();
         }
-        
+
+        // recursively checks for null/leaf spots
         pub fn node_count_number_of_leaves(node: &Tree) -> usize {
             let mut count = 0;
 
@@ -601,18 +649,19 @@ pub mod tree {
             }
             count
         }
-        
+
         // pub fn node_is_tree_empty(node: &Tree) -> bool {
         //     node.borrow().left.is_none() && node.borrow().right.is_none()
         // }
 
-        pub fn node_get_height_of_tree (node: &Tree) -> usize {
+        // recursively checks for height spots
+        pub fn node_get_height_of_tree(node: &Tree) -> usize {
             let mut height = 1;
             let mut height_left = 0;
             let mut height_right = 0;
             let node_borrowed = node.borrow();
             if node_borrowed.left.is_none() && node_borrowed.right.is_none() {
-                return height
+                return height;
             }
             if let Some(ref left_child) = node_borrowed.left {
                 height_left = height + TreeNode::node_get_height_of_tree(left_child);
@@ -624,6 +673,7 @@ pub mod tree {
             height
         }
 
+        // recursively prints node (in order traversal)
         pub fn node_print_in_order_traversal(&self) {
             if let Some(ref left) = self.left {
                 left.borrow().node_print_in_order_traversal();
@@ -634,6 +684,7 @@ pub mod tree {
             }
         }
 
+        // recursively prints node (pre order traversal)
         pub fn node_print_pre_order_traversal(&self) {
             print!("{:?} ", self.key);
             if let Some(ref left) = self.left {
@@ -695,7 +746,10 @@ pub mod tree {
                         let successor = Self::find_successor(&node);
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
-                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            std::mem::swap(
+                                &mut node.borrow_mut().key,
+                                &mut successor_node.borrow_mut().key,
+                            );
                             Self::delete_node_rb(successor_node);
                         }
                     } else {
@@ -711,15 +765,19 @@ pub mod tree {
                                 match node_parent {
                                     None => {
                                         // technically this case is not gonna happen
-                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_left_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                         node_left_cp.borrow_mut().parent = None;
                                         return Some(node_left_cp);
                                     }
                                     Some(node_parent) => {
                                         // node is left child of parent
-                                        node_parent.upgrade().unwrap().borrow_mut().left = Some(node_left_cp.clone());
-                                        node_left_cp.borrow_mut().parent = Some(node_parent.clone());
-                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_parent.upgrade().unwrap().borrow_mut().left =
+                                            Some(node_left_cp.clone());
+                                        node_left_cp.borrow_mut().parent =
+                                            Some(node_parent.clone());
+                                        node_left_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                     }
                                 }
                             } else if !node_left_exist && node_right_exist {
@@ -728,15 +786,19 @@ pub mod tree {
                                 match node_parent {
                                     None => {
                                         // technically this case is not gonna happen
-                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_right_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                         node_right_cp.borrow_mut().parent = None;
                                         return Some(node_right_cp);
                                     }
                                     Some(node_parent) => {
                                         // node is left child of parent
-                                        node_parent.upgrade().unwrap().borrow_mut().left = Some(node_right_cp.clone());
-                                        node_right_cp.borrow_mut().parent = Some(node_parent.clone());
-                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_parent.upgrade().unwrap().borrow_mut().left =
+                                            Some(node_right_cp.clone());
+                                        node_right_cp.borrow_mut().parent =
+                                            Some(node_parent.clone());
+                                        node_right_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                     }
                                 }
                             } else {
@@ -759,7 +821,10 @@ pub mod tree {
                         let successor = Self::find_successor(&node);
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
-                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            std::mem::swap(
+                                &mut node.borrow_mut().key,
+                                &mut successor_node.borrow_mut().key,
+                            );
                             Self::delete_node_rb(successor_node);
                         }
                     } else {
@@ -775,15 +840,19 @@ pub mod tree {
                                 match node_parent {
                                     None => {
                                         // technically this case is not gonna happen
-                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_left_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                         node_left_cp.borrow_mut().parent = None;
                                         return Some(node_left_cp);
                                     }
                                     Some(node_parent) => {
                                         // node is right child of parent
-                                        node_parent.upgrade().unwrap().borrow_mut().right = Some(node_left_cp.clone());
-                                        node_left_cp.borrow_mut().parent = Some(node_parent.clone());
-                                        node_left_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_parent.upgrade().unwrap().borrow_mut().right =
+                                            Some(node_left_cp.clone());
+                                        node_left_cp.borrow_mut().parent =
+                                            Some(node_parent.clone());
+                                        node_left_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                     }
                                 }
                             } else if !node_left_exist && node_right_exist {
@@ -792,15 +861,19 @@ pub mod tree {
                                 match node_parent {
                                     None => {
                                         // technically this case is not gonna happen
-                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_right_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                         node_right_cp.borrow_mut().parent = None;
                                         return Some(node_right_cp);
                                     }
                                     Some(node_parent) => {
                                         // node is left child of parent
-                                        node_parent.upgrade().unwrap().borrow_mut().right = Some(node_right_cp.clone());
-                                        node_right_cp.borrow_mut().parent = Some(node_parent.clone());
-                                        node_right_cp.borrow_mut().color = node.borrow().color.clone();
+                                        node_parent.upgrade().unwrap().borrow_mut().right =
+                                            Some(node_right_cp.clone());
+                                        node_right_cp.borrow_mut().parent =
+                                            Some(node_parent.clone());
+                                        node_right_cp.borrow_mut().color =
+                                            node.borrow().color.clone();
                                     }
                                 }
                             } else {
@@ -834,7 +907,10 @@ pub mod tree {
                         let successor = Self::find_successor(&node);
                         if let Some(ref successor_node) = successor {
                             // Replace the current node with its successor
-                            std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
+                            std::mem::swap(
+                                &mut node.borrow_mut().key,
+                                &mut successor_node.borrow_mut().key,
+                            );
                             Self::delete_node_rb(successor_node);
                         }
                     } else {
@@ -845,6 +921,7 @@ pub mod tree {
             Self::get_root(node)
         }
 
+        // get color of a node
         fn get_color(node: &OptionTree) -> NodeColor {
             // a None node returns black color
             match node {
@@ -853,6 +930,7 @@ pub mod tree {
             }
         }
 
+        // performs delete action on red-black tree node
         fn delete_maintain_rb(node: &Tree) {
             // maintain rbtree property after delete a black node with no children (& not root)
             let parent = node.borrow().parent.clone();
@@ -868,7 +946,7 @@ pub mod tree {
                             // sibling is black
                             if sibling.borrow().color == NodeColor::Black {
                                 let sibling_cclose; // sibling's cloest child to node
-                                let sibling_cfar;   // sibling's distant child to node
+                                let sibling_cfar; // sibling's distant child to node
                                 if node_position == ChildPosition::Left {
                                     sibling_cclose = sibling.borrow().left.clone();
                                     sibling_cfar = sibling.borrow().right.clone();
@@ -876,7 +954,9 @@ pub mod tree {
                                     sibling_cclose = sibling.borrow().right.clone();
                                     sibling_cfar = sibling.borrow().left.clone();
                                 }
-                                if Self::get_color(&sibling_cclose) == NodeColor::Black && Self::get_color(&sibling_cfar) == NodeColor::Black {
+                                if Self::get_color(&sibling_cclose) == NodeColor::Black
+                                    && Self::get_color(&sibling_cfar) == NodeColor::Black
+                                {
                                     // close and distant are black
                                     if parent.borrow().color == NodeColor::Black {
                                         // parent is also black
@@ -887,7 +967,9 @@ pub mod tree {
                                         sibling.clone().borrow_mut().color = NodeColor::Red;
                                         parent.clone().borrow_mut().color = NodeColor::Black;
                                     }
-                                } else if Self::get_color(&sibling_cclose) == NodeColor::Red && Self::get_color(&sibling_cfar) == NodeColor::Black {
+                                } else if Self::get_color(&sibling_cclose) == NodeColor::Red
+                                    && Self::get_color(&sibling_cfar) == NodeColor::Black
+                                {
                                     // close is red, distant is black
                                     if node_position == ChildPosition::Left {
                                         Self::right_rotate(&sibling.clone());
@@ -895,7 +977,8 @@ pub mod tree {
                                         Self::left_rotate(&sibling.clone());
                                     }
                                     sibling.clone().borrow_mut().color = NodeColor::Red;
-                                    sibling_cclose.clone().unwrap().borrow_mut().color = NodeColor::Black;
+                                    sibling_cclose.clone().unwrap().borrow_mut().color =
+                                        NodeColor::Black;
                                     Self::delete_maintain_rb(&node.clone());
                                 } else if Self::get_color(&sibling_cfar) == NodeColor::Red {
                                     // distant is red
@@ -904,9 +987,11 @@ pub mod tree {
                                     } else {
                                         Self::right_rotate(&parent.clone());
                                     }
-                                    sibling.clone().borrow_mut().color = parent.borrow().color.clone();
+                                    sibling.clone().borrow_mut().color =
+                                        parent.borrow().color.clone();
                                     parent.clone().borrow_mut().color = NodeColor::Black;
-                                    sibling_cfar.clone().unwrap().borrow_mut().color = NodeColor::Black;
+                                    sibling_cfar.clone().unwrap().borrow_mut().color =
+                                        NodeColor::Black;
                                 }
                             } else {
                                 // sibling is red
@@ -925,6 +1010,7 @@ pub mod tree {
             }
         }
 
+        // recursively checks for height of left child spots
         fn node_get_height_of_left_tree(node: &Tree) -> usize {
             let node_new_left = node.borrow().left.clone();
             if let Some(node_new_left) = &node_new_left {
@@ -934,6 +1020,7 @@ pub mod tree {
             }
         }
 
+        // recursively checks for height of right child spots
         fn node_get_height_of_right_tree(node: &Tree) -> usize {
             let node_new_right = node.borrow().right.clone();
             if let Some(node_new_right) = &node_new_right {
@@ -943,8 +1030,10 @@ pub mod tree {
             }
         }
 
+        // uses height of left and right child to calculate balance factor
         fn get_balance_factor(node: &Tree) -> i32 {
-            Self::node_get_height_of_left_tree(node) as i32 - Self::node_get_height_of_right_tree(node) as i32
+            Self::node_get_height_of_left_tree(node) as i32
+                - Self::node_get_height_of_right_tree(node) as i32
         }
 
         // remove a node from the tree and return the new subtree
@@ -970,7 +1059,7 @@ pub mod tree {
             } else if node_key == key {
                 let node_left_exist = node_left.is_some();
                 let node_right_exist = node_right.is_some();
-                
+
                 // set child of the parent of the node depending on child of the node
                 if node_left_exist && !node_right_exist {
                     // if only left child of the deleting node exists
@@ -988,8 +1077,14 @@ pub mod tree {
                     let successor = Self::find_successor(&node);
                     if let Some(ref successor_node) = successor {
                         // Replace the current node with its successor
-                        std::mem::swap(&mut node.borrow_mut().key, &mut successor_node.borrow_mut().key);
-                        node.borrow_mut().right = Self::delete_node_avl(&node_right.unwrap(), successor_node.borrow().key);
+                        std::mem::swap(
+                            &mut node.borrow_mut().key,
+                            &mut successor_node.borrow_mut().key,
+                        );
+                        node.borrow_mut().right = Self::delete_node_avl(
+                            &node_right.unwrap(),
+                            successor_node.borrow().key,
+                        );
                         node_new = Some(node.clone());
                     }
                 }
@@ -1000,7 +1095,7 @@ pub mod tree {
                 None => {
                     println!("None");
                     None
-                },
+                }
                 Some(node_new) => {
                     let height_left = Self::node_get_height_of_left_tree(&node_new) as u32;
                     let height_right = Self::node_get_height_of_right_tree(&node_new) as u32;
@@ -1011,7 +1106,8 @@ pub mod tree {
                     let balance_factor = Self::get_balance_factor(&node_new) as i32;
                     if let Some(node_new_left) = &node_new_left {
                         if balance_factor > 1 as i32 {
-                            let balance_factor_left = Self::get_balance_factor(node_new_left) as i32;
+                            let balance_factor_left =
+                                Self::get_balance_factor(node_new_left) as i32;
                             if balance_factor_left >= 0 as i32 {
                                 return Self::right_rotate(&node_new);
                             } else {
@@ -1020,8 +1116,9 @@ pub mod tree {
                         }
                     }
                     if let Some(node_new_right) = &node_new_right {
-                        if balance_factor < -1 as i32{
-                            let balance_factor_right = Self::get_balance_factor(node_new_right) as i32;
+                        if balance_factor < -1 as i32 {
+                            let balance_factor_right =
+                                Self::get_balance_factor(node_new_right) as i32;
                             if balance_factor_right <= 0 as i32 {
                                 return Self::left_rotate(&node_new);
                             } else {
@@ -1029,33 +1126,33 @@ pub mod tree {
                             }
                         }
                     }
-                    
+
                     Some(node_new)
                 }
             }
         }
     }
 
-    pub struct RBTree{
+    pub struct RBTree {
         root: OptionTree,
     }
 
-
     impl RBTree {
+        // create a new red-black tree
         pub fn new() -> RBTree {
-            RBTree {root: None}
+            RBTree { root: None }
         }
-
+        // get the root of the tree
         pub fn get_root(&self) -> OptionTree {
             self.root.clone()
         }
+        // performs root leveled insert
         pub fn r_insert(&mut self, key: u32, color: NodeColor) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
                     TreeNode::regular_insert(root, key, color)
-
-                },
+                }
                 None => {
                     // if tree is empty create a new new node and set as root
                     self.root = TreeNode::new_rb(key, NodeColor::Black);
@@ -1064,6 +1161,7 @@ pub mod tree {
             }
         }
 
+        // performs insert action on red-black tree
         pub fn insert(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
@@ -1077,33 +1175,30 @@ pub mod tree {
                         new_node = TreeNode::recolor(&new_node)?;
                     }
 
-                    
-                    
-
                     // new_node.borrow().print_tree();
                     // we may hae a node higher up in the tree depending on how many time recoloring ran
-                    // 3: check if need rotation -> perform rotation. 
+                    // 3: check if need rotation -> perform rotation.
                     // determine case on current node. but our rotations take in the top node so we need to get grandparent
                     let rotation_case = new_node.borrow().determine_case();
                     let rotated_root = match rotation_case.as_str() {
                         "LL" => {
                             let top = new_node.borrow().get_grandparent()?;
                             TreeNode::ll_rotate(&top)
-                        },
+                        }
                         "RR" => {
                             let top = new_node.borrow().get_grandparent()?;
                             TreeNode::rr_rotate(&top)
-                        },
+                        }
                         "LR" => {
                             let top = new_node.borrow().get_grandparent()?;
                             TreeNode::lr_rotate(&top)
-                        },
+                        }
                         "RL" => {
                             let top = new_node.borrow().get_grandparent()?;
                             TreeNode::rl_rotate(&top)
-                        },
+                        }
                         "None" => None, // No rotation needed, or handle as appropriate
-                        _ => None, // Catch-all case, unlikely to be reached
+                        _ => None,      // Catch-all case, unlikely to be reached
                     };
 
                     // // rotated_root.unwrap().borrow().print_node();
@@ -1113,13 +1208,10 @@ pub mod tree {
                         }
                     }
 
-                    
                     // 4: rotation might change the root. if root of new subtree has no parent then it is the new root
-                    
 
-                    
                     None
-                },
+                }
                 None => {
                     // if tree is empty create a new new node and set as root
                     self.root = TreeNode::new_rb(key, NodeColor::Black);
@@ -1128,7 +1220,8 @@ pub mod tree {
             }
         }
 
-        pub fn delete(&mut self, key: u32) -> OptionTree{
+        // performs delete action on red-black tree (if key exists in tree)
+        pub fn delete(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     if let Some(node_to_delete) = TreeNode::find_node(root, key) {
@@ -1141,9 +1234,9 @@ pub mod tree {
                         self.get_root();
                         None
                     }
-                },
+                }
                 None => {
-                    // if tree is empty 
+                    // if tree is empty
                     // println!("The RBTree is empty, no deletion required");
                     self.get_root();
                     None
@@ -1151,15 +1244,14 @@ pub mod tree {
             }
         }
 
-        // * print delete could be something like this
-        // * ideally it would result a copy of the node that was deleted (not Rc copy, could be just a ::new(key) of TreeNode)
-        pub fn print_delete(&mut self, key: u32){
+        // print the result of the delete method
+        pub fn print_delete(&mut self, key: u32) {
             let result = self.delete(key);
             match result {
                 Some(ref node) => {
                     // if tree contains the key
                     println!("Found node: {:?}, deleting.", node.borrow().key);
-                },
+                }
                 None => {
                     // if tree doesn't contain the key
                     println!("Cannot find the {} node in the tree.", key);
@@ -1167,18 +1259,21 @@ pub mod tree {
             }
         }
 
+        // returns the number of leaves in the tree
         pub fn count_number_of_leaves(&self) -> usize {
             let mut count = 0;
             if let Some(ref node) = self.root {
                 count = TreeNode::node_count_number_of_leaves(node)
-            } 
+            }
             count
         }
 
+        // prints the number of leaves in the tree
         pub fn print_count_number_of_leaves(&self) {
             println!("count_number_of_leaves: {}", self.count_number_of_leaves());
         }
-        
+
+        // returns if the tree is empty
         pub fn is_tree_empty(&self) -> bool {
             let mut state = true;
             if let Some(_node) = &self.root {
@@ -1187,22 +1282,26 @@ pub mod tree {
             state
         }
 
+        // prints if the tree is empty
         pub fn print_is_tree_empty(&self) {
             println!("is_tree_empty: {}", self.is_tree_empty());
         }
 
+        // returns the height of the tree
         pub fn get_height_of_tree(&self) -> usize {
             let mut height = 0;
             if let Some(ref node) = self.root {
                 height = TreeNode::node_get_height_of_tree(node)
-            } 
+            }
             height
         }
 
+        // prints the height of the tree
         pub fn print_get_height_of_tree(&self) {
             println!("get_height_of_tree: {}", self.get_height_of_tree());
         }
 
+        // prints the in order traversal of the tree
         pub fn print_in_order_traversal(&self) {
             println!("In order traversal: ");
             if let Some(ref node) = self.root {
@@ -1211,20 +1310,23 @@ pub mod tree {
             println!();
         }
 
+        // prints the pre order traversal of the tree
         pub fn print_pre_order_traversal(&self) {
             println!("Pre order traversal: ");
             if let Some(ref node) = self.root {
                 TreeNode::node_print_pre_order_traversal(&node.borrow());
-            } 
+            }
             println!();
         }
 
+        // prints the tree in a sturctured format (from root)
         pub fn print_tree(&self) {
             if let Some(ref root) = self.root {
                 root.borrow().print_tree();
             }
         }
 
+        // finds and returns a node with a given key (if there)
         pub fn find(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
@@ -1236,7 +1338,7 @@ pub mod tree {
                         // self.get_root()
                         None
                     }
-                },
+                }
                 None => {
                     // if tree is empty, return None
                     // self.get_root()
@@ -1245,13 +1347,14 @@ pub mod tree {
             }
         }
 
+        // prints the result of the find method
         pub fn print_find(&mut self, key: u32) {
             let result = self.find(key);
             match result {
                 Some(ref node) => {
                     // if tree contains the key
                     println!("Found node: {:?}", node.borrow().key);
-                },
+                }
                 None => {
                     // if tree doesn't contain the key
                     println!("Cannot find the {} node in the tree.", key);
@@ -1260,28 +1363,28 @@ pub mod tree {
         }
     }
 
-
-    pub struct AVLTree{
+    pub struct AVLTree {
         root: OptionTree,
     }
 
     impl AVLTree {
+        // create a new AVLTree
         pub fn new() -> AVLTree {
-            AVLTree {root: None}
+            AVLTree { root: None }
         }
 
+        // get the root of the tree
         pub fn get_root(&self) -> OptionTree {
             self.root.clone()
         }
 
-        // regular insert
+        // regular insert for the AVL tree
         pub fn r_insert(&mut self, key: u32, color: NodeColor) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
                     TreeNode::regular_insert(root, key, color)
-
-                },
+                }
                 None => {
                     // if tree is empty create a new new node and set as root
                     self.root = TreeNode::new_rb(key, NodeColor::Black);
@@ -1290,40 +1393,30 @@ pub mod tree {
             }
         }
 
-        // AVL TREE Insertion
+        // AVL TREE Insertion, returns the new root of the tree
         pub fn insert(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
                     // tree is not empty do insertion
                     // 1: do regular insert and get the new node
                     let mut new_node = TreeNode::regular_insert(root, key, NodeColor::Red)?;
-                    
+
                     let mut current = Some(new_node.clone());
                     while let Some(curr_node) = current {
                         // Update the height of the current node
                         TreeNode::update_height_single_node(&curr_node);
-                        
+
                         // Check if the current node is unbalanced
                         let balance_case = curr_node.borrow().determine_unbalance_case();
 
                         // unbalanced
                         if let Some(case) = balance_case {
-
                             // fix
                             let rotated_root = match case.as_str() {
-                                "LL" => {
-                                    TreeNode::ll_rotate(&curr_node)
-                                },
-                                "RR" => {
-                    
-                                    TreeNode::rr_rotate(&curr_node)
-                                },
-                                "LR" => {
-                                    TreeNode::lr_rotate(&curr_node)
-                                },
-                                "RL" => {
-                                    TreeNode::rl_rotate(&curr_node)
-                                },
+                                "LL" => TreeNode::ll_rotate(&curr_node),
+                                "RR" => TreeNode::rr_rotate(&curr_node),
+                                "LR" => TreeNode::lr_rotate(&curr_node),
+                                "RL" => TreeNode::rl_rotate(&curr_node),
                                 _ => None, // Catch-all case, unlikely to be reached
                             };
 
@@ -1333,14 +1426,12 @@ pub mod tree {
                                     self.root = Some(sub_root.clone());
                                 }
                             }
-
-
                         }
-                        
+
                         // Move up to the parent for the next iteration
                         current = curr_node.borrow().parent.as_ref().and_then(|p| p.upgrade());
                     }
-                    
+
                     // TreeNode::lr_rotate(imbalance_node)
 
                     // 2: update heights and calculate balance, returns imbalance or none
@@ -1348,7 +1439,6 @@ pub mod tree {
                     // 3: if none do nothing, if some then imbalance found
                     // if imbalance, determine case, apply rotations with height adjustment,
                     // call update on new nood
-
 
                     // node.determineavlcase -> apply rotation ->
                     // if let Some (result) = result {
@@ -1358,10 +1448,9 @@ pub mod tree {
                     //     println!("{}", first);
                     //     println!("{}", second);
                     // }
-                    
 
                     None
-                },
+                }
                 None => {
                     // if tree is empty create a new new node and set as root
                     self.root = TreeNode::new_rb(key, NodeColor::Black);
@@ -1370,7 +1459,8 @@ pub mod tree {
             }
         }
 
-        pub fn delete(&mut self, key: u32) -> OptionTree{
+        // delete a node from the AVL tree (if there)
+        pub fn delete(&mut self, key: u32) -> OptionTree {
             let check = self.find(key);
             if let Some(found) = check {
                 match self.root {
@@ -1388,30 +1478,28 @@ pub mod tree {
                             self.get_root();
                             None
                         }
-                    },
+                    }
                     None => {
-                        // if tree is empty 
+                        // if tree is empty
                         // println!("The AVLTree is empty, no deletion required");
                         self.get_root();
                         None
                     }
                 }
-                
             } else {
                 println!("Not Found");
                 None
             }
         }
 
-        // * print delete could be something like this
-        // * ideally it would result a copy of the node that was deleted (not Rc copy, could be just a ::new(key) of TreeNode)
-        pub fn print_delete(&mut self, key: u32){
+        // print the result of the delete method
+        pub fn print_delete(&mut self, key: u32) {
             let result = self.delete(key);
             match result {
                 Some(ref node) => {
                     // if tree contains the key
                     println!("Found node: {:?}, deleting.", node.borrow().key);
-                },
+                }
                 None => {
                     // if tree doesn't contain the key
                     println!("Cannot find the {} node in the tree.", key);
@@ -1419,18 +1507,21 @@ pub mod tree {
             }
         }
 
+        // returns the number of leaves in the tree
         pub fn count_number_of_leaves(&self) -> usize {
             let mut count = 0;
             if let Some(ref node) = self.root {
                 count = TreeNode::node_count_number_of_leaves(node)
-            } 
+            }
             count
         }
 
+        // prints the number of leaves in the tree
         pub fn print_count_number_of_leaves(&self) {
             println!("count_number_of_leaves: {}", self.count_number_of_leaves());
         }
-        
+
+        // returns if the tree is empty
         pub fn is_tree_empty(&self) -> bool {
             let mut state = true;
             if let Some(_node) = &self.root {
@@ -1439,22 +1530,26 @@ pub mod tree {
             state
         }
 
+        // prints if the tree is empty
         pub fn print_is_tree_empty(&self) {
             println!("is_tree_empty: {}", self.is_tree_empty());
         }
 
+        // returns the height of the tree
         pub fn get_height_of_tree(&self) -> usize {
             let mut height = 0;
             if let Some(ref node) = self.root {
                 height = TreeNode::node_get_height_of_tree(node)
-            } 
+            }
             height
         }
 
+        // prints the height of the tree
         pub fn print_get_height_of_tree(&self) {
             println!("get_height_of_tree: {}", self.get_height_of_tree());
         }
 
+        // prints the in order traversal of the tree
         pub fn print_in_order_traversal(&self) {
             println!("In order traversal: ");
             if let Some(ref node) = self.root {
@@ -1463,20 +1558,23 @@ pub mod tree {
             println!();
         }
 
+        // prints the pre order traversal of the tree
         pub fn print_pre_order_traversal(&self) {
             println!("Pre order traversal: ");
             if let Some(ref node) = self.root {
                 TreeNode::node_print_pre_order_traversal(&node.borrow());
-            } 
+            }
             println!();
         }
 
+        // prints the tree in a structured format (from root)
         pub fn print_tree(&self) {
             if let Some(ref root) = self.root {
                 root.borrow().avl_print_tree();
             }
         }
 
+        // finds and returns a node with a given key (if there)
         pub fn find(&mut self, key: u32) -> OptionTree {
             match self.root {
                 Some(ref root) => {
@@ -1488,7 +1586,7 @@ pub mod tree {
                         // self.get_root()
                         None
                     }
-                },
+                }
                 None => {
                     // if tree is empty, return None
                     // self.get_root()
@@ -1497,13 +1595,14 @@ pub mod tree {
             }
         }
 
+        // prints the result of the find method
         pub fn print_find(&mut self, key: u32) {
             let result = self.find(key);
             match result {
                 Some(ref node) => {
                     // if tree contains the key
                     println!("Found node: {:?}", node.borrow().key);
-                },
+                }
                 None => {
                     // if tree doesn't contain the key
                     println!("Cannot find the {} node in the tree.", key);
@@ -1512,10 +1611,3 @@ pub mod tree {
         }
     }
 }
-
-
-
-
-// // avl tree implementation here
-// // i guess we take out the stuff that we need for both and put it outside hte
-// pub mod avltree {}

@@ -1,14 +1,11 @@
-extern crate trees;
-
-//
-use trees::tree::*;
-// use trees::tree::AVLTree;
+// extern crate trees;
+// use trees::tree::*;
 
 // Assuming RBTree is structured properly and has an `insert` method.
 
-fn main() {
+// fn main() {
     // passed_avl_example();
-    main_cli(); // cli program
+    // main_cli(); // cli program
     // main2001();
     // main2002();
     // main2003();
@@ -17,7 +14,7 @@ fn main() {
     // main1005();
     // main_blank(); // use a blank main when running criterion benchmark tests
     // passed_rb_example();
-}
+// }
 
 fn avl() {
     // Create the root of the tree with a specific key
@@ -735,4 +732,93 @@ fn main2006() {
     │           └── 10(1)
         */
 
+}
+
+
+
+
+extern crate trees;
+use trees::tree::*;
+fn main() {
+    let mut myrbtree = RBTree::new();
+    myrbtree.print_find(30); // should be: Cannot find the 30 node in the tree.
+    myrbtree.print_is_tree_empty(); // should be: true
+    myrbtree.insert(20);
+    myrbtree.print_is_tree_empty(); // should be: false
+    myrbtree.insert(10);
+    myrbtree.insert(30);
+    myrbtree.insert(40);
+    myrbtree.insert(50);
+    myrbtree.print_count_number_of_leaves(); // should be: 6
+    myrbtree.print_get_height_of_tree(); // should be: 3
+    myrbtree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    myrbtree.print_is_tree_empty(); // should be: false
+    myrbtree.print_pre_order_traversal(); // should be: 20 10 40 30 50
+    myrbtree.print_tree();
+    // should be:
+    /*
+            ┌── 50 (Red)
+        ┌── 40 (Black)
+        │   └── 30 (Red)
+    ┌── 20 (Black)
+    │   └── 10 (Black)
+        */
+    myrbtree.print_find(30); // should be: Found node: 30
+    myrbtree.print_find(22); // should be: Cannot find the 22 node in the RBTree.
+    myrbtree.print_delete(50); // should be: Found node: 50, deleting.
+    myrbtree.print_tree();
+    // should be:
+    /*
+        ┌── 40 (Black)
+        │   └── 30 (Red)
+    ┌── 20 (Black)
+    │   └── 10 (Black)
+        */
+    myrbtree.print_delete(50); // should be: Cannot find the 50 node in the tree.
+}
+
+
+
+
+
+
+
+
+
+fn main2() {
+    let mut mytree = AVLTree::new();
+    mytree.print_find(30); // should be: Cannot find the 30 node in the tree.
+    mytree.print_is_tree_empty(); // should be: true
+    mytree.insert(20);
+    mytree.print_is_tree_empty(); // should be: false
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(40);
+    mytree.insert(50);
+    mytree.print_count_number_of_leaves(); // should be: 6
+    mytree.print_get_height_of_tree(); // should be: 3
+    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    mytree.print_is_tree_empty(); // should be: false
+    mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 50(1)
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+        */
+    mytree.print_find(30); // should be: Found node: 30
+    mytree.print_find(22); // should be: Cannot find the 22 node in the tree.
+    mytree.print_delete(50); // should be: Found node: 50, deleting.
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+        */
+    mytree.print_delete(50); // should be: Cannot find the 50 node in the tree.
 }
