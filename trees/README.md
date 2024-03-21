@@ -4,7 +4,7 @@
 - Authors: Prabh Kooner, Jiannan Lu, Brandon Hoynick
 
 ## Get Started – How to add crate to your project:
-![get started](trees/report/getstarted.jpg)
+![get started](https://github.com/kooner27/421_projects/blob/9323c47d3a221e7905a433d2d6293f8f59e7f755/trees/report/getstarted.jpg)
 
 ## Program-based Tree Tester – Users can optionally execute our ‘trees_tester.exe’ file to get program to test both trees. The following will show how to test crate structs and functions through a demo executable:
 
