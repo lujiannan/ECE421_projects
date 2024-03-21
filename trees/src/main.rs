@@ -8,15 +8,15 @@ use trees::tree::*;
 
 fn main() {
     // passed_avl_example();
-    // main1007(); // cli program
+    main_cli(); // cli program
     // main2001();
     // main2002();
     // main2003();
     // main2004();
     // main2005();
     // main1005();
-    // main1006(); // use a blank main when running criterion benchmark tests
-    passed_rb_example();
+    // main_blank(); // use a blank main when running criterion benchmark tests
+    // passed_rb_example();
 }
 
 fn avl() {
@@ -62,9 +62,7 @@ fn passed_rb_example() {
     root.insert(60);
     root.insert(70);
     root.insert(80);
-    root.find(80);
     root.print_find(80);
-    root.find(1000);
     root.print_find(1000);
     root.insert(4);
     root.insert(8);
@@ -223,7 +221,7 @@ fn main1005() {
     // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
 
     let mut myrbtree = RBTree::new();
-    // myrbtree.find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
+    myrbtree.print_find(30); // should be: Cannot find the 30 node in the tree.
     myrbtree.print_is_tree_empty(); // should be: true
     myrbtree.insert(20);
     myrbtree.print_is_tree_empty(); // should be: false
@@ -231,30 +229,39 @@ fn main1005() {
     myrbtree.insert(30);
     myrbtree.insert(40);
     myrbtree.insert(50);
-
     myrbtree.print_count_number_of_leaves(); // should be: 6
     myrbtree.print_get_height_of_tree(); // should be: 3
     myrbtree.print_in_order_traversal(); // should be: 10 20 30 40 50
     myrbtree.print_is_tree_empty(); // should be: false
-    myrbtree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
+    myrbtree.print_pre_order_traversal(); // should be: 20 10 40 30 50
     myrbtree.print_tree();
     // should be:
     /*
-            ┌── 50 (Red)40
-        ┌── 40 (Black)20
-        │   └── 30 (Red)40
+            ┌── 50 (Red)
+        ┌── 40 (Black)
+        │   └── 30 (Red)
     ┌── 20 (Black)
-    │   └── 10 (Black)20
+    │   └── 10 (Black)
         */
-    // myrbtree.find(30); // should be: Found node: 30
-    // myrbtree.find(22); // should be: Cannot find the 22 node in the RBTree.
+    myrbtree.print_find(30); // should be: Found node: 30
+    myrbtree.print_find(22); // should be: Cannot find the 22 node in the RBTree.
+    myrbtree.print_delete(50); // should be: Found node: 50, deleting.
+    myrbtree.print_tree();
+    // should be:
+    /*
+        ┌── 40 (Black)
+        │   └── 30 (Red)
+    ┌── 20 (Black)
+    │   └── 10 (Black)
+        */
+    myrbtree.print_delete(50); // should be: Cannot find the 50 node in the tree.
 }
 
-fn main1006() {
+fn main_blank() {
     // use a blank main when running criterion benchmark tests
 }
 
-fn main1007() {
+fn main_cli() {
     // tester for CLI program with inputs
     println!("Welcome to our AVL or Red-Black tree tester program!");
     let mut program_on = true;
@@ -343,7 +350,7 @@ fn main1007() {
                                 continue;
                             }
                         };
-                        myavltree.delete(num);
+                        myavltree.print_delete(num);
                         
                     }
                     "leaves" => {
@@ -427,7 +434,7 @@ fn main1007() {
                                 continue;
                             }
                         };
-                        myrbtree.delete(num);
+                        myrbtree.print_delete(num);
                         
                     }
                     "leaves" => {
@@ -587,7 +594,7 @@ fn main2005() {
     // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
 
     let mut mytree = AVLTree::new();
-    mytree.print_find(30); // should be: Cannot find the 30 node, the RBTree is empty, no nodes in tree.
+    mytree.print_find(30); // should be: Cannot find the 30 node in the tree.
     mytree.print_is_tree_empty(); // should be: true
     mytree.insert(20);
     mytree.print_is_tree_empty(); // should be: false
@@ -595,12 +602,59 @@ fn main2005() {
     mytree.insert(30);
     mytree.insert(40);
     mytree.insert(50);
+    mytree.print_count_number_of_leaves(); // should be: 6
+    mytree.print_get_height_of_tree(); // should be: 3
+    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    mytree.print_is_tree_empty(); // should be: false
+    mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 
+    mytree.print_tree();
+    // should be:
+    /*
+            ┌── 50(1)
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+        */
+    mytree.print_find(30); // should be: Found node: 30
+    mytree.print_find(22); // should be: Cannot find the 22 node in the tree.
+    mytree.print_delete(50); // should be: Found node: 50, deleting.
+    mytree.print_tree();
+    // should be:
+    /*
+        ┌── 40(2)
+        │   └── 30(1)
+    ┌── 20(3)
+    │   └── 10(1)
+        */
+    mytree.print_delete(50); // should be: Cannot find the 50 node in the tree.
+}
 
-    // mytree.count_number_of_leaves(); // should be: 6
-    // mytree.get_height_of_tree(); // should be: 3
-    // mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
-    // mytree.is_tree_empty(); // should be: false
-    // mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 // not needed (extra feature; prints root first, then left, then right)
+
+fn main2006() {
+    // avl tree //works
+    // tester for meta info functions (leave count, empty, height, in order traversal, pre order traversal)
+    
+    // 3- Count the number of leaves in a tree.
+    // 4- Return the height of a tree.
+    // 5- Print In-order traversal of the tree.
+    // 6- Check if the tree is empty.
+    // 7- Print the tree showing its structure. (Using println!(“{:#?}”,tree); is NOT sufficient)
+
+    let mut mytree = AVLTree::new();
+    mytree.print_find(30); // should be: Cannot find the 30 node in the tree.
+    mytree.print_is_tree_empty(); // should be: true
+    mytree.insert(20);
+    mytree.print_is_tree_empty(); // should be: false
+    mytree.insert(10);
+    mytree.insert(30);
+    mytree.insert(40);
+    mytree.insert(50);
+    mytree.count_number_of_leaves(); // should be: 6
+    mytree.get_height_of_tree(); // should be: 3
+    mytree.print_in_order_traversal(); // should be: 10 20 30 40 50
+    mytree.is_tree_empty(); // should be: false
+    mytree.print_pre_order_traversal(); // should be: 20 10 40 30 50 
     mytree.print_tree();
     // should be:
     /*
