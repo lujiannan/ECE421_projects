@@ -1,0 +1,42 @@
+<!-- 
+
+The main webpage (grabs data from ./bootstrap.js which grabs from index.js)
+
+
+ -->
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Is Prime App!</title>
+  <style>
+    /* this is used for css style declarations (without need of style.css file) */
+    body {
+      background-color: lightblue;
+    }
+
+    h1 {
+      color: navy;
+      margin-left: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Hello World</h1>
+  <noscript>This page contains webassembly and javascript content,
+    please enable javascript in your browser.</noscript>
+  <script src="./bootstrap.js"></script>
+  <form>
+    Enter a number: <input type="text" value="2" id="PrimeNumber"><br>
+  </form>
+  <button id="CheckNumber">Check Number</button>
+  <canvas id="board" width="100" height="100" style="border:1px solid grey">
+    Your browser doesn't support html5 canvas
+  </canvas>
+</body>
+
+</html>
