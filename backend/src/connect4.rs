@@ -1,16 +1,18 @@
-#[derive(Debug, Clone, Copy, PartialEq)]
+use serde::{Serialize, Deserialize};
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Player {
     Red,
     Yellow,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Cell {
     Empty,
     Occupied(Player),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Board {
     grid: Vec<Vec<Cell>>,
     pub current_turn: Player,
@@ -20,7 +22,7 @@ pub struct Board {
     last_move: Option<(usize, usize)>, // Track the last move as (row, col)
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum State {
     Running,
     Won(Player),
