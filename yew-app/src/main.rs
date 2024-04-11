@@ -91,25 +91,29 @@ fn connect_four_game() -> Html {
             board.set(b); // Update the board state
         })
     };
-
     let pixel_size = "100px";
     let button_style = format!("display: grid; grid-template-columns: repeat({}, {});", board.cols, pixel_size);
     let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
+    
+    let button_style_active = "text-align: center; background-color: initial;";
+    let button_style_greyed = "text-align: center; background-color: grey;";
 
     html! {
         <>
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
             <div style={button_style.clone()}>
-                {
-                    (0..board.cols).map(|col| {
-                        html! {
-                            <button style="text-align: center;" onclick={on_column_click.reform(move |_| col)}>
-                                { format!("Drop in Col {}", col) }
-                            </button>
-                        }
-                    }).collect::<Html>()
-                }
+            {
+                (0..board.cols).map(|col| {
+                    let is_disabled = matches!(board.state, State::Running);
+                    let button_style = if is_disabled { button_style_active } else { button_style_greyed };
+                    html! {
+                        <button style={button_style} onclick={on_column_click.reform(move |_| col)} disabled={!is_disabled}>
+                            { format!("Drop in Col {}", col) }
+                        </button>
+                    }
+                }).collect::<Html>()
+            }
             </div>
             <div style={grid_style.clone()}>
                 {
