@@ -1,69 +1,132 @@
 use yew::prelude::*;
+use yew_router::prelude::*;
+mod connect4;
+use connect4::{Board, Player, State};
 
-#[derive(PartialEq, Clone, Copy)]
-enum Tile {
-    Empty,
-    P1(char), // T or O for player 1
-    P2(char), // T or O for player 2
+
+#[derive(Clone, Routable, PartialEq)]
+enum Route {
+    #[at("/")]
+    Home,
+    #[at("/game")]
+    Game,
+    #[at("/instructions")]
+    Instructions,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
 }
 
-#[function_component(Game)]
-fn app() -> Html {
-    // game dimension
-    let width = 6;
-    let height = 4;
-    let board_ot = use_state(|| vec![vec![Tile::Empty; width]; height]);
-    // player 1 starts the game
-    let current_player = use_state(|| 1);
-    // the winner
-    let winner = use_state(|| -1);
-    // Function to handle a player move
-    let handle_click = {
-        let board_ot = board_ot.clone();
-        let current_player = current_player.clone();
-        let winner = winner.clone();
-        Callback::from(move |(row, col): (usize, usize)| {
-            let mut board = (*board_ot).clone();
-            if board[row][col] == Tile::Empty {
-                board[row][col] = if *current_player == 1 {
-                    Tile::P1('T') // For Player 1, 'T'
-                } else {
-                    Tile::P2('O') // For Player 2, 'O'
-                };
-                board_ot.set(board);
-                // Switch player turn
-                current_player.set(if *current_player == 1 { 2 } else { 1 });
-            }
-        })
-    };
+#[function_component(Home)]
+fn home() -> Html {
     html! {
         <div>
-            <h1>{ "Toot-Otto Game" }</h1>
-            <div style="display: grid; grid-template-columns: repeat(6, 50px); gap: 5px;">
-                { for board_ot.iter().enumerate().map(|(row, line)| html! {
-                    { for line.iter().enumerate().map(|(col, &tile)| {
-                        let on_click = {
-                            let row = row;
-                            let col = col;
-                            handle_click.reform(move |_| (row, col))
-                        };
-
-                        html! {
-                            <div style="border: 1px solid black; text-align: center; line-height: 50px; width: 50px; height: 50px;" onclick={on_click}>
-                                { match tile {
-                                    Tile::Empty => ' ',
-                                    Tile::P1(letter) | Tile::P2(letter) => letter,
-                                }}
-                            </div>
-                        }
-                    })}
-                })}
-            </div>
-            // Add logic to display current player or win conditions
+            <h1>{ "Welcome to Connect Four!" }</h1>
+            <nav>
+                <Link<Route> to={Route::Game}>{ "Play Game" }</Link<Route>>
+                <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
+            </nav>
         </div>
     }
 }
 
-fn main() {
-    yew::Renderer::<Game>::new().render();
+#[function_component(Instructions)]
+fn instructions() -> Html {
+    html! {
+        <div>
+            <h1>{ "Instructions" }</h1>
+            <p>{ "This page will provide instructions on how to play Connect Four." }</p>
+            <p>{ "Place your discs by clicking the buttons and try to get four in a row." }</p>
+            <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
+        </div>
+    }
 }
+
+#[function_component(App)]
+fn app() -> Html {
+    html! {
+        <BrowserRouter>
+            // <Switch<Route> render={Switch::render(switch)} />
+            <Switch<Route> render={switch} />
+        </BrowserRouter>
+    }
+}
+
+fn switch(routes: Route) -> Html {
+    match routes {
+        Route::Home => html! { <Home /> },
+        Route::Game => html! { <ConnectFourGame /> },
+        Route::Instructions => html! { <Instructions /> },
+        Route::NotFound => html! { <h1>{ "404 Not Found" }</h1> },
+    }
+}
+
+// #[function_component(App)]
+// fn app() -> Html {
+//     html! {
+//         <ConnectFourGame />
+//     }
+// }
+
+fn main() {
+    yew::Renderer::<App>::new().render();
+}
+
+
+
+#[function_component(ConnectFourGame)]
+fn connect_four_game() -> Html {
+    let board = use_state(|| Board::new(6, 7)); // Initialize the board
+
+    let on_column_click = {
+        let board = board.clone();
+        Callback::from(move |col: usize| {
+            let mut b = (*board).clone(); // Clone the current board state
+            b.insert_disc(col).ok(); // Ignore errors for simplicity
+            board.set(b); // Update the board state
+        })
+    };
+
+    html! {
+        <>
+        <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
+            <h1>{ "Connect Four" }</h1>
+            <div>
+                {
+                    (0..board.cols).map(|col| { // Use `cols` from your board structure
+                        html! {
+                            <button onclick={on_column_click.reform(move |_| col)}>
+                                { format!("Drop in Col {}", col) }
+                            </button>
+                        }
+                    }).collect::<Html>()
+                }
+            </div>
+            <div style="font-family: monospace;">
+                {
+                    for board.grid.iter().rev().map(|row| { // Access the `grid` directly
+                        html! {
+                            <div>
+                                { for row.iter().map(|cell| html!{ <span>{ format!("{:?}", cell) }{" "}</span> }) }
+                            </div>
+                        }
+                    })
+                }
+            </div>
+            <div>
+                {
+                    match board.state {
+                        State::Won(player) => html! { <p>{ format!("Player {:?} wins!", player) }</p> },
+                        State::Draw => html! { <p>{ "The game is a draw!" }</p> },
+                        State::Running => html! { <p>{ "Game is in progress..." }</p> },
+                    }
+                }
+            </div>
+        </>
+    }
+}
+
+
+
+
+
