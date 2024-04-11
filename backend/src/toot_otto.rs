@@ -42,6 +42,7 @@ impl Board {
             rows,
             cols,
             state: State::Running,
+            
         }
     }
 
@@ -94,27 +95,31 @@ impl Board {
         };
     }
 
+    
     // Check if the last move resulted in a win
+// Check if the last move resulted in a win
     pub fn check_win(&self, last_row: usize, last_col: usize) -> bool {
-        // Implement win checking logic here
-        // You'll need to check for sequences of "TOOT" or "OTTO"
-        false
+        // Convert the entire row to a string representation
+        let row_string: String = self.grid[last_row].iter().map(|cell| {
+            match cell {
+                Cell::Occupied(Piece::T) => 'T',
+                Cell::Occupied(Piece::O) => 'O',
+                _ => '.',
+            }
+        }).collect();
+
+        // Define the target sequences based on the current player's turn
+        let target_sequence = match self.current_turn {
+            Player::Toot => "TOOT", 
+            Player::Otto => "OTTO",
+        };
+
+        // Check if the row string contains the target sequence
+        row_string.contains(target_sequence)
     }
 
     // Check if the game is a draw (the board is full)
     pub fn is_draw(&self) -> bool {
         self.grid.iter().all(|row| row.iter().all(|cell| matches!(cell, Cell::Occupied(_))))
     }
-
-    // Example function to insert a piece, you'll need to adapt this to switch between T and O based on player input
-    // pub fn insert_piece(&mut self, col: usize, piece: Piece) -> Result<(), &'static str> {
-    //     // Insertion logic similar to Connect Four, adapted for TOOT-OTTO pieces
-    // }
-
-    // // You'll need a new method to check for TOOT or OTTO patterns specifically
-    // fn check_win(&self) -> bool {
-    //     // Implement checking logic for TOOT and OTTO sequences
-    // }
-
-    // Switch turns, draw checks, etc., can remain largely unchanged, but you may need to adapt them to the new gameplay mechanics
 }
