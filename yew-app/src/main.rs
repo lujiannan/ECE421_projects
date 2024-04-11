@@ -3,6 +3,11 @@ use yew_router::prelude::*;
 mod connect4;
 use connect4::{Board, Player, State};
 
+mod toot_otto;
+use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Piece};
+
+use std::io::{self, Write};
+
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -125,6 +130,12 @@ fn connect_four_game() -> Html {
         </>
     }
 }
+
+
+
+
+
+
 
 
 
