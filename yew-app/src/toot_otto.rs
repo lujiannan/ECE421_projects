@@ -64,6 +64,7 @@ impl Board {
 
 
     // Insert a piece into the specified column
+    // Insert a piece into the specified column
     pub fn insert_piece(&mut self, col: usize, piece: Piece) -> Result<(), &'static str> {
         if col >= self.cols {
             return Err("Column out of bounds");
@@ -71,21 +72,30 @@ impl Board {
 
         // Attempt to place the piece in the lowest empty cell in the specified column
         for row in (0..self.rows).rev() {
-            if let Cell::Empty = self.grid[row][col] {
+            if matches!(self.grid[row][col], Cell::Empty) {
                 self.grid[row][col] = Cell::Occupied(piece);
-                // Check if this move wins the game or results in a draw
-                if self.check_win(row, col) {
-                    self.state = State::Won(self.current_turn);
-                } else if self.is_draw() {
-                    self.state = State::Draw;
+
+                // Check if this move wins the game
+                if let Some(winner) = self.check_win(row, col) {
+                    self.state = State::Won(winner);
+                    return Ok(());  // End the game since there's a winner
                 }
-                self.switch_turn(); // Switch the turn to the other player
+
+                // Check if the game is a draw
+                if self.is_draw() {
+                    self.state = State::Draw;
+                    return Ok(());  // End the game since it's a draw
+                }
+
+                // If no win or draw, switch turns
+                self.switch_turn();
                 return Ok(());
             }
         }
 
         Err("Column is full")
     }
+
 
     // Switch the current player's turn
     pub fn switch_turn(&mut self) {
@@ -98,7 +108,7 @@ impl Board {
     
     // Check if the last move resulted in a win
 // Check if the last move resulted in a win
-    pub fn check_win(&self, last_row: usize, last_col: usize) -> bool {
+    pub fn check_win(&self, last_row: usize, last_col: usize) -> Option<Player> {
         // Convert the entire row to a string representation
         let row_string: String = self.grid[last_row].iter().map(|cell| {
             match cell {
@@ -109,13 +119,21 @@ impl Board {
         }).collect();
 
         // Define the target sequences based on the current player's turn
-        let target_sequence = match self.current_turn {
-            Player::Toot => "TOOT", 
-            Player::Otto => "OTTO",
-        };
+        // let target_sequence = match self.current_turn {
+        //     Player::Toot => "TOOT", 
+        //     Player::Otto => "OTTO",
+        // };
 
-        // Check if the row string contains the target sequence
-        row_string.contains(target_sequence)
+
+            // Check for both winning sequences
+        if row_string.contains("TOOT") {
+            return Some(Player::Toot);
+        }
+        if row_string.contains("OTTO") {
+            return Some(Player::Otto);
+        }
+
+    None
     }
 
     // Check if the game is a draw (the board is full)
