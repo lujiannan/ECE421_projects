@@ -1,7 +1,12 @@
 use yew::prelude::*;
 use yew_router::prelude::*;
 mod connect4;
-use connect4::{Board, Player, State};
+use connect4::{Board, Player, State, Cell};
+
+mod toot_otto;
+use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Piece};
+
+use std::io::{self, Write};
 
 
 #[derive(Clone, Routable, PartialEq)]
@@ -72,6 +77,15 @@ fn main() {
     yew::Renderer::<App>::new().render();
 }
 
+fn display_cell(cell: &Cell) -> String {
+    match cell {
+        Cell::Empty => " ".to_string(),
+        Cell::Occupied(player) => match player {
+            Player::Red => "Red".to_string(),
+            Player::Yellow => "Yellow".to_string(),
+        },
+    }
+}
 
 
 #[function_component(ConnectFourGame)]
@@ -115,7 +129,8 @@ fn connect_four_game() -> Html {
                     for board.grid.iter().flatten().map(|cell| {
                         html! {
                             <div style="border: 1px solid black; text-align: center; line-height: 100px;">
-                                { format!("{:?}", cell) }
+                                // { format!("{:?}", cell) }
+                                { display_cell(cell) }
                             </div>
                         }
                     })
@@ -133,6 +148,14 @@ fn connect_four_game() -> Html {
         </>
     }
 }
+
+
+////////////////// toot otto
+
+
+
+
+
 
 
 
