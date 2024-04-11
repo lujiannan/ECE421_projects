@@ -127,10 +127,21 @@ fn connect_four_game() -> Html {
             <div style={grid_style.clone()}>
                 {
                     for board.grid.iter().flatten().map(|cell| {
+                        // html! {
+                        //     <div style="border: 1px solid black; text-align: center; line-height: 100px;">
+                        //         // { format!("{:?}", cell) }
+                        //         { display_cell(cell) }
+                        //     </div>
+                        // }
                         html! {
                             <div style="border: 1px solid black; text-align: center; line-height: 100px;">
-                                // { format!("{:?}", cell) }
-                                { display_cell(cell) }
+                            {
+                                match cell {
+                                    connect4::Cell::Empty => html! { },
+                                    connect4::Cell::Occupied(Player::Red) => html! { <img src="https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/armor.png" /> },
+                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src="https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png" /> },
+                                }
+                            }
                             </div>
                         }
                     })
