@@ -92,27 +92,31 @@ fn connect_four_game() -> Html {
         })
     };
 
+    let pixel_size = "100px";
+    let button_style = format!("display: grid; grid-template-columns: repeat({}, {});", board.cols, pixel_size);
+    let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
+
     html! {
         <>
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
-            <div>
+            <div style={button_style.clone()}>
                 {
-                    (0..board.cols).map(|col| { // Use `cols` from your board structure
+                    (0..board.cols).map(|col| {
                         html! {
-                            <button onclick={on_column_click.reform(move |_| col)}>
+                            <button style="text-align: center;" onclick={on_column_click.reform(move |_| col)}>
                                 { format!("Drop in Col {}", col) }
                             </button>
                         }
                     }).collect::<Html>()
                 }
             </div>
-            <div style="font-family: monospace;">
+            <div style={grid_style.clone()}>
                 {
-                    for board.grid.iter().rev().map(|row| { // Access the `grid` directly
+                    for board.grid.iter().flatten().map(|cell| {
                         html! {
-                            <div>
-                                { for row.iter().map(|cell| html!{ <span>{ format!("{:?}", cell) }{" "}</span> }) }
+                            <div style="border: 1px solid black; text-align: center; line-height: 100px;">
+                                { format!("{:?}", cell) }
                             </div>
                         }
                     })
