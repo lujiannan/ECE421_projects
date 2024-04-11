@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use rand::Rng; // Import the Rng trait to use random number generation
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Player {
@@ -56,6 +57,23 @@ impl Board {
             }
             println!();
         }
+    }
+
+    pub fn computer_move(&mut self) -> Result<(), &'static str> {
+        let mut rng = rand::thread_rng();
+        let mut attempts = 0;
+        loop {
+            let col = rng.gen_range(0..self.cols);
+            if let Ok(_) = self.insert_disc(col) {
+                println!("Computer placed on column {}", col + 1);
+                break;
+            }
+            attempts += 1;
+            if attempts > 100 { // Just to prevent an infinite loop
+                return Err("Failed to make a move after multiple attempts.");
+            }
+        }
+        Ok(())
     }
 
     // Insert a disc into the specified column
@@ -133,15 +151,58 @@ impl Board {
             return true;
         }
     
-        // Diagonal checks to be implemented similarly...
-    
-        false
-    }
-    
+        // Diagonal Check (Descending from top-left to bottom-right)
+        let mut count = 1; // start with the last move
+        // Check upwards to the left
+        for i in 1..=3 {
+            if last_col >= i && last_row >= i && self.grid[last_row - i][last_col - i] == last_player {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        // Check downwards to the right
+        for i in 1..=3 {
+            if last_row + i < self.rows && last_col + i < self.cols && self.grid[last_row + i][last_col + i] == last_player {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        if count >= 4 {
+            return true;
+        }
 
-    // if the board is full it is a draw.
-    fn is_draw(&self) -> bool {
-        self.grid.iter().all(|row| row.iter().all(|&cell| cell != Cell::Empty))
-    }
+        // Diagonal Check (Ascending from bottom-left to top-right)
+        count = 1; // reset for the next diagonal check
+        // Check downwards to the left
+        for i in 1..=3 {
+            if last_col >= i && last_row + i < self.rows && self.grid[last_row + i][last_col - i] == last_player {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        // Check upwards to the right
+        for i in 1..=3 {
+            if last_row >= i && last_col + i < self.cols && self.grid[last_row - i][last_col + i] == last_player {
+                count += 1;
+            } else {
+                break;
+            }
+        }
+        if count >= 4 {
+            return true;
+        }
+
+        // If all checks fail then it is not a win
+        false
+        }
+        
+
+        // if the board is full it is a draw.
+        fn is_draw(&self) -> bool {
+            self.grid.iter().all(|row| row.iter().all(|&cell| cell != Cell::Empty))
+        }
     
 }

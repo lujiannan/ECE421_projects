@@ -2,7 +2,7 @@ mod connect4;
 use connect4::{Board, Player, State};
 use std::io::{self, Write};
 
-fn main() {
+fn interface() {
     let mut board = Board::new(6, 7); // Assuming a standard Connect Four board size
 
     loop {
