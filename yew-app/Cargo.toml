@@ -13,3 +13,4 @@ wasm-bindgen-futures = "0.4"
 gloo-net = "0.2"
 rand = "0.8"
 log = "0.4"
+yew-router = { git = "https://github.com/yewstack/yew.git" }
