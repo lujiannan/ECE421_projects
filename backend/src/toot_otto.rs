@@ -13,6 +13,13 @@ pub enum Player {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub enum Winner {
+    Player(Player),  // To capture which player won
+    None,            // No winner yet
+    Draw,            // Game is a draw
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Cell {
     Empty,
     Occupied(Piece),
@@ -20,7 +27,7 @@ pub enum Cell {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Board {
-    grid: Vec<Vec<Cell>>,
+    pub grid: Vec<Vec<Cell>>,
     pub current_turn: Player,
     pub rows: usize,
     pub cols: usize,
@@ -62,7 +69,14 @@ impl Board {
         }
     }
 
+    pub fn computer_move(&mut self) -> Result<(), &'static str> {
+        // TODO:
+        self.insert_piece(1, Piece::O);
+        Ok(())
+    }
 
+
+    // Insert a piece into the specified column
     // Insert a piece into the specified column
     pub fn insert_piece(&mut self, col: usize, piece: Piece) -> Result<(), &'static str> {
         if col >= self.cols {
@@ -71,21 +85,37 @@ impl Board {
 
         // Attempt to place the piece in the lowest empty cell in the specified column
         for row in (0..self.rows).rev() {
-            if let Cell::Empty = self.grid[row][col] {
+            if matches!(self.grid[row][col], Cell::Empty) {
                 self.grid[row][col] = Cell::Occupied(piece);
-                // Check if this move wins the game or results in a draw
-                if self.check_win(row, col) {
-                    self.state = State::Won(self.current_turn);
-                } else if self.is_draw() {
-                    self.state = State::Draw;
+
+                match self.check_win(row, col) {
+                    Some(Winner::Player(player)) => {
+                        self.state = State::Won(player);
+                        return Ok(());  // End the game since there's a winner
+                    },
+                    Some(Winner::Draw) => {
+                        self.state = State::Draw;
+                        return Ok(());  // End the game since it's a draw (toot and otto win same time)
+                    },
+                    _ => {} // Continue the game if there is no winner
                 }
-                self.switch_turn(); // Switch the turn to the other player
+                
+
+                // Check if the game is a draw (board full condition)
+                if self.is_draw() {
+                    self.state = State::Draw;
+                    return Ok(());  // End the game since it's a draw
+                }
+
+                // If no win or draw, switch turns
+                self.switch_turn();
                 return Ok(());
             }
         }
 
         Err("Column is full")
     }
+
 
     // Switch the current player's turn
     pub fn switch_turn(&mut self) {
@@ -96,27 +126,103 @@ impl Board {
     }
 
     
-    // Check if the last move resulted in a win
-// Check if the last move resulted in a win
-    pub fn check_win(&self, last_row: usize, last_col: usize) -> bool {
-        // Convert the entire row to a string representation
-        let row_string: String = self.grid[last_row].iter().map(|cell| {
+    
+    fn row_to_string(&self, row: usize) -> String {
+        self.grid[row].iter().map(|cell| {
             match cell {
                 Cell::Occupied(Piece::T) => 'T',
                 Cell::Occupied(Piece::O) => 'O',
                 _ => '.',
             }
-        }).collect();
-
-        // Define the target sequences based on the current player's turn
-        let target_sequence = match self.current_turn {
-            Player::Toot => "TOOT", 
-            Player::Otto => "OTTO",
-        };
-
-        // Check if the row string contains the target sequence
-        row_string.contains(target_sequence)
+        }).collect()
     }
+
+    // Generates a string from a column for checking win conditions
+    fn col_to_string(&self, col: usize) -> String {
+        self.grid.iter().map(|row| {
+            match row[col] {
+                Cell::Occupied(Piece::T) => 'T',
+                Cell::Occupied(Piece::O) => 'O',
+                _ => '.',
+            }
+        }).collect()
+    }
+
+    // Generates a string from the major diagonal
+    fn major_diag_to_string(&self, start_row: usize, start_col: usize) -> String {
+        let mut result = String::new();
+        let mut row = start_row;
+        let mut col = start_col;
+        while row < self.rows && col < self.cols {
+            match self.grid[row][col] {
+                Cell::Occupied(Piece::T) => result.push('T'),
+                Cell::Occupied(Piece::O) => result.push('O'),
+                _ => result.push('.'),
+            }
+            row += 1;
+            col += 1;
+        }
+        result
+    }
+
+    // Generates a string from the minor diagonal
+    fn minor_diag_to_string(&self, start_row: usize, start_col: usize) -> String {
+        let mut result = String::new();
+        let mut row = start_row;
+        let mut col = start_col;
+        while row < self.rows && col < self.cols {
+            match self.grid[row][col] {
+                Cell::Occupied(Piece::T) => result.push('T'),
+                Cell::Occupied(Piece::O) => result.push('O'),
+                _ => result.push('.'),
+            }
+            if col == 0 {  // Prevent underflow by breaking the loop if col is zero
+                break;
+            }
+            row += 1;
+            col -= 1;  // Safe decrement as we check before this operation
+        }
+        result
+    }
+
+
+    // Check if the last move resulted in a win
+    pub fn check_win(&self, last_row: usize, last_col: usize) -> Option<Winner> {
+        let row_string = self.row_to_string(last_row);
+        let col_string = self.col_to_string(last_col);
+
+        let start_major_diag = usize::min(last_row, last_col);
+        let major_diag_string = self.major_diag_to_string(last_row - start_major_diag, last_col - start_major_diag);
+
+        let start_minor_diag = usize::min(last_row, self.cols - 1 - last_col);
+        let minor_diag_string = self.minor_diag_to_string(last_row - start_minor_diag, last_col + start_minor_diag);
+
+        let mut toot_win = false;
+        let mut otto_win = false;
+        // Check all strings for win conditions
+        for string in &[row_string, col_string, major_diag_string, minor_diag_string] {
+            if string.contains("TOOT") {
+                toot_win = true;
+            }
+            if string.contains("OTTO") {
+                otto_win = true;
+            }
+        }
+
+        // Check for draw by simultaneous win condition
+        if toot_win && otto_win {
+            return Some(Winner::Draw); // Correctly return a Winner enum for draw
+        } else if toot_win {
+            return Some(Winner::Player(Player::Toot)); // Correctly return Winner::Player enum variant for Toot win
+        } else if otto_win {
+            return Some(Winner::Player(Player::Otto)); // Correctly return Winner::Player enum variant for Otto win
+        }
+        
+
+        // No win found
+        None
+    }
+
 
     // Check if the game is a draw (the board is full)
     pub fn is_draw(&self) -> bool {

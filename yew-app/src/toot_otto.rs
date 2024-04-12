@@ -1,4 +1,6 @@
 use serde::{Serialize, Deserialize};
+use rand::Rng; // Import the Rng trait to use random number generation
+use rand::seq::SliceRandom;
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum Piece {
@@ -70,8 +72,49 @@ impl Board {
     // }
 
     pub fn computer_move(&mut self) -> Result<(), &'static str> {
-        // TODO:
-        let _ = self.insert_piece(1, Piece::O);
+        let mut rng = rand::thread_rng();
+        let mut attempts = 0;
+        loop {
+            let col = rng.gen_range(0..self.cols);
+            let pieces = [Piece::T, Piece::O]; // Array of pieces
+            let piece = *pieces.choose(&mut rng).expect("Failed to select a random piece");
+
+            if let Ok(_) = self.insert_piece(col, piece) {
+                println!("Computer placed piece on column {}", col + 1);
+                break;
+            }
+            attempts += 1;
+            if attempts > 100 { // Prevents an infinite loop
+                return Err("Failed to make a move after multiple attempts.");
+            }
+        }
+        Ok(())
+    }
+
+    // Hard strategy move focusing around a given column
+    pub fn computer_move_hard(&mut self, given_col: usize) -> Result<(), &'static str> {
+        let mut rng = rand::thread_rng();
+        let mut attempts = 0;
+        loop {
+            let choices = [
+                given_col,
+                given_col.saturating_add(1),
+                given_col.saturating_sub(1),
+            ];
+            let col = *choices.choose(&mut rng).unwrap_or(&given_col); // Ensures a fallback to the given column
+
+            let pieces = [Piece::T, Piece::O]; // Array of pieces
+            let piece = *pieces.choose(&mut rng).expect("Failed to select a random piece");
+
+            if let Ok(_) = self.insert_piece(col, piece) {
+                println!("Computer placed piece on column {}", col + 1);
+                break;
+            }
+            attempts += 1;
+            if attempts > 100 {
+                return Err("Failed to make a move after multiple attempts.");
+            }
+        }
         Ok(())
     }
 
