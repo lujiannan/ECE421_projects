@@ -1,1 +1,0 @@
-/home/jonas/rust_projects/421_project/yew-app/target/wasm32-unknown-unknown/debug/yew-app.wasm: /home/jonas/rust_projects/421_project/yew-app/src/connect4.rs /home/jonas/rust_projects/421_project/yew-app/src/main.rs /home/jonas/rust_projects/421_project/yew-app/src/toot_otto.rs
