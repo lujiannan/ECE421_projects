@@ -47,24 +47,24 @@ impl Board {
     }
 
 
-    pub fn display(&self) {
-        for row in &self.grid {
-            for cell in row {
-                match cell {
-                    Cell::Empty => print!(" . "),
-                    Cell::Occupied(piece) => match piece {
-                        Piece::T => print!(" T "),
-                        Piece::O => print!(" O "),
-                    },
-                }
-            }
-            println!();
-        }
-    }
+    // pub fn display(&self) {
+    //     for row in &self.grid {
+    //         for cell in row {
+    //             match cell {
+    //                 Cell::Empty => print!(" . "),
+    //                 Cell::Occupied(piece) => match piece {
+    //                     Piece::T => print!(" T "),
+    //                     Piece::O => print!(" O "),
+    //                 },
+    //             }
+    //         }
+    //         println!();
+    //     }
+    // }
 
     pub fn computer_move(&mut self) -> Result<(), &'static str> {
         // TODO:
-        self.insert_piece(1, Piece::O);
+        let _ = self.insert_piece(1, Piece::O);
         Ok(())
     }
 
@@ -101,6 +101,20 @@ impl Board {
 
         Err("Column is full")
     }
+
+    pub fn predict_piece(&self, col: usize) -> Option<(usize, usize)> {
+        if col >= self.cols {
+            return None;
+        }
+
+        for row in (0..self.rows).rev() {
+            if matches!(self.grid[row][col], Cell::Empty) {
+                return Some((row, col));
+            }
+        }
+
+        return None;
+    } 
 
 
     // Switch the current player's turn

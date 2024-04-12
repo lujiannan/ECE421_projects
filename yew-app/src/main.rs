@@ -201,15 +201,15 @@ fn main() {
     yew::Renderer::<App>::new().render();
 }
 
-fn display_cell(cell: &Cell) -> String {
-    match cell {
-        Cell::Empty => " ".to_string(),
-        Cell::Occupied(player) => match player {
-            Player::Red => "Red".to_string(),
-            Player::Yellow => "Yellow".to_string(),
-        },
-    }
-}
+// fn display_cell(cell: &Cell) -> String {
+//     match cell {
+//         Cell::Empty => " ".to_string(),
+//         Cell::Occupied(player) => match player {
+//             Player::Red => "Red".to_string(),
+//             Player::Yellow => "Yellow".to_string(),
+//         },
+//     }
+// }
 
 #[function_component(ConnectFourGame)]
 fn connect_four_game() -> Html {
@@ -279,31 +279,43 @@ fn connect_four_game() -> Html {
         })
     };
 
+    let predicted_pos: UseStateHandle<Option<(usize, usize)>> = use_state(|| None);
+
     let on_column_click = {
         let board = board.clone();
         let hovered_col = hovered_col.clone();
         let player1_done = player1_done.clone();
+        let predicted_pos = predicted_pos.clone();
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
+            let b_cpy = b.clone();
             if b.state != connect4::State::Running {
                 hovered_col.set(None);
+                predicted_pos.set(None);
             }
             player1_done.set(true);
             board.set(b); // Update the board state
+            predicted_pos.set(b_cpy.predict_disc(col));
         })
     };
 
     let handle_mouseover = {
+        let board = board.clone();
         let hovered_col = hovered_col.clone();
+        let predicted_pos = predicted_pos.clone();
         Callback::from(move |col: usize| {
+            let b = (*board).clone();
             hovered_col.set(Some(col));
+            predicted_pos.set(b.predict_disc(col));
         })
     };
     let handle_mouseout = {
         let hovered_col = hovered_col.clone();
+        let predicted_pos = predicted_pos.clone();
         Callback::from(move |_col: usize| {
             hovered_col.set(None);
+            predicted_pos.set(None);
         })
     };
 
@@ -355,7 +367,7 @@ fn connect_four_game() -> Html {
 
             <div style={grid_style.clone()}>
                 {
-                    for board.grid.iter().enumerate().map(|(_row, line)| {
+                    for board.grid.iter().enumerate().map(|(row, line)| {
                         html! {
                             {
                                 for line.iter().enumerate().map(|(col, &cell)| {
@@ -363,8 +375,6 @@ fn connect_four_game() -> Html {
                                     if let Some(hovered_col) = *hovered_col {
                                         if hovered_col == col {
                                             cell_style = cell_style_hovered;
-                                            // UI prediction of the future position of next move
-                                            
                                         } else {
                                             cell_style = cell_style_locked;
                                         }
@@ -392,7 +402,15 @@ fn connect_four_game() -> Html {
                                         >
                                             {
                                                 match cell {
-                                                    connect4::Cell::Empty => html! {},
+                                                    connect4::Cell::Empty => {
+                                                        // UI prediction of the future position of next move
+                                                        if let Some(pos) = *predicted_pos {
+                                                            if row == pos.0 && col == pos.1 { html! { <img style="opacity:0.6" src={current_player_icon} width="80" height="80"/> } }
+                                                            else {html! {}}
+                                                        } else {
+                                                            html! {}
+                                                        }
+                                                    },
                                                     connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
                                                     connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
                                                 }
@@ -421,16 +439,6 @@ fn connect_four_game() -> Html {
                 }
             </div>
         </>
-    }
-}
-
-fn display_toot_piece(cell: &TootCell) -> String {
-    match cell {
-        TootCell::Empty => " ".to_string(),
-        TootCell::Occupied(piece) => match piece {
-            Piece::T => "T".to_string(),
-            Piece::O => "O".to_string(),
-        },
     }
 }
 
@@ -484,6 +492,8 @@ fn toot_otto_game() -> Html {
         })
     };
 
+    let predicted_pos: UseStateHandle<Option<(usize, usize)>> = use_state(|| None);
+
     let on_column_click = {
         let board = board.clone();
         let selected_piece = selected_piece.clone();
@@ -502,21 +512,27 @@ fn toot_otto_game() -> Html {
     };
 
     let handle_mouseover = {
+        let board = board.clone();
         let selected_piece = selected_piece.clone();
-        let is_selected = if *selected_piece == None { false } else { true };
         let hovered_col = hovered_col.clone();
+        let predicted_pos = predicted_pos.clone();
         Callback::from(move |col: usize| {
-            if is_selected {
+            let b = (*board).clone();
+            if let Some(_piece) = *selected_piece {
                 hovered_col.set(Some(col));
+                predicted_pos.set(b.predict_piece(col));
             } else {
                 hovered_col.set(None);
+                predicted_pos.set(None);
             }
         })
     };
     let handle_mouseout = {
         let hovered_col = hovered_col.clone();
+        let predicted_pos = predicted_pos.clone();
         Callback::from(move |_col: usize| {
             hovered_col.set(None);
+            predicted_pos.set(None);
         })
     };
 
@@ -583,7 +599,7 @@ fn toot_otto_game() -> Html {
             </div>
             <div style={grid_style.clone()}>
                 {
-                    for board.grid.iter().enumerate().map(|(_row, line)| {
+                    for board.grid.iter().enumerate().map(|(row, line)| {
                         html! {
                             {
                                 for line.iter().enumerate().map(|(col, &cell)| {
@@ -610,7 +626,30 @@ fn toot_otto_game() -> Html {
                                         onmouseleave={handle_mouseout.reform(move |_| col)}
                                         onclick={on_column_click.reform(move |_| col)}
                                         >
-                                            {display_toot_piece(&cell)}
+                                            {
+                                                match cell {
+                                                    TootCell::Empty => {
+                                                        // UI prediction of the future position of next move
+                                                        if let Some(pos) = *predicted_pos {
+                                                            if row == pos.0 && col == pos.1 {
+                                                                if let Some(piece) = *selected_piece {
+                                                                    match piece {
+                                                                        Piece::T => html! {<text style="opacity:0.6">{"T"}</text>},
+                                                                        Piece::O => html! {<text style="opacity:0.6">{"O"}</text>},
+                                                                    }
+                                                                } else {html! {<text>{" "}</text>}}
+                                                            }
+                                                            else {html! {<text>{" "}</text>}}
+                                                        } else {
+                                                            html! {<text>{" "}</text>}
+                                                        }
+                                                    },
+                                                    TootCell::Occupied(piece) => match piece {
+                                                        Piece::T => html! {<text>{"T"}</text>},
+                                                        Piece::O => html! {<text>{"O"}</text>},
+                                                    },
+                                                }
+                                            }
                                         </button>
                                     }
                                 })
