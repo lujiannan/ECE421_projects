@@ -412,11 +412,15 @@ fn connect_four_game() -> Html {
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
+            board.set(b.clone());
             if b.state != connect4::State::Running {
                 hovered_col.set(None);
             }
-            player1_done.set(true);
-            board.set(b); // Update the board state
+            else {
+                player1_done.set(true);
+                board.set(b); // Update the board state
+            }
+            
         })
     };
 
@@ -596,13 +600,26 @@ fn toot_otto_game() -> Html {
         let player1_done = player1_done.clone();
         Callback::from(move |_col: usize| {
             let mut b = (*board).clone();
-            // if the current status is player vs. computer
-            if app_state_borrowed.difficulty != Difficulty::None {
-                if let Err(e) = b.computer_move() {
-                    println!("Error: {}", e);
-                } else {
-                    board.set(b);
-                    player1_done.set(false);
+            let current_difficulty = app_state_borrowed.difficulty; // Directly accessing because we cloned the state.
+            
+            match current_difficulty {
+                Difficulty::None => (), // Do nothing if no difficulty is set.
+                Difficulty::Easy => {
+                    if let Err(e) = b.computer_move() {
+                        println!("Error: {}", e);
+                    } else {
+                        board.set(b);
+                        player1_done.set(false); // Reset the player1_done flag.
+                    }
+                },
+                Difficulty::Hard => {
+                    if let Err(e) = b.computer_move_hard(_col) {
+                        println!("Error: {}", e);
+                    } else {
+                        println!("Hard moved");
+                        board.set(b);
+                        player1_done.set(false); // Reset the player1_done flag.
+                    }
                 }
             }
         })
