@@ -348,7 +348,13 @@ fn connect_four_game() -> Html {
             <div>
                 {
                     match board.state {
-                        State::Won(player) => html! { <p>{ format!("Player {:?} wins! Refresh to reset game.", player) }</p> },
+                        State::Won(player) => html! { 
+                            <p>
+                                {
+                                    format!("{} wins! Refresh to reset game.", if player == Player::Red {"Player"} else {"Comp"})
+                                }
+                            </p> 
+                        },
                         State::Draw => html! { <p>{ "The game is a draw!" }</p> },
                         State::Running => html! { <p>{ "Game is in progress..." }</p> },
                     }
