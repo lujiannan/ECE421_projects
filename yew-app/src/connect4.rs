@@ -45,20 +45,20 @@ impl Board {
     }
 
     // Display the current state of the board
-    pub fn display(&self) {
-        for row in &self.grid {
-            for cell in row {
-                match cell {
-                    Cell::Empty => print!(" . "),
-                    Cell::Occupied(player) => match player {
-                        Player::Red => print!(" R "),
-                        Player::Yellow => print!(" Y "),
-                    },
-                }
-            }
-            println!();
-        }
-    }
+    // pub fn display(&self) {
+    //     for row in &self.grid {
+    //         for cell in row {
+    //             match cell {
+    //                 Cell::Empty => print!(" . "),
+    //                 Cell::Occupied(player) => match player {
+    //                     Player::Red => print!(" R "),
+    //                     Player::Yellow => print!(" Y "),
+    //                 },
+    //             }
+    //         }
+    //         println!();
+    //     }
+    // }
 
     pub fn computer_move(&mut self) -> Result<(), &'static str> {
         let mut rng = rand::thread_rng();
@@ -118,6 +118,19 @@ impl Board {
         }
     
         Err("Column is full")
+    }
+
+    pub fn predict_disc(&self, col: usize) -> Option<(usize, usize)>{
+        if col >= self.cols {
+            return None;
+        }
+    
+        for row in (0..self.rows).rev() {
+            if let Cell::Empty = self.grid[row][col] {
+                return Some((row, col));
+            }
+        }
+        return None;
     }
     
 
