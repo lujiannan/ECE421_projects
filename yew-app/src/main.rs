@@ -120,31 +120,35 @@ fn home() -> Html {
         <div>
             <h1>{ "Welcome to our game center!" }</h1>
             <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
-            <div>
-                <p>{ "Select the difficulty of computer opponent:" }</p>     
+            
+            <p>{ "Select the difficulty of computer opponent:" }</p>
+            <div style="display: flex; align-items: center;">
                 <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Easy} />
                 <label for="easy">{"Easy"}</label>
                 <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Hard}/>
                 <label for="hard">{"Hard"}</label>
             </div>
-            <div>
-                <p>{ "Select the player icon you want:" }</p>     
+
+            <p>{ "Select the player icon you want:" }</p>  
+            <div style="display: flex; align-items: center;">   
                 <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
                 <label for="option1">{"option1"}</label>
-                <img src={ARMOR_IMG_URL} width="80" height="80" />
+                <img src={ARMOR_IMG_URL} width="50" height="50" />
                 <input type="radio" id="option2" name="player_icon" value="option2" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
                 <label for="option2">{"option2"}</label>
-                <img src={SWORD_IMG_URL} width="80" height="80" />
+                <img src={SWORD_IMG_URL} width="50" height="50" />
             </div>
-            <div>
-                <p>{ "Select the computer icon you want:" }</p>     
+
+            <p>{ "Select the computer icon you want:" }</p>  
+            <div style="display: flex; align-items: center;">   
                 <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
                 <label for="option3">{"option3"}</label>
-                <img src={GEM_IMG_URL} width="80" height="80" />
+                <img src={GEM_IMG_URL} width="50" height="50" />
                 <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
                 <label for="option4">{"option4"}</label>
-                <img src={HEART_IMG_URL} width="80" height="80" />
+                <img src={HEART_IMG_URL} width="50" height="50" />
             </div>
+
             <nav>
                 <p>{ "Instructions for each game are below." }</p>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
