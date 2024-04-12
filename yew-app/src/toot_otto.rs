@@ -106,10 +106,10 @@ impl Board {
     }
 
     
+    
     // Check if the last move resulted in a win
-// Check if the last move resulted in a win
     pub fn check_win(&self, last_row: usize, last_col: usize) -> Option<Player> {
-        // Convert the entire row to a string representation
+        // Horizontal check (existing)
         let row_string: String = self.grid[last_row].iter().map(|cell| {
             match cell {
                 Cell::Occupied(Piece::T) => 'T',
@@ -118,14 +118,6 @@ impl Board {
             }
         }).collect();
 
-        // Define the target sequences based on the current player's turn
-        // let target_sequence = match self.current_turn {
-        //     Player::Toot => "TOOT", 
-        //     Player::Otto => "OTTO",
-        // };
-
-
-            // Check for both winning sequences
         if row_string.contains("TOOT") {
             return Some(Player::Toot);
         }
@@ -133,8 +125,26 @@ impl Board {
             return Some(Player::Otto);
         }
 
-    None
+        // Vertical check (new addition)
+        let col_string: String = self.grid.iter().map(|row| {
+            match row[last_col] {
+                Cell::Occupied(Piece::T) => 'T',
+                Cell::Occupied(Piece::O) => 'O',
+                _ => '.',
+            }
+        }).collect();
+
+        if col_string.contains("TOOT") {
+            return Some(Player::Toot);
+        }
+        if col_string.contains("OTTO") {
+            return Some(Player::Otto);
+        }
+
+        // No win found
+        None
     }
+
 
     // Check if the game is a draw (the board is full)
     pub fn is_draw(&self) -> bool {
