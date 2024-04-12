@@ -17,3 +17,4 @@ rand = "0.8"
 log = "0.4"
 yew-router = { git = "https://github.com/yewstack/yew.git" }
 lazy_static = "1.4.0"
+web-sys = "0.3.69"

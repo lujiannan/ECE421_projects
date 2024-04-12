@@ -10,6 +10,9 @@ use toot_otto::{
 };
 
 use std::io::{self, Write};
+use serde::{Serialize, Deserialize};
+use web_sys::window;
+use serde_json::*;
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -26,14 +29,14 @@ enum Route {
     NotFound,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 enum Difficulty {
     None,
     Easy,
     Hard,
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 enum PlayerIcon {
     Option1,
     Option2,
@@ -43,7 +46,7 @@ const ARMOR_IMG_URL: &str =
 const SWORD_IMG_URL: &str =
     "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png";
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 enum CompIcon {
     Option3,
     Option4,
@@ -53,7 +56,7 @@ const GEM_IMG_URL: &str =
 const HEART_IMG_URL: &str =
     "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/heart.png";
 
-#[derive(Properties, Clone, PartialEq)]
+#[derive(Properties, Clone, PartialEq, Serialize, Deserialize)]
 struct AppState {
     difficulty: Difficulty,
     player_icon: PlayerIcon,
@@ -76,9 +79,30 @@ lazy_static! {
     static ref APP_STATE: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
 }
 
+
+
+fn save_state(state: &AppState) {
+    let window = window().expect("no global `window` exists");
+    let storage = window.local_storage().unwrap().unwrap();
+    storage.set_item("appState", &serde_json::to_string(state).unwrap()).unwrap();
+}
+
+fn load_state() -> Option<AppState> {
+    let window = window().expect("no global `window` exists");
+    let storage = window.local_storage().unwrap().unwrap();
+    let state_json = storage.get_item("appState").unwrap()?;
+    Some(serde_json::from_str(&state_json).unwrap())
+}
+
 #[function_component(Home)]
 fn home() -> Html {
-    let app_state = APP_STATE.lock().unwrap();
+    let mut app_state = APP_STATE.lock().unwrap();
+
+    // Load state when the application starts
+    let loaded_state = load_state();
+    if let Some(state) = loaded_state {
+        *app_state = state;
+    }
 
     let on_player_icon_change = {
         let app_state = Arc::clone(&APP_STATE);
@@ -90,6 +114,9 @@ fn home() -> Html {
                 PlayerIcon::Option1
             };
             app_state.player_icon = value;
+
+            // Save state when the player icon changes
+            save_state(&app_state);
         })
     };
 
@@ -103,14 +130,37 @@ fn home() -> Html {
                 CompIcon::Option3
             };
             app_state.comp_icon = value;
+
+            // Save state when the computer icon changes
+            save_state(&app_state);
         })
     };
+
+    // let on_difficulty_change = {
+    //     let app_state = Arc::clone(&APP_STATE);
+    //     Callback::from(move |value: String| {
+    //         let mut app_state = app_state.lock().unwrap();
+    //         app_state.difficulty = match value.as_str() {
+    //             "easy" => Difficulty::Easy,
+    //             "hard" => Difficulty::Hard,
+    //             _ => Difficulty::None,
+    //         };
+
+    //         // Save state when the difficulty changes
+    //         save_state(&app_state);
+    //     })
+    // };
 
     html! {
         <div>
             <h1>{ "Welcome to our game center!" }</h1>
             <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
+            <nav>
+                <p>{ "Instructions for each game are below." }</p>
+                <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
+            </nav>
 
+            <h1>{ "I want to play Connect-4..." }</h1>
             <p>{ "Select an icon for player1:" }</p>
             <div style="display: flex; align-items: center;">
                 <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
@@ -121,7 +171,7 @@ fn home() -> Html {
                 <img src={SWORD_IMG_URL} width="60" height="60" />
             </div>
 
-            <p>{ "Select an icon for player2:" }</p>
+            <p>{ "Select an icon for player2/computer:" }</p>
             <div style="display: flex; align-items: center;">
                 <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
                 <label for="option3">{"option3"}</label>
@@ -131,15 +181,61 @@ fn home() -> Html {
                 <img src={HEART_IMG_URL} width="60" height="60" />
             </div>
 
+            // <p>{ "Select the play mode ('none' for 2-human players, 'easy' for easy computer opponent, 'hard' for hard computer opponent):" }</p>
+            // <div style="display: flex; align-items: center;">
+            //     <text>{ "AI: "}</text>
+            //     <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(|_| "none".to_string())} checked={app_state.difficulty == Difficulty::None} />
+            //     <label for="none">{"None"}</label>
+            //     <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(|_| "easy".to_string())} checked={app_state.difficulty == Difficulty::Easy} />
+            //     <label for="easy">{"Easy"}</label>
+            //     <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(|_| "hard".to_string())} checked={app_state.difficulty == Difficulty::Hard}/>
+            //     <label for="hard">{"Hard"}</label>
+            // </div>
+
             <nav>
-                <p>{ "Instructions for each game are below." }</p>
-                <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
                 <p>{ "Or start playing Connect 4 below." }</p>
                 <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
                 <p>{ "Or start playing Toot-Otto below." }</p>
                 <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
-
             </nav>
+
+            // <h1>{ "I want to play TooT and Otto..." }</h1>
+            // <p>{ "Select player1's word (and player2/computer will be other word):" }</p>
+            // <div style="display: flex; align-items: center;">
+            //     <input type="radio" id="TOOT" name="player1_toot" value="TOOT" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
+            //     <label for="TOOT">{"TOOT"}</label>
+            //     <img src={ARMOR_IMG_URL} width="60" height="60" />
+            //     <input type="radio" id="OTTO" name="player1_otto" value="OTTO" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
+            //     <label for="OTTO">{"OTTO"}</label>
+            //     <img src={SWORD_IMG_URL} width="60" height="60" />
+            // </div>
+
+            // <p>{ "Select an icon for player2/computer:" }</p>
+            // <div style="display: flex; align-items: center;">
+            //     <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
+            //     <label for="option3">{"option3"}</label>
+            //     <img src={GEM_IMG_URL} width="60" height="60" />
+            //     <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
+            //     <label for="option4">{"option4"}</label>
+            //     <img src={HEART_IMG_URL} width="60" height="60" />
+            // </div>
+
+            // <p>{ "Select the play mode ('none' for 2-human players, 'easy' for easy computer opponent, 'hard' for hard computer opponent):" }</p>
+            // <div style="display: flex; align-items: center;">
+            //     <text>{ "AI: "}</text>
+            //     <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(|_| "none".to_string())} checked={app_state.difficulty == Difficulty::None} />
+            //     <label for="none">{"None"}</label>
+            //     <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(|_| "easy".to_string())} checked={app_state.difficulty == Difficulty::Easy} />
+            //     <label for="easy">{"Easy"}</label>
+            //     <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(|_| "hard".to_string())} checked={app_state.difficulty == Difficulty::Hard}/>
+            //     <label for="hard">{"Hard"}</label>
+            // </div>
+            <nav>
+            <p>{ "Or start playing Connect 4 below." }</p>
+            <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
+            <p>{ "Or start playing Toot-Otto below." }</p>
+            <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
+        </nav>
         </div>
     }
 }
@@ -149,10 +245,13 @@ fn instructions() -> Html {
     html! {
         <div>
             <h1>{ "Instructions" }</h1>
-            <p>{ "This page will provide instructions on how to play Connect Four." }</p>
+            <p>{ "These are instructions on how to play Connect Four." }</p>
             <p>{ "Place your discs by clicking the buttons and try to get four in a row." }</p>
 
-            <p>{ "Connect Four is a two-player connection game in which the players take turns dropping colored discs from the top into a seven-column, six-row vertically suspended grid. The objective of the game is to be the first to form a horizontal, vertical, or diagonal line of four of one's own discs." }</p>
+            <p>{ "Connect Four is a two-player connection game in which the players take turns 
+            dropping colored discs from the top into a seven-column, six-row vertically suspended 
+            grid. The objective of the game is to be the first to form a horizontal, vertical, 
+            or diagonal line of four of one's own discs." }</p>
             <br/>
             <div><h5>{ "To play Connect 4 follow the following steps:" }</h5></div>
             <ul>
@@ -163,6 +262,22 @@ fn instructions() -> Html {
             <br/>
             { "For More information on Connect 4 click " }
             <a href="https://en.wikipedia.org/wiki/Connect_Four">{ "here" }</a>
+            <br/>
+
+            <p>{ "These are instructions on how to play Toot-Otto." }</p>
+            <p>{ "Place your discs by clicking the buttons and try to complete a spelling of TOOT or OTTO." }</p>
+            <br/>
+            <div><h5>{ "To play Toot-Otto follow the following steps:" }</h5></div>
+            <ul>
+                <li>{ "A new game describes discs of which name (TooT or Otto) belongs to which player" }</li>
+                <li>{ "Click on the desired column on the game board to place your disc of either T or O" }</li>
+                <li>{ "One player is TOOT and the other player is OTTO. Each takes six O's 
+                and six T's. The first player who spells his or her name - up, down, 
+                sideways, or on the diagonal - wins!" }</li>
+            </ul>
+            <br/>
+            { "For More information on Toot-Otto click " }
+            <a href="https://boardgamegeek.com/boardgame/19530/toot-and-otto">{ "here" }</a>
             <br/>
 
             <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
@@ -213,7 +328,14 @@ fn display_cell(cell: &Cell) -> String {
 
 #[function_component(ConnectFourGame)]
 fn connect_four_game() -> Html {
-    let app_state_borrowed = APP_STATE.lock().unwrap();
+    let mut app_state_borrowed = APP_STATE.lock().unwrap();
+
+    // Load state when the application starts
+    let loaded_state = load_state();
+    if let Some(state) = loaded_state {
+        *app_state_borrowed = state;
+    }
+
     let players_icon = match app_state_borrowed.player_icon {
         PlayerIcon::Option1 => ARMOR_IMG_URL,
         PlayerIcon::Option2 => SWORD_IMG_URL,
@@ -233,6 +355,9 @@ fn connect_four_game() -> Html {
                 "hard" => Difficulty::Hard,
                 _ => Difficulty::None,
             };
+
+            // Save state when the difficulty changes
+            save_state(&app_state);
         })
     };
 
@@ -266,11 +391,12 @@ fn connect_four_game() -> Html {
                         board.set(b);
                         player1_clicked.set(false);
                     }
-                }
+                },
                 Difficulty::Hard => {
                     if let Err(e) = b.computer_move_hard(_col) {
                         println!("Error: {}", e);
                     } else {
+                        println!("Hard moved");
                         board.set(b);
                         player1_clicked.set(false);
                     }
