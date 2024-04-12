@@ -409,7 +409,7 @@ fn connect_four_game() -> Html {
                         State::Won(player) => html! {
                             <p>
                                 {
-                                    format!("{} wins! Refresh to reset game.", if player == Player::Red {"Player"} else {"Comp"})
+                                    format!("{} wins! Refresh to reset game.", if player == Player::Red {"Player1"} else {"Player2"})
                                 }
                             </p>
                         },
