@@ -230,6 +230,14 @@ fn display_cell(cell: &Cell) -> String {
 fn connect_four_game() -> Html {
 
     let app_state_borrowed = APP_STATE.lock().unwrap();
+    let players_icon = match app_state_borrowed.player_icon {
+        PlayerIcon::Option1 => ARMOR_IMG_URL,
+        PlayerIcon::Option2 => SWORD_IMG_URL,
+    };
+    let comp_icon = match app_state_borrowed.comp_icon {
+        CompIcon::Option3 => GEM_IMG_URL,
+        CompIcon::Option4 => HEART_IMG_URL,
+    };
 
     let board = use_state(|| Board::new(6, 7)); // Initialize the board
 
@@ -282,8 +290,8 @@ fn connect_four_game() -> Html {
                             {
                                 match cell {
                                     connect4::Cell::Empty => html! { },
-                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={ARMOR_IMG_URL} width="80" height="80" /> },
-                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={SWORD_IMG_URL} width="80" height="80" /> },
+                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
+                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
                                 }
                             }
                             </div>
