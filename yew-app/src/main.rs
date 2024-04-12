@@ -9,8 +9,6 @@ use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Pi
 
 use std::io::{self, Write};
 
-
-
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
     #[at("/")]
@@ -28,6 +26,7 @@ enum Route {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum Difficulty {
+    None,
     Easy,
     Hard,
 }
@@ -57,7 +56,7 @@ struct AppState {
 impl AppState {
     fn new() -> Self {
         Self {
-            difficulty: Difficulty::Easy,
+            difficulty: Difficulty::None,
             player_icon: PlayerIcon::Option1,
             comp_icon: CompIcon::Option3,
         }
@@ -78,14 +77,14 @@ fn home() -> Html {
 
     let on_difficulty_change = {
         let app_state = Arc::clone(&APP_STATE);
-        Callback::from(move |_| {
+        Callback::from(move |d: &str| {
             let mut app_state = app_state.lock().unwrap();
-            let value = if app_state.difficulty == Difficulty::Easy {
-                Difficulty::Hard
-            } else {
-                Difficulty::Easy
+            app_state.difficulty = match d {
+                "none" => Difficulty::None,
+                "easy" => Difficulty::Easy,
+                "hard" => Difficulty::Hard,
+                _ => Difficulty::None,
             };
-            app_state.difficulty = value;
         })
     };
 
@@ -123,13 +122,15 @@ fn home() -> Html {
 
             <p>{ "Select the difficulty of computer opponent:" }</p> 
             <div style="display: flex; align-items: center;">
-                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Easy} />
+                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state.difficulty == Difficulty::None} />
+                <label for="none">{"None"}</label>
+                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state.difficulty == Difficulty::Easy} />
                 <label for="easy">{"Easy"}</label>
-                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Hard}/>
+                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state.difficulty == Difficulty::Hard}/>
                 <label for="hard">{"Hard"}</label>
             </div>
 
-            <p>{ "Select the player icon you want:" }</p>
+            <p>{ "Select an icon for player1:" }</p>
             <div style="display: flex; align-items: center;">
                 <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
                 <label for="option1">{"option1"}</label>
@@ -139,7 +140,7 @@ fn home() -> Html {
                 <img src={SWORD_IMG_URL} width="60" height="60" />
             </div>
 
-            <p>{ "Select the computer icon you want:" }</p>  
+            <p>{ "Select an icon for player2:" }</p>  
             <div style="display: flex; align-items: center;">
                 <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
                 <label for="option3">{"option3"}</label>
@@ -247,8 +248,8 @@ fn connect_four_game() -> Html {
     let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
 
     let current_player = match board.current_turn {
-        Player::Red => "Player",
-        Player::Yellow => "Comp",
+        Player::Red => "Player1",
+        Player::Yellow => "Player2",
     };
 
     let current_player_icon = match board.current_turn {
@@ -303,9 +304,9 @@ fn connect_four_game() -> Html {
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
             <h2 style="display: flex; align-items: center;">
-                { format!("App State: Difficulty - {:?}, Player - ", app_state_borrowed.difficulty) }
+                { format!("Status: AI - {:?}, Player1 - ", app_state_borrowed.difficulty) }
                 <img src={players_icon} width="50" height="50" />
-                { format!(", Comp -") }
+                { format!(", Player2 -") }
                 <img src={comp_icon} width="50" height="50" />
             </h2>
 
