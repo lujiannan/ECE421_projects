@@ -244,63 +244,104 @@ fn connect_four_game() -> Html {
     };
 
     let board = use_state(|| Board::new(6, 7)); // Initialize the board
+    let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
 
     let on_column_click = {
         let board = board.clone();
+        let hovered_col = hovered_col.clone();
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
+            if b.state != State::Running {
+                hovered_col.set(None);
+            }
             board.set(b); // Update the board state
         })
     };
+
+    let handle_mouseover = {
+        let hovered_col = hovered_col.clone();
+        Callback::from(move |col: usize| {
+            hovered_col.set(Some(col));
+        })
+    };
+    let handle_mouseout = {
+        let hovered_col = hovered_col.clone();
+        Callback::from(move |_col: usize| {
+            hovered_col.set(None);
+        })
+    };
+
     let pixel_size = "100px";
-    let button_style = format!("display: grid; grid-template-columns: repeat({}, {});", board.cols, pixel_size);
     let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
     
-    let button_style_active = "text-align: center; background-color: initial;";
-    let button_style_greyed = "text-align: center; background-color: grey;";
+    let cell_style_locked = "
+    border: 1px solid black;
+    text-align: center;
+    line-height: 100px;
+    ";
+    let cell_style_hovered = "
+    border: 1px solid black;
+    text-align: center;
+    line-height: 100px;
+    background-color: lightgray;
+    transform: scale(1.05);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    ";
 
     html! {
         <>
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
-            <h2>
-                { format!("App State: Difficulty - {:?}, Player Icon - ", app_state_borrowed.difficulty) }
-                
+            <h2 style="display: flex; align-items: center;">
+                { format!("App State: Difficulty - {:?}, Player - ", app_state_borrowed.difficulty) }
+                <img src={players_icon} width="60" height="60" />
+                { format!(", Comp -") }
+                <img src={comp_icon} width="60" height="60" />
             </h2>
             
-            <div style={button_style.clone()}>
-            {
-                (0..board.cols).map(|col| {
-                    let is_disabled = matches!(board.state, State::Running);
-                    let button_style = if is_disabled { button_style_active } else { button_style_greyed };
-                    html! {
-                        <button style={button_style} onclick={on_column_click.reform(move |_| col)} disabled={!is_disabled}>
-                            { format!("Drop in Col {}", col) }
-                        </button>
-                    }
-                }).collect::<Html>()
-            }
-            </div>
             <div style={grid_style.clone()}>
                 {
-                    for board.grid.iter().flatten().map(|cell| {
-                        // html! {
-                        //     <div style="border: 1px solid black; text-align: center; line-height: 100px;">
-                        //         // { format!("{:?}", cell) }
-                        //         { display_cell(cell) }
-                        //     </div>
-                        // }
+                    for board.grid.iter().enumerate().map(|(_row, line)| {
                         html! {
-                            <div style="border: 1px solid black; text-align: center; line-height: 100px;">
                             {
-                                match cell {
-                                    connect4::Cell::Empty => html! { },
-                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
-                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
-                                }
+                                for line.iter().enumerate().map(|(col, &cell)| {
+                                    let mut cell_style: &str = "";
+                                    if let Some(hovered_col) = *hovered_col {
+                                        if hovered_col == col {
+                                            cell_style = cell_style_hovered;
+                                        } else {
+                                            cell_style = cell_style_locked;
+                                        }
+                                    } else {
+                                        cell_style = cell_style_locked;
+                                    };
+                                    let is_enabled = matches!(board.state, State::Running);
+                                    html! {
+                                        <button
+                                        style={cell_style}
+                                        onmouseenter={
+                                            if is_enabled {
+                                                handle_mouseover.reform(move |_| col)
+                                            } else {
+                                                handle_mouseout.reform(move |_| col)
+                                            }
+                                        }
+                                        onmouseleave={handle_mouseout.reform(move |_| col)}
+                                        onclick={on_column_click.reform(move |_| col)}
+                                        disabled={!is_enabled}
+                                        >
+                                            {
+                                                match cell {
+                                                    connect4::Cell::Empty => html! {},
+                                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
+                                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
+                                                }
+                                            }
+                                        </button>
+                                    }
+                                })
                             }
-                            </div>
                         }
                     })
                 }
