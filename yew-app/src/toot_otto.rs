@@ -62,6 +62,12 @@ impl Board {
         }
     }
 
+    pub fn computer_move(&mut self) -> Result<(), &'static str> {
+        // TODO:
+        self.insert_piece(1, Piece::O);
+        Ok(())
+    }
+
 
     // Insert a piece into the specified column
     // Insert a piece into the specified column
