@@ -1,2 +1,3 @@
-
-/yew-app/dist
+/yew-app/dist/
+/yew-app/target
+/yew-app/Cargo.lock
