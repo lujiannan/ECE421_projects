@@ -363,6 +363,8 @@ fn connect_four_game() -> Html {
                                     if let Some(hovered_col) = *hovered_col {
                                         if hovered_col == col {
                                             cell_style = cell_style_hovered;
+                                            // UI prediction of the future position of next move
+                                            
                                         } else {
                                             cell_style = cell_style_locked;
                                         }
