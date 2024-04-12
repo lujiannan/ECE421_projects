@@ -257,15 +257,36 @@ fn connect_four_game() -> Html {
         Player::Yellow => comp_icon,
     };
 
+    let player1_clicked = use_state(|| false);
+    let on_column_click_comp = {
+        let board = board.clone();
+        let app_state_borrowed = app_state_borrowed.clone();
+        let player1_clicked = player1_clicked.clone();
+        Callback::from(move |_col: usize| {
+            let mut b = (*board).clone();
+            // if the current status is player vs. computer
+            if app_state_borrowed.difficulty != Difficulty::None {
+                if let Err(e) = b.computer_move() {
+                    println!("Error: {}", e);
+                } else {
+                    board.set(b);
+                    player1_clicked.set(false);
+                }
+            }
+        })
+    };
+
     let on_column_click = {
         let board = board.clone();
         let hovered_col = hovered_col.clone();
+        let player1_clicked = player1_clicked.clone();
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
             if b.state != connect4::State::Running {
                 hovered_col.set(None);
             }
+            player1_clicked.set(true);
             board.set(b); // Update the board state
         })
     };
@@ -333,6 +354,9 @@ fn connect_four_game() -> Html {
                                         cell_style = cell_style_locked;
                                     };
                                     let is_enabled = matches!(board.state, connect4::State::Running);
+                                    if *player1_clicked == true {
+                                        on_column_click_comp.emit(col);
+                                    }
                                     html! {
                                         <button
                                         style={cell_style}
