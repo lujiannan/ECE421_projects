@@ -2,10 +2,12 @@ use yew::prelude::*;
 // use yew::events::InputData;
 use yew_router::prelude::*;
 mod connect4;
-use connect4::{Board, Player, State, Cell};
+use connect4::{Board, Cell, Player, State};
 
 mod toot_otto;
-use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Piece, Cell as TootCell};
+use toot_otto::{
+    Board as TootBoard, Cell as TootCell, Piece, Player as TootPlayer, State as TootState,
+};
 
 use std::io::{self, Write};
 
@@ -36,16 +38,20 @@ enum PlayerIcon {
     Option1,
     Option2,
 }
-const ARMOR_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/armor.png";
-const SWORD_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png";
+const ARMOR_IMG_URL: &str =
+    "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/armor.png";
+const SWORD_IMG_URL: &str =
+    "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png";
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum CompIcon {
     Option3,
     Option4,
 }
-const GEM_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/gem.png";
-const HEART_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/heart.png";
+const GEM_IMG_URL: &str =
+    "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/gem.png";
+const HEART_IMG_URL: &str =
+    "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/heart.png";
 
 #[derive(Properties, Clone, PartialEq)]
 struct AppState {
@@ -72,7 +78,6 @@ lazy_static! {
 
 #[function_component(Home)]
 fn home() -> Html {
-
     let app_state = APP_STATE.lock().unwrap();
 
     let on_player_icon_change = {
@@ -87,7 +92,7 @@ fn home() -> Html {
             app_state.player_icon = value;
         })
     };
-    
+
     let on_comp_icon_change = {
         let app_state = Arc::clone(&APP_STATE);
         Callback::from(move |_| {
@@ -100,7 +105,6 @@ fn home() -> Html {
             app_state.comp_icon = value;
         })
     };
-
 
     html! {
         <div>
@@ -117,7 +121,7 @@ fn home() -> Html {
                 <img src={SWORD_IMG_URL} width="60" height="60" />
             </div>
 
-            <p>{ "Select an icon for player2:" }</p>  
+            <p>{ "Select an icon for player2:" }</p>
             <div style="display: flex; align-items: center;">
                 <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
                 <label for="option3">{"option3"}</label>
@@ -134,7 +138,7 @@ fn home() -> Html {
                 <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
                 <p>{ "Or start playing Toot-Otto below." }</p>
                 <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
-                
+
             </nav>
         </div>
     }
@@ -160,7 +164,7 @@ fn instructions() -> Html {
             { "For More information on Connect 4 click " }
             <a href="https://en.wikipedia.org/wiki/Connect_Four">{ "here" }</a>
             <br/>
-            
+
             <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
         </div>
     }
@@ -207,10 +211,8 @@ fn display_cell(cell: &Cell) -> String {
     }
 }
 
-
 #[function_component(ConnectFourGame)]
 fn connect_four_game() -> Html {
-
     let app_state_borrowed = APP_STATE.lock().unwrap();
     let players_icon = match app_state_borrowed.player_icon {
         PlayerIcon::Option1 => ARMOR_IMG_URL,
@@ -255,12 +257,23 @@ fn connect_four_game() -> Html {
         Callback::from(move |_col: usize| {
             let mut b = (*board).clone();
             // if the current status is player vs. computer
-            if app_state_borrowed.difficulty != Difficulty::None {
-                if let Err(e) = b.computer_move() {
-                    println!("Error: {}", e);
-                } else {
-                    board.set(b);
-                    player1_clicked.set(false);
+            match app_state_borrowed.difficulty {
+                Difficulty::None => (),
+                Difficulty::Easy => {
+                    if let Err(e) = b.computer_move() {
+                        println!("Error: {}", e);
+                    } else {
+                        board.set(b);
+                        player1_clicked.set(false);
+                    }
+                }
+                Difficulty::Hard => {
+                    if let Err(e) = b.computer_move_hard(_col) {
+                        println!("Error: {}", e);
+                    } else {
+                        board.set(b);
+                        player1_clicked.set(false);
+                    }
                 }
             }
         })
@@ -295,8 +308,11 @@ fn connect_four_game() -> Html {
     };
 
     let pixel_size = "100px";
-    let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
-    
+    let grid_style = format!(
+        "display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
+        board.cols, pixel_size, pixel_size
+    );
+
     let cell_style_locked = "
     border: 1px solid black;
     text-align: center;
@@ -336,7 +352,7 @@ fn connect_four_game() -> Html {
                 <img src={current_player_icon} width="50" height="50" />
                 { format!(" ({})", current_player) }
             </p>
-            
+
             <div style={grid_style.clone()}>
                 {
                     for board.grid.iter().enumerate().map(|(_row, line)| {
@@ -390,12 +406,12 @@ fn connect_four_game() -> Html {
             <div>
                 {
                     match board.state {
-                        State::Won(player) => html! { 
+                        State::Won(player) => html! {
                             <p>
                                 {
                                     format!("{} wins! Refresh to reset game.", if player == Player::Red {"Player"} else {"Comp"})
                                 }
-                            </p> 
+                            </p>
                         },
                         State::Draw => html! { <p>{ "The game is a draw!" }</p> },
                         State::Running => html! { <p>{ "Game is in progress..." }</p> },
@@ -406,11 +422,6 @@ fn connect_four_game() -> Html {
     }
 }
 
-
-
-
-
-
 fn display_toot_piece(cell: &TootCell) -> String {
     match cell {
         TootCell::Empty => " ".to_string(),
@@ -420,8 +431,6 @@ fn display_toot_piece(cell: &TootCell) -> String {
         },
     }
 }
-
-
 
 ////////////////// toot otto
 #[function_component(TootOttoGame)]
@@ -492,7 +501,7 @@ fn toot_otto_game() -> Html {
 
     let handle_mouseover = {
         let selected_piece = selected_piece.clone();
-        let is_selected = if *selected_piece == None {false} else {true};
+        let is_selected = if *selected_piece == None { false } else { true };
         let hovered_col = hovered_col.clone();
         Callback::from(move |col: usize| {
             if is_selected {
@@ -510,7 +519,10 @@ fn toot_otto_game() -> Html {
     };
 
     let pixel_size = "80px"; // Smaller pieces for a more complex board
-    let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
+    let grid_style = format!(
+        "display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
+        board.cols, pixel_size, pixel_size
+    );
     let current_player = match board.current_turn {
         TootPlayer::Toot => "TOOT",
         TootPlayer::Otto => "OTTO",
@@ -546,7 +558,7 @@ fn toot_otto_game() -> Html {
             </div>
             <p>{ format!("Current turn: {}", current_player) }</p>
             <div>
-                <button 
+                <button
                     style={
                         if *selected_piece == Some(Piece::T) {btn_style_selected}
                         else {btn_style_regular}
