@@ -75,19 +75,6 @@ fn home() -> Html {
 
     let app_state = APP_STATE.lock().unwrap();
 
-    let on_difficulty_change = {
-        let app_state = Arc::clone(&APP_STATE);
-        Callback::from(move |d: &str| {
-            let mut app_state = app_state.lock().unwrap();
-            app_state.difficulty = match d {
-                "none" => Difficulty::None,
-                "easy" => Difficulty::Easy,
-                "hard" => Difficulty::Hard,
-                _ => Difficulty::None,
-            };
-        })
-    };
-
     let on_player_icon_change = {
         let app_state = Arc::clone(&APP_STATE);
         Callback::from(move |_| {
@@ -119,16 +106,6 @@ fn home() -> Html {
         <div>
             <h1>{ "Welcome to our game center!" }</h1>
             <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
-
-            <p>{ "Select the difficulty of computer opponent:" }</p> 
-            <div style="display: flex; align-items: center;">
-                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state.difficulty == Difficulty::None} />
-                <label for="none">{"None"}</label>
-                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state.difficulty == Difficulty::Easy} />
-                <label for="easy">{"Easy"}</label>
-                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state.difficulty == Difficulty::Hard}/>
-                <label for="hard">{"Hard"}</label>
-            </div>
 
             <p>{ "Select an icon for player1:" }</p>
             <div style="display: flex; align-items: center;">
@@ -244,6 +221,19 @@ fn connect_four_game() -> Html {
         CompIcon::Option4 => HEART_IMG_URL,
     };
 
+    let on_difficulty_change = {
+        let app_state = Arc::clone(&APP_STATE);
+        Callback::from(move |d: &str| {
+            let mut app_state = app_state.lock().unwrap();
+            app_state.difficulty = match d {
+                "none" => Difficulty::None,
+                "easy" => Difficulty::Easy,
+                "hard" => Difficulty::Hard,
+                _ => Difficulty::None,
+            };
+        })
+    };
+
     let board = use_state(|| Board::new(6, 7)); // Initialize the board
     let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
 
@@ -257,11 +247,11 @@ fn connect_four_game() -> Html {
         Player::Yellow => comp_icon,
     };
 
-    let player1_clicked = use_state(|| false);
+    let player1_done = use_state(|| false);
     let on_column_click_comp = {
         let board = board.clone();
         let app_state_borrowed = app_state_borrowed.clone();
-        let player1_clicked = player1_clicked.clone();
+        let player1_clicked = player1_done.clone();
         Callback::from(move |_col: usize| {
             let mut b = (*board).clone();
             // if the current status is player vs. computer
@@ -279,14 +269,14 @@ fn connect_four_game() -> Html {
     let on_column_click = {
         let board = board.clone();
         let hovered_col = hovered_col.clone();
-        let player1_clicked = player1_clicked.clone();
+        let player1_done = player1_done.clone();
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
             if b.state != connect4::State::Running {
                 hovered_col.set(None);
             }
-            player1_clicked.set(true);
+            player1_done.set(true);
             board.set(b); // Update the board state
         })
     };
@@ -324,13 +314,23 @@ fn connect_four_game() -> Html {
         <>
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
+
             <h2 style="display: flex; align-items: center;">
-                { format!("Status: AI - {:?}, Player1 - ", app_state_borrowed.difficulty) }
+                { format!("Status: ") }
+                { format!("Player1 - ") }
                 <img src={players_icon} width="50" height="50" />
                 { format!(", Player2 -") }
                 <img src={comp_icon} width="50" height="50" />
             </h2>
-
+            <div style="display: flex; align-items: center;">
+                <text>{ "AI: "}</text>
+                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
+                <label for="none">{"None"}</label>
+                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
+                <label for="easy">{"Easy"}</label>
+                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
+                <label for="hard">{"Hard"}</label>
+            </div>
             <p style="display: flex; align-items: center;">
                 { format!("Current turn: ") }
                 <img src={current_player_icon} width="50" height="50" />
@@ -354,7 +354,8 @@ fn connect_four_game() -> Html {
                                         cell_style = cell_style_locked;
                                     };
                                     let is_enabled = matches!(board.state, connect4::State::Running);
-                                    if *player1_clicked == true {
+                                    // robot move
+                                    if *player1_done == true {
                                         on_column_click_comp.emit(col);
                                     }
                                     html! {
@@ -437,18 +438,53 @@ fn toot_otto_game() -> Html {
         })
     };
 
+    let app_state_borrowed = APP_STATE.lock().unwrap();
+    let on_difficulty_change = {
+        let app_state = Arc::clone(&APP_STATE);
+        Callback::from(move |d: &str| {
+            let mut app_state = app_state.lock().unwrap();
+            app_state.difficulty = match d {
+                "none" => Difficulty::None,
+                "easy" => Difficulty::Easy,
+                "hard" => Difficulty::Hard,
+                _ => Difficulty::None,
+            };
+        })
+    };
+
     let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
+
+    let player1_done = use_state(|| false);
+    let on_column_click_comp = {
+        let board = board.clone();
+        let app_state_borrowed = app_state_borrowed.clone();
+        let player1_done = player1_done.clone();
+        Callback::from(move |_col: usize| {
+            let mut b = (*board).clone();
+            // if the current status is player vs. computer
+            if app_state_borrowed.difficulty != Difficulty::None {
+                if let Err(e) = b.computer_move() {
+                    println!("Error: {}", e);
+                } else {
+                    board.set(b);
+                    player1_done.set(false);
+                }
+            }
+        })
+    };
 
     let on_column_click = {
         let board = board.clone();
         let selected_piece = selected_piece.clone();
         let hovered_col = hovered_col.clone();
+        let player1_done = player1_done.clone();
         Callback::from(move |col: usize| {
             if let Some(piece) = *selected_piece {
                 let mut b = (*board).clone();
                 hovered_col.set(None);
                 b.insert_piece(col, piece).ok(); // Handling the insertion and ignoring errors
                 board.set(b); // Update the board state
+                player1_done.set(true);
                 selected_piece.set(None); // Reset the selected piece after placing it
             }
         })
@@ -499,6 +535,15 @@ fn toot_otto_game() -> Html {
         <>
             <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "TOOT-OTTO" }</h1>
+            <div style="display: flex; align-items: center;">
+                <text>{ "AI: "}</text>
+                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
+                <label for="none">{"None"}</label>
+                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
+                <label for="easy">{"Easy"}</label>
+                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
+                <label for="hard">{"Hard"}</label>
+            </div>
             <p>{ format!("Current turn: {}", current_player) }</p>
             <div>
                 <button 
@@ -538,6 +583,10 @@ fn toot_otto_game() -> Html {
                                     } else {
                                         cell_style = cell_style_locked;
                                     };
+                                    // robot move
+                                    if *player1_done == true {
+                                        on_column_click_comp.emit(col);
+                                    }
                                     html! {
                                         <button
                                         style={cell_style}
