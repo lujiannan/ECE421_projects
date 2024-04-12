@@ -445,8 +445,8 @@ fn toot_otto_game() -> Html {
     background-color: lightgray;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
-    let btn_style_regular: &str = "";
-    let btn_style_selected = "background-color: lightgray;";
+    let btn_style_regular: &str = "color: dimgray;";
+    let btn_style_selected = "background-color: lightgray; color: black;";
 
     html! {
         <>
@@ -459,14 +459,20 @@ fn toot_otto_game() -> Html {
                         if *selected_piece == Some(Piece::T) {btn_style_selected}
                         else {btn_style_regular}
                     }
-                    onclick={on_piece_select.reform(|_| Piece::T)}>{ "Select T" }
+                    onclick={on_piece_select.reform(|_| Piece::T)}
+                    disabled={!matches!(board.state, toot_otto::State::Running)}
+                >
+                    { "Select T" }
                 </button>
                 <button
                     style={
                         if *selected_piece == Some(Piece::O) {btn_style_selected}
                         else {btn_style_regular}
                     }
-                    onclick={on_piece_select.reform(|_| Piece::O)}>{ "Select O" }
+                    onclick={on_piece_select.reform(|_| Piece::O)}
+                    disabled={!matches!(board.state, toot_otto::State::Running)}
+                >
+                    { "Select O" }
                 </button>
             </div>
             <div style={grid_style.clone()}>
@@ -506,7 +512,7 @@ fn toot_otto_game() -> Html {
             <div>
                 {
                     match board.state {
-                        TootState::Won(player) => html! { <p>{ format!("Player {:?} wins!", player) }</p> },
+                        TootState::Won(player) => html! { <p>{ format!("Player {:?} wins! Refresh to reset game.", player) }</p> },
                         TootState::Draw => html! { <p>{ "The game is a draw!" }</p> },
                         TootState::Running => html! { <p>{ "Game is in progress..." }</p> },
                     }
