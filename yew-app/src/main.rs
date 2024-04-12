@@ -252,7 +252,7 @@ fn connect_four_game() -> Html {
         Callback::from(move |col: usize| {
             let mut b = (*board).clone(); // Clone the current board state
             b.insert_disc(col).ok(); // Ignore errors for simplicity
-            if b.state != State::Running {
+            if b.state != connect4::State::Running {
                 hovered_col.set(None);
             }
             board.set(b); // Update the board state
@@ -316,7 +316,7 @@ fn connect_four_game() -> Html {
                                     } else {
                                         cell_style = cell_style_locked;
                                     };
-                                    let is_enabled = matches!(board.state, State::Running);
+                                    let is_enabled = matches!(board.state, connect4::State::Running);
                                     html! {
                                         <button
                                         style={cell_style}
@@ -391,16 +391,39 @@ fn toot_otto_game() -> Html {
         })
     };
 
+    let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
+
     let on_column_click = {
         let board = board.clone();
         let selected_piece = selected_piece.clone();
+        let hovered_col = hovered_col.clone();
         Callback::from(move |col: usize| {
             if let Some(piece) = *selected_piece {
                 let mut b = (*board).clone();
+                hovered_col.set(None);
                 b.insert_piece(col, piece).ok(); // Handling the insertion and ignoring errors
                 board.set(b); // Update the board state
                 selected_piece.set(None); // Reset the selected piece after placing it
             }
+        })
+    };
+
+    let handle_mouseover = {
+        let selected_piece = selected_piece.clone();
+        let is_selected = if *selected_piece == None {false} else {true};
+        let hovered_col = hovered_col.clone();
+        Callback::from(move |col: usize| {
+            if is_selected {
+                hovered_col.set(Some(col));
+            } else {
+                hovered_col.set(None);
+            }
+        })
+    };
+    let handle_mouseout = {
+        let hovered_col = hovered_col.clone();
+        Callback::from(move |_col: usize| {
+            hovered_col.set(None);
         })
     };
 
@@ -410,6 +433,20 @@ fn toot_otto_game() -> Html {
         TootPlayer::Toot => "TOOT",
         TootPlayer::Otto => "OTTO",
     };
+
+    let cell_style_locked = "
+    border: 1px solid black;
+    text-align: center;
+    line-height: 100px;
+    ";
+    let cell_style_hovered = "
+    border: 1px solid black;
+    text-align: center;
+    line-height: 100px;
+    background-color: lightgray;
+    transform: scale(1.05);
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    ";
 
     html! {
         <>
@@ -422,25 +459,36 @@ fn toot_otto_game() -> Html {
             </div>
             <div style={grid_style.clone()}>
                 {
-                    for board.grid.iter().flatten().map(|cell| {
+                    for board.grid.iter().enumerate().map(|(_row, line)| {
                         html! {
-                            <div style="border: 1px solid black; text-align: center; line-height: 80px;">
-                            // { format!("{:?}", cell) }
-                            { display_toot_piece(cell) }
-                            </div>
+                            {
+                                for line.iter().enumerate().map(|(col, &cell)| {
+                                    let mut cell_style: &str = "";
+                                    if let Some(hovered_col) = *hovered_col {
+                                        if hovered_col == col {
+                                            cell_style = cell_style_hovered;
+                                        } else {
+                                            cell_style = cell_style_locked;
+                                        }
+                                    } else {
+                                        cell_style = cell_style_locked;
+                                    };
+                                    html! {
+                                        <button
+                                        style={cell_style}
+                                        onmouseenter={
+                                            handle_mouseover.reform(move |_| col)
+                                        }
+                                        onmouseleave={handle_mouseout.reform(move |_| col)}
+                                        onclick={on_column_click.reform(move |_| col)}
+                                        >
+                                            {display_toot_piece(&cell)}
+                                        </button>
+                                    }
+                                })
+                            }
                         }
                     })
-                }
-            </div>
-            <div>
-                {
-                    (0..board.cols).map(|col| {
-                        html! {
-                            <button onclick={on_column_click.reform(move |_| col)} disabled={selected_piece.is_none()}>
-                                { format!("Place in Col {}", col) }
-                            </button>
-                        }
-                    }).collect::<Html>()
                 }
             </div>
             <div>
