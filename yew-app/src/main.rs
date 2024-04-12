@@ -37,12 +37,16 @@ enum PlayerIcon {
     Option1,
     Option2,
 }
+const ARMOR_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/armor.png";
+const SWORD_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png";
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 enum CompIcon {
     Option3,
     Option4,
 }
+const GEM_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/gem.png";
+const HEART_IMG_URL: &str = "https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/heart.png";
 
 #[derive(Properties, Clone, PartialEq)]
 struct AppState {
@@ -66,12 +70,6 @@ use std::sync::{Arc, Mutex};
 lazy_static! {
     static ref APP_STATE: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
 }
-
-// type SharedAppState = Rc<RefCell<AppState>>;
-// #[derive(Properties, Clone, PartialEq)]
-// pub struct GameProps {
-//     pub app_state: SharedAppState,
-// }
 
 #[function_component(Home)]
 fn home() -> Html {
@@ -120,10 +118,10 @@ fn home() -> Html {
 
     html! {
         <div>
-            <h1>{ "Welcome to Connect Four!" }</h1>
-            <p>{ "This is a simple implementation of the Connect Four game using Yew." }</p>
+            <h1>{ "Welcome to our game center!" }</h1>
+            <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
             <div>
-                <p>{ "Select the difficulty of computer player:" }</p>     
+                <p>{ "Select the difficulty of computer opponent:" }</p>     
                 <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Easy} />
                 <label for="easy">{"Easy"}</label>
                 <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.clone()} checked={app_state.difficulty == Difficulty::Hard}/>
@@ -133,21 +131,28 @@ fn home() -> Html {
                 <p>{ "Select the player icon you want:" }</p>     
                 <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
                 <label for="option1">{"option1"}</label>
+                <img src={ARMOR_IMG_URL} width="80" height="80" />
                 <input type="radio" id="option2" name="player_icon" value="option2" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
                 <label for="option2">{"option2"}</label>
+                <img src={SWORD_IMG_URL} width="80" height="80" />
             </div>
             <div>
                 <p>{ "Select the computer icon you want:" }</p>     
                 <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
                 <label for="option3">{"option3"}</label>
+                <img src={GEM_IMG_URL} width="80" height="80" />
                 <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
                 <label for="option4">{"option4"}</label>
+                <img src={HEART_IMG_URL} width="80" height="80" />
             </div>
-            <p>{ "Click the button below to start playing!" }</p>
             <nav>
-                <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
-                <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
+                <p>{ "Instructions for each game are below." }</p>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
+                <p>{ "Or start playing Connect 4 below." }</p>
+                <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
+                <p>{ "Or start playing Toot-Otto below." }</p>
+                <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
+                
             </nav>
         </div>
     }
@@ -277,8 +282,8 @@ fn connect_four_game() -> Html {
                             {
                                 match cell {
                                     connect4::Cell::Empty => html! { },
-                                    connect4::Cell::Occupied(Player::Red) => html! { <img src="https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/armor.png" /> },
-                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src="https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/static/sword.png" /> },
+                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={ARMOR_IMG_URL} width="80" height="80" /> },
+                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={SWORD_IMG_URL} width="80" height="80" /> },
                                 }
                             }
                             </div>
@@ -289,7 +294,7 @@ fn connect_four_game() -> Html {
             <div>
                 {
                     match board.state {
-                        State::Won(player) => html! { <p>{ format!("Player {:?} wins!", player) }</p> },
+                        State::Won(player) => html! { <p>{ format!("Player {:?} wins! Refresh to reset game.", player) }</p> },
                         State::Draw => html! { <p>{ "The game is a draw!" }</p> },
                         State::Running => html! { <p>{ "Game is in progress..." }</p> },
                     }
