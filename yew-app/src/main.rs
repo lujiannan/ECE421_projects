@@ -4,7 +4,7 @@ mod connect4;
 use connect4::{Board, Player, State, Cell};
 
 mod toot_otto;
-use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Piece};
+use toot_otto::{Board as TootBoard, Player as TootPlayer, State as TootState, Piece, Cell as TootCell};
 
 use std::io::{self, Write};
 
@@ -15,6 +15,8 @@ enum Route {
     Home,
     #[at("/game")]
     Game,
+    #[at("/toot-otto-game")]
+    TootOttoGame,
     #[at("/instructions")]
     Instructions,
     #[not_found]
@@ -28,7 +30,8 @@ fn home() -> Html {
         <div>
             <h1>{ "Welcome to Connect Four!" }</h1>
             <nav>
-                <Link<Route> to={Route::Game}>{ "Play Game" }</Link<Route>>
+                <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
+                <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
             </nav>
         </div>
@@ -61,6 +64,7 @@ fn switch(routes: Route) -> Html {
     match routes {
         Route::Home => html! { <Home /> },
         Route::Game => html! { <ConnectFourGame /> },
+        Route::TootOttoGame => html! { <TootOttoGame /> },
         Route::Instructions => html! { <Instructions /> },
         Route::NotFound => html! { <h1>{ "404 Not Found" }</h1> },
     }
@@ -150,8 +154,101 @@ fn connect_four_game() -> Html {
 }
 
 
-////////////////// toot otto
 
+
+
+
+fn display_toot_piece(cell: &TootCell) -> String {
+    match cell {
+        TootCell::Empty => " ".to_string(),
+        TootCell::Occupied(piece) => match piece {
+            Piece::T => "T".to_string(),
+            Piece::O => "O".to_string(),
+        },
+    }
+}
+
+
+
+////////////////// toot otto
+#[function_component(TootOttoGame)]
+fn toot_otto_game() -> Html {
+    let board = use_state(|| TootBoard::new(4, 6)); // Standard TOOT-OTTO board size
+
+    // State to keep track of the currently selected piece
+    let selected_piece = use_state(|| None);
+
+    let on_piece_select = {
+        let selected_piece = selected_piece.clone();
+        Callback::from(move |piece: Piece| {
+            selected_piece.set(Some(piece));
+        })
+    };
+
+    let on_column_click = {
+        let board = board.clone();
+        let selected_piece = selected_piece.clone();
+        Callback::from(move |col: usize| {
+            if let Some(piece) = *selected_piece {
+                let mut b = (*board).clone();
+                b.insert_piece(col, piece).ok(); // Handling the insertion and ignoring errors
+                board.set(b); // Update the board state
+                selected_piece.set(None); // Reset the selected piece after placing it
+            }
+        })
+    };
+
+    let pixel_size = "80px"; // Smaller pieces for a more complex board
+    let grid_style = format!("display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};", board.cols, pixel_size, pixel_size);
+    let current_player = match board.current_turn {
+        TootPlayer::Toot => "TOOT",
+        TootPlayer::Otto => "OTTO",
+    };
+
+    html! {
+        <>
+            <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
+            <h1>{ "TOOT-OTTO" }</h1>
+            <p>{ format!("Current turn for: {}", current_player) }</p>
+            <div>
+                <button onclick={on_piece_select.reform(|_| Piece::T)}>{ "Select T" }</button>
+                <button onclick={on_piece_select.reform(|_| Piece::O)}>{ "Select O" }</button>
+            </div>
+            <div style={grid_style.clone()}>
+                {
+                    for board.grid.iter().flatten().map(|cell| {
+                        html! {
+                            <div style="border: 1px solid black; text-align: center; line-height: 80px;">
+                            // { format!("{:?}", cell) }
+                            { display_toot_piece(cell) }
+                            </div>
+                        }
+                    })
+                }
+            </div>
+            <div>
+                {
+                    (0..board.cols).map(|col| {
+                        html! {
+                            <button onclick={on_column_click.reform(move |_| col)} disabled={selected_piece.is_none()}>
+                                { format!("Place in Col {}", col) }
+                            </button>
+                        }
+                    }).collect::<Html>()
+                }
+            </div>
+            <div>
+                {
+                    match board.state {
+                        TootState::Won(player) => html! { <p>{ format!("Player {:?} wins!", player) }</p> },
+                        TootState::Draw => html! { <p>{ "The game is a draw!" }</p> },
+                        TootState::Running => html! { <p>{ "Game is in progress..." }</p> },
+                    }
+                }
+            </div>
+        </>
+    }
+}
 
 
 
