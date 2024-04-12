@@ -246,7 +246,7 @@ fn connect_four_game() -> Html {
     let board = use_state(|| Board::new(6, 7)); // Initialize the board
     let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
 
-    let _current_player = match board.current_turn {
+    let current_player = match board.current_turn {
         Player::Red => "Player",
         Player::Yellow => "Comp",
     };
@@ -312,6 +312,7 @@ fn connect_four_game() -> Html {
             <p style="display: flex; align-items: center;">
                 { format!("Current turn: ") }
                 <img src={current_player_icon} width="50" height="50" />
+                { format!(" ({})", current_player) }
             </p>
             
             <div style={grid_style.clone()}>
