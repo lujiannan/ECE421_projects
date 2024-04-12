@@ -445,8 +445,8 @@ fn toot_otto_game() -> Html {
     background-color: lightgray;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
-    let btn_style_regular: &str = "color: dimgray;";
-    let btn_style_selected = "background-color: lightgray; color: black;";
+    let btn_style_regular: &str = "color: dimgray; margin: 4px;";
+    let btn_style_selected = "background-color: lightgray; color: black; margin: 4px;";
 
     html! {
         <>
