@@ -246,6 +246,16 @@ fn connect_four_game() -> Html {
     let board = use_state(|| Board::new(6, 7)); // Initialize the board
     let hovered_col: UseStateHandle<Option<usize>> = use_state(|| None);
 
+    let _current_player = match board.current_turn {
+        Player::Red => "Player",
+        Player::Yellow => "Comp",
+    };
+
+    let current_player_icon = match board.current_turn {
+        Player::Red => players_icon,
+        Player::Yellow => comp_icon,
+    };
+
     let on_column_click = {
         let board = board.clone();
         let hovered_col = hovered_col.clone();
@@ -294,10 +304,15 @@ fn connect_four_game() -> Html {
             <h1>{ "Connect Four" }</h1>
             <h2 style="display: flex; align-items: center;">
                 { format!("App State: Difficulty - {:?}, Player - ", app_state_borrowed.difficulty) }
-                <img src={players_icon} width="60" height="60" />
+                <img src={players_icon} width="50" height="50" />
                 { format!(", Comp -") }
-                <img src={comp_icon} width="60" height="60" />
+                <img src={comp_icon} width="50" height="50" />
             </h2>
+
+            <p style="display: flex; align-items: center;">
+                { format!("Current turn: ") }
+                <img src={current_player_icon} width="50" height="50" />
+            </p>
             
             <div style={grid_style.clone()}>
                 {
@@ -527,12 +542,3 @@ fn toot_otto_game() -> Html {
         </>
     }
 }
-
-
-
-
-
-
-
-
-
