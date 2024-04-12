@@ -264,8 +264,10 @@ fn connect_four_game() -> Html {
         <>
         <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "Connect Four" }</h1>
-            <h2>{ format!("App State: Difficulty - {:?}, Player Icon - {:?}, Comp Icon - {:?}", 
-            app_state_borrowed.difficulty, app_state_borrowed.player_icon, app_state_borrowed.comp_icon) }</h2>
+            <h2>
+                { format!("App State: Difficulty - {:?}, Player Icon - ", app_state_borrowed.difficulty) }
+                
+            </h2>
             
             <div style={button_style.clone()}>
             {
