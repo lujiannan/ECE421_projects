@@ -285,7 +285,6 @@ fn connect_four_game() -> Html {
     text-align: center;
     line-height: 100px;
     background-color: lightgray;
-    transform: scale(1.05);
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
 
@@ -444,18 +443,31 @@ fn toot_otto_game() -> Html {
     text-align: center;
     line-height: 100px;
     background-color: lightgray;
-    transform: scale(1.05);
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
+    let btn_style_regular: &str = "";
+    let btn_style_selected = "background-color: lightgray;";
 
     html! {
         <>
             <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
             <h1>{ "TOOT-OTTO" }</h1>
-            <p>{ format!("Current turn for: {}", current_player) }</p>
+            <p>{ format!("Current turn: {}", current_player) }</p>
             <div>
-                <button onclick={on_piece_select.reform(|_| Piece::T)}>{ "Select T" }</button>
-                <button onclick={on_piece_select.reform(|_| Piece::O)}>{ "Select O" }</button>
+                <button 
+                    style={
+                        if *selected_piece == Some(Piece::T) {btn_style_selected}
+                        else {btn_style_regular}
+                    }
+                    onclick={on_piece_select.reform(|_| Piece::T)}>{ "Select T" }
+                </button>
+                <button
+                    style={
+                        if *selected_piece == Some(Piece::O) {btn_style_selected}
+                        else {btn_style_regular}
+                    }
+                    onclick={on_piece_select.reform(|_| Piece::O)}>{ "Select O" }
+                </button>
             </div>
             <div style={grid_style.clone()}>
                 {
