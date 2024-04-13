@@ -813,6 +813,7 @@ fn toot_otto_game() -> Html {
                                         if *player1_done == true {
                                             on_column_click_comp.emit(col);
                                         }
+                                        let is_enabled = matches!(board.state, toot_otto::State::Running);
                                         html! {
                                             <button
                                             class="cell"
@@ -822,6 +823,7 @@ fn toot_otto_game() -> Html {
                                             }
                                             onmouseleave={handle_mouseout.reform(move |_| col)}
                                             onclick={on_column_click.reform(move |_| col)}
+                                            disabled={!is_enabled}
                                             >
                                                 {
                                                     match cell {
