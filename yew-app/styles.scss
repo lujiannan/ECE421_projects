@@ -27,6 +27,7 @@ body {
 button {
     background-color: white;
     text-align: center;
+    font-family: inherit;
 }
 
 .cell {
@@ -35,6 +36,8 @@ button {
     margin: 4px;
     text-align: center;
     line-height: 100px;
+    font-size: inherit;
+    font-family: inherit;
 }
 
 .container-connect4 {
