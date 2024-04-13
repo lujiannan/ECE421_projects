@@ -201,11 +201,15 @@ fn home() -> Html {
             <h1 class="text_titles">{ "I want to play Connect-4..." }</h1>
             <p>{ "Select an icon for player1:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
-                <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
-                <label for="option1">{"option1"}</label>
+                <label class="l-radio" for="option1">
+                    <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
+                    <span>{"option1"}</span>
+                </label>
                 <img src={ARMOR_IMG_URL} width="60" height="60" />
-                <input type="radio" id="option2" name="player_icon" value="option2" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
-                <label for="option2">{"option2"}</label>
+                <label class="l-radio" for="option2">
+                    <input type="radio" id="option2" name="player_icon" value="option2" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
+                    <span>{"option2"}</span>
+                </label>
                 <img src={SWORD_IMG_URL} width="60" height="60" />
             </div>
 
@@ -216,8 +220,10 @@ fn home() -> Html {
                     <span>{"option3"}</span>
                 </label>
                 <img src={GEM_IMG_URL} width="60" height="60" />
-                <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
-                <label class="l-radio" for="option4">{"option4"}</label>
+                <label class="l-radio" for="option4">
+                    <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
+                    <span>{"option4"}</span>
+                </label>
                 <img src={HEART_IMG_URL} width="60" height="60" />
             </div>
 
@@ -233,7 +239,6 @@ fn home() -> Html {
             // </div>
 
             <nav>
-                <p>{ "Or start playing Connect 4 below." }</p>
                 <Link<Route> to={Route::Game}>
                     <button class="btn-forward">
                         <span class="circle" aria-hidden="true">
@@ -247,10 +252,14 @@ fn home() -> Html {
             <h1 class="text_titles">{ "I want to play TooT and Otto..." }</h1>
             <p>{ "Select player1's word (and player2/computer will be other word):" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
-                <input type="radio" id="TOOT" name="player1" value="TOOT" onclick={on_player_select_toototto.clone()} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot} />
-                <label for="TOOT">{"TOOT"}</label>
-                <input type="radio" id="OTTO" name="player1" value="OTTO" onclick={on_player_select_toototto} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerOtto} />
-                <label for="OTTO">{"OTTO"}</label>
+                <label class="l-radio" for="TOOT">
+                    <input type="radio" id="TOOT" name="player1" value="TOOT" onclick={on_player_select_toototto.clone()} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot} />
+                    <span>{"TOOT"}</span>
+                </label>
+                <label class="l-radio" for="OTTO">
+                    <input type="radio" id="OTTO" name="player1" value="OTTO" onclick={on_player_select_toototto} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerOtto} />
+                    <span>{"OTTO"}</span>
+                </label>
             </div>
 
             // <p>{ "Select the play mode ('none' for 2-human players, 'easy' for easy computer opponent, 'hard' for hard computer opponent):" }</p>
@@ -264,7 +273,6 @@ fn home() -> Html {
             //     <label for="hard">{"Hard"}</label>
             // </div>
             <nav>
-            <p>{ "Start playing Toot-Otto below:" }</p>
             <Link<Route> to={Route::TootOttoGame}><button class="btn-forward">
                 <span class="circle" aria-hidden="true">
                         <span class="icon arrow"></span>
@@ -519,13 +527,19 @@ fn connect_four_game() -> Html {
                 <img src={comp_icon} width="50" height="50" />
             </h2>
             <div class="radio-buttons" style="display: flex; align-items: center;">
-                <text>{ "AI: "}</text>
-                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
-                <label for="none">{"None"}</label>
-                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
-                <label for="easy">{"Easy"}</label>
-                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
-                <label for="hard">{"Hard"}</label>
+                <text>{ "Robot: "}</text>
+                <label class="l-radio" for="none">
+                    <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
+                    <span>{"none"}</span>
+                </label>
+                <label class="l-radio" for="easy">
+                    <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
+                    <span>{"easy"}</span>
+                </label>
+                <label class="l-radio" for="hard">
+                    <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
+                    <span>{"hard"}</span>
+                </label>
             </div>
             <p class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Current turn: ") }
@@ -771,13 +785,19 @@ fn toot_otto_game() -> Html {
                 { opponent_word }
             </h2>
             <div class="radio-buttons" style="display: flex; align-items: center;">
-                <text>{ "AI: "}</text>
-                <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
-                <label for="none">{"None"}</label>
-                <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
-                <label for="easy">{"Easy"}</label>
-                <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
-                <label for="hard">{"Hard"}</label>
+                <text>{ "Robot: "}</text>
+                <label class="l-radio" for="none">
+                    <input type="radio" id="none" name="difficulty" value="none" onclick={on_difficulty_change.reform(move |_| "none")} checked={app_state_borrowed.difficulty == Difficulty::None} />
+                    <span>{"none"}</span>
+                </label>
+                <label class="l-radio" for="easy">
+                    <input type="radio" id="easy" name="difficulty" value="easy" onclick={on_difficulty_change.reform(move |_| "easy")} checked={app_state_borrowed.difficulty == Difficulty::Easy} />
+                    <span>{"easy"}</span>
+                </label>
+                <label class="l-radio" for="hard">
+                    <input type="radio" id="hard" name="difficulty" value="hard" onclick={on_difficulty_change.reform(move |_| "hard")} checked={app_state_borrowed.difficulty == Difficulty::Hard}/>
+                    <span>{"hard"}</span>
+                </label>
             </div>
             <p>{ format!("Current turn: {}", current_player) }</p>
             <div>

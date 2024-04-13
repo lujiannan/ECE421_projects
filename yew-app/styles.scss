@@ -4,6 +4,7 @@
     src: url('https://raw.githubusercontent.com/kooner27/421_projects/main/yew-app/assets/SupplyCenter-0W9nz.ttf') format('truetype');
 }
 
+$line-spacing: 1.5rem;
 
 html,
 body {
@@ -15,8 +16,12 @@ body {
     font-family: 'Arial', sans-serif;
     background-color: #cfc494; 
 }
+
+h1 {
+    margin-top: $line-spacing;
+}
+
 .text_titles {
-    margin: 0;
     /*padding: 20px;*/
     text-align: center;
     padding-left: 10px;
@@ -77,6 +82,7 @@ button {
     transition: $property $duration $ease;
 }
 .btn-forward {
+    margin-top: $line-spacing;
     position: relative;
     display: inline-block;
     cursor: pointer;
@@ -86,7 +92,7 @@ button {
     text-decoration: none;
     background: transparent;
     padding: 0;
-    width: 18rem;
+    width: 14rem;
     height: auto;
     font-size: inherit;
     font-family: inherit;
@@ -157,6 +163,7 @@ button {
     }
 }
 .btn-back {
+    margin-top: $line-spacing;
     position: relative;
     display: inline-block;
     cursor: pointer;
@@ -166,7 +173,7 @@ button {
     text-decoration: none;
     background: transparent;
     padding: 0;
-    width: 18rem;
+    width: 14rem;
     height: auto;
     font-size: inherit;
     font-family: inherit;
@@ -246,8 +253,9 @@ button {
     margin: 8px 0;
     -webkit-tap-highlight-color: transparent;
 }
-.l-radio:hover, .l-radio:focus-within {
-    background: rgba(159, 159, 159, 0.1);
+.l-radio:hover {
+    background: lightgray;
+    opacity: 0.5;
 }
 .l-radio input {
     vertical-align: middle;
