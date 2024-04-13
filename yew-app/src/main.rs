@@ -264,6 +264,14 @@ fn home() -> Html {
 fn instructions() -> Html {
     html! {
         <div>
+            <Link<Route> to={Route::Home}>
+                <button class="btn-back">
+                    <span class="circle" aria-hidden="true">
+                        <span class="icon arrow"></span>
+                    </span>
+                    <span class="button-text">{"Back to Home"}</span>
+                </button>
+            </Link<Route>>
             <h1>{ "Instructions" }</h1>
             <p>{ "These are instructions on how to play Connect Four." }</p>
             <p>{ "Place your discs by clicking the buttons and try to get four in a row." }</p>
@@ -299,8 +307,6 @@ fn instructions() -> Html {
             { "For More information on Toot-Otto click " }
             <a href="https://boardgamegeek.com/boardgame/19530/toot-and-otto">{ "here" }</a>
             <br/>
-
-            <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
         </div>
     }
 }
