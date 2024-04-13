@@ -569,14 +569,18 @@ fn connect_four_game() -> Html {
                                                         connect4::Cell::Empty => {
                                                             // UI prediction of the future position of next move
                                                             if let Some(pos) = *predicted_pos {
+
                                                                 if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} style="transform: translate(-10px, -8px);" width="80" height="80"/> } }
+
                                                                 else {html! {}}
                                                             } else {
                                                                 html! {}
                                                             }
                                                         },
+
                                                         connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
                                                         connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
+
                                                     }
                                                 }
                                             </button>
@@ -813,6 +817,7 @@ fn toot_otto_game() -> Html {
                                         if *player1_done == true {
                                             on_column_click_comp.emit(col);
                                         }
+                                        let is_enabled = matches!(board.state, toot_otto::State::Running);
                                         html! {
                                             <button
                                             class="cell"
@@ -822,6 +827,7 @@ fn toot_otto_game() -> Html {
                                             }
                                             onmouseleave={handle_mouseout.reform(move |_| col)}
                                             onclick={on_column_click.reform(move |_| col)}
+                                            disabled={!is_enabled}
                                             >
                                                 {
                                                     match cell {
