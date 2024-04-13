@@ -211,11 +211,13 @@ fn home() -> Html {
 
             <p>{ "Select an icon for player2/computer:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
-                <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
-                <label for="option3">{"option3"}</label>
+                <label class="l-radio" for="option3">
+                    <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
+                    <span>{"option3"}</span>
+                </label>
                 <img src={GEM_IMG_URL} width="60" height="60" />
                 <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
-                <label for="option4">{"option4"}</label>
+                <label class="l-radio" for="option4">{"option4"}</label>
                 <img src={HEART_IMG_URL} width="60" height="60" />
             </div>
 
