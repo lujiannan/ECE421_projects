@@ -101,6 +101,13 @@ fn load_state() -> Option<AppState> {
     let state_json = storage.get_item("appState").unwrap()?;
     Some(serde_json::from_str(&state_json).unwrap())
 }
+// //alternative version to return state, incase serialized data returned is not compatible with AppState
+// fn load_state() -> Result<AppState, serde_json::Error> {
+//     let window = window().expect("no global `window` exists");
+//     let storage = window.local_storage().unwrap().unwrap();
+//     let state_json = storage.get_item("appState").unwrap()?;
+//     serde_json::from_str(&state_json)
+// }
 
 #[function_component(Home)]
 fn home() -> Html {
@@ -111,6 +118,14 @@ fn home() -> Html {
     if let Some(state) = loaded_state {
         *app_state = state;
     }
+    // // Load state when the application starts
+    // match load_state() {
+    //     Ok(state) => *app_state = state,
+    //     Err(e) => {
+    //         // Handle the error here, e.g. log it or show an error message
+    //         console::log_1(&format!("Failed to load state: {}", e).into());
+    //     }
+    // }
 
     let on_player_icon_change = {
         let app_state = Arc::clone(&APP_STATE);
@@ -500,7 +515,7 @@ fn connect_four_game() -> Html {
                 { format!("Status: ") }
                 { format!("Player1 - ") }
                 <img src={players_icon} width="50" height="50" />
-                { format!(", Player2 -") }
+                { format!(", Player2/Computer -") }
                 <img src={comp_icon} width="50" height="50" />
             </h2>
             <div style="display: flex; align-items: center;">
@@ -629,6 +644,9 @@ fn toot_otto_game() -> Html {
                 "hard" => Difficulty::Hard,
                 _ => Difficulty::None,
             };
+
+            // Save state when the difficulty changes
+            save_state(&app_state);
         })
     };
 
@@ -754,7 +772,7 @@ fn toot_otto_game() -> Html {
                 { format!("Status: ") }
                 { format!("Player1 - ") }
                 { player1_word }
-                { format!(", Player2 -") }
+                { format!(", Player2/Computer -") }
                 { opponent_word }
             </h2>
             <div style="display: flex; align-items: center;">
