@@ -486,9 +486,9 @@ fn connect_four_game() -> Html {
         })
     };
 
-    let pixel_size = "100px";
+    let pixel_size = "80px";
     let grid_style = format!(
-        "display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
+        "display: grid; text-align: center; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
         board.cols, pixel_size, pixel_size
     );
 
@@ -727,7 +727,7 @@ fn toot_otto_game() -> Html {
 
     let pixel_size = "80px"; // Smaller pieces for a more complex board
     let grid_style = format!(
-        "display: grid; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
+        "display: grid; text-align: center; grid-template-columns: repeat({}, {}); grid-auto-rows: {};",
         board.cols, pixel_size, pixel_size
     );
     let current_player = match board.current_turn {
@@ -796,63 +796,65 @@ fn toot_otto_game() -> Html {
                     { "Select O" }
                 </button>
             </div>
-            <div class="grid" style={grid_style.clone()}>
-                {
-                    for board.grid.iter().enumerate().map(|(row, line)| {
-                        html! {
-                            {
-                                for line.iter().enumerate().map(|(col, &cell)| {
-                                    let mut cell_style: &str = "";
-                                    if let Some(hovered_col) = *hovered_col {
-                                        if hovered_col == col {
-                                            cell_style = cell_style_hovered;
-                                        }
-                                    };
-                                    // robot move
-                                    if *player1_done == true {
-                                        on_column_click_comp.emit(col);
-                                    }
-                                    html! {
-                                        <button
-                                        class="cell"
-                                        style={cell_style}
-                                        onmouseenter={
-                                            handle_mouseover.reform(move |_| col)
-                                        }
-                                        onmouseleave={handle_mouseout.reform(move |_| col)}
-                                        onclick={on_column_click.reform(move |_| col)}
-                                        >
-                                            {
-                                                match cell {
-                                                    TootCell::Empty => {
-                                                        // UI prediction of the future position of next move
-                                                        if let Some(pos) = *predicted_pos {
-                                                            if row == pos.0 && col == pos.1 {
-                                                                if let Some(piece) = *selected_piece {
-                                                                    match piece {
-                                                                        Piece::T => html! {<text style="opacity:0.6">{"T"}</text>},
-                                                                        Piece::O => html! {<text style="opacity:0.6">{"O"}</text>},
-                                                                    }
-                                                                } else {html! {<text>{" "}</text>}}
-                                                            }
-                                                            else {html! {<text>{" "}</text>}}
-                                                        } else {
-                                                            html! {<text>{" "}</text>}
-                                                        }
-                                                    },
-                                                    TootCell::Occupied(piece) => match piece {
-                                                        Piece::T => html! {<text>{"T"}</text>},
-                                                        Piece::O => html! {<text>{"O"}</text>},
-                                                    },
-                                                }
+            <div class="container-toototto">
+                <div class="grid" style={grid_style.clone()}>
+                    {
+                        for board.grid.iter().enumerate().map(|(row, line)| {
+                            html! {
+                                {
+                                    for line.iter().enumerate().map(|(col, &cell)| {
+                                        let mut cell_style: &str = "text-align: center;";
+                                        if let Some(hovered_col) = *hovered_col {
+                                            if hovered_col == col {
+                                                cell_style = cell_style_hovered;
                                             }
-                                        </button>
-                                    }
-                                })
+                                        };
+                                        // robot move
+                                        if *player1_done == true {
+                                            on_column_click_comp.emit(col);
+                                        }
+                                        html! {
+                                            <button
+                                            class="cell"
+                                            style={cell_style}
+                                            onmouseenter={
+                                                handle_mouseover.reform(move |_| col)
+                                            }
+                                            onmouseleave={handle_mouseout.reform(move |_| col)}
+                                            onclick={on_column_click.reform(move |_| col)}
+                                            >
+                                                {
+                                                    match cell {
+                                                        TootCell::Empty => {
+                                                            // UI prediction of the future position of next move
+                                                            if let Some(pos) = *predicted_pos {
+                                                                if row == pos.0 && col == pos.1 {
+                                                                    if let Some(piece) = *selected_piece {
+                                                                        match piece {
+                                                                            Piece::T => html! {<text style="opacity:0.6">{"T"}</text>},
+                                                                            Piece::O => html! {<text style="opacity:0.6">{"O"}</text>},
+                                                                        }
+                                                                    } else {html! {<text>{" "}</text>}}
+                                                                }
+                                                                else {html! {<text>{" "}</text>}}
+                                                            } else {
+                                                                html! {<text>{" "}</text>}
+                                                            }
+                                                        },
+                                                        TootCell::Occupied(piece) => match piece {
+                                                            Piece::T => html! {<text>{"T"}</text>},
+                                                            Piece::O => html! {<text>{"O"}</text>},
+                                                        },
+                                                    }
+                                                }
+                                            </button>
+                                        }
+                                    })
+                                }
                             }
-                        }
-                    })
-                }
+                        })
+                    }
+                </div>
             </div>
             <div>
                 {
