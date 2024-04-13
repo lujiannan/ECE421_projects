@@ -216,8 +216,15 @@ fn home() -> Html {
             // </div>
 
             <nav>
-                <p>{ "Start playing Connect 4 below:" }</p>
-                <Link<Route> to={Route::Game}>{ "Play Connect 4" }</Link<Route>>
+                <p>{ "Or start playing Connect 4 below." }</p>
+                <Link<Route> to={Route::Game}>
+                    <button class="btn-forward">
+                        <span class="circle" aria-hidden="true">
+                            <span class="icon arrow"></span>
+                        </span>
+                        <span class="button-text">{"Play Connect4"}</span>
+                    </button>
+                </Link<Route>>
             </nav>
 
             <h1>{ "I want to play TooT and Otto..." }</h1>
@@ -241,7 +248,13 @@ fn home() -> Html {
             // </div>
             <nav>
             <p>{ "Start playing Toot-Otto below:" }</p>
-            <Link<Route> to={Route::TootOttoGame}>{ "Play Toot-Otto" }</Link<Route>>
+            <Link<Route> to={Route::TootOttoGame}><button class="btn-forward">
+                <span class="circle" aria-hidden="true">
+                        <span class="icon arrow"></span>
+                    </span>
+                    <span class="button-text">{"Play Toot-Otto"}</span>
+                </button>
+            </Link<Route>>
         </nav>
         </div>
     }
@@ -473,7 +486,14 @@ fn connect_four_game() -> Html {
 
     html! {
         <>
-        <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
+            <Link<Route> to={Route::Home}>
+                <button class="btn-back">
+                    <span class="circle" aria-hidden="true">
+                        <span class="icon arrow"></span>
+                    </span>
+                    <span class="button-text">{"Back to Home"}</span>
+                </button>
+            </Link<Route>>
             <h1>{ "Connect Four" }</h1>
 
             <h2 style="display: flex; align-items: center;">
@@ -721,7 +741,14 @@ fn toot_otto_game() -> Html {
     };
     html! {
         <>
-            <Link<Route> to={Route::Home}>{ "Back to Home" }</Link<Route>>
+            <Link<Route> to={Route::Home}>
+                <button class="btn-back">
+                    <span class="circle" aria-hidden="true">
+                        <span class="icon arrow"></span>
+                    </span>
+                    <span class="button-text">{"Back to Home"}</span>
+                </button>
+            </Link<Route>>
             <h1>{ "TOOT-OTTO" }</h1>
             <h2 style="display: flex; align-items: center;">
                 { format!("Status: ") }
