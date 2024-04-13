@@ -492,15 +492,7 @@ fn connect_four_game() -> Html {
         board.cols, pixel_size, pixel_size
     );
 
-    let cell_style_locked = "
-    border: 1px solid black;
-    text-align: center;
-    line-height: 100px;
-    ";
     let cell_style_hovered = "
-    border: 1px solid black;
-    text-align: center;
-    line-height: 100px;
     background-color: lightgray;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
@@ -539,63 +531,62 @@ fn connect_four_game() -> Html {
                 { format!(" ({})", current_player) }
             </p>
 
-            <div class="grid" style={grid_style.clone()}>
-                {
-                    for board.grid.iter().enumerate().map(|(row, line)| {
-                        html! {
-                            {
-                                for line.iter().enumerate().map(|(col, &cell)| {
-                                    let mut cell_style: &str = "";
-                                    if let Some(hovered_col) = *hovered_col {
-                                        if hovered_col == col {
-                                            cell_style = cell_style_hovered;
-                                        } else {
-                                            cell_style = cell_style_locked;
+            <div class="container-connect4">
+                <div class="grid" style={grid_style.clone()}>
+                    {
+                        for board.grid.iter().enumerate().map(|(row, line)| {
+                            html! {
+                                {
+                                    for line.iter().enumerate().map(|(col, &cell)| {
+                                        let mut cell_style: &str = "";
+                                        if let Some(hovered_col) = *hovered_col {
+                                            if hovered_col == col {
+                                                cell_style = cell_style_hovered;
+                                            } 
+                                        };
+                                        let is_enabled = matches!(board.state, connect4::State::Running);
+                                        // robot move
+                                        if *player1_done == true {
+                                            on_column_click_comp.emit(col);
                                         }
-                                    } else {
-                                        cell_style = cell_style_locked;
-                                    };
-                                    let is_enabled = matches!(board.state, connect4::State::Running);
-                                    // robot move
-                                    if *player1_done == true {
-                                        on_column_click_comp.emit(col);
-                                    }
-                                    html! {
-                                        <button
-                                        style={cell_style}
-                                        onmouseenter={
-                                            if is_enabled {
-                                                handle_mouseover.reform(move |_| col)
-                                            } else {
-                                                handle_mouseout.reform(move |_| col)
-                                            }
-                                        }
-                                        onmouseleave={handle_mouseout.reform(move |_| col)}
-                                        onclick={on_column_click.reform(move |_| col)}
-                                        disabled={!is_enabled}
-                                        >
-                                            {
-                                                match cell {
-                                                    connect4::Cell::Empty => {
-                                                        // UI prediction of the future position of next move
-                                                        if let Some(pos) = *predicted_pos {
-                                                            if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} width="80" height="80"/> } }
-                                                            else {html! {}}
-                                                        } else {
-                                                            html! {}
-                                                        }
-                                                    },
-                                                    connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
-                                                    connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
+                                        html! {
+                                            <button
+                                            class="cell"
+                                            style={cell_style}
+                                            onmouseenter={
+                                                if is_enabled {
+                                                    handle_mouseover.reform(move |_| col)
+                                                } else {
+                                                    handle_mouseout.reform(move |_| col)
                                                 }
                                             }
-                                        </button>
-                                    }
-                                })
+                                            onmouseleave={handle_mouseout.reform(move |_| col)}
+                                            onclick={on_column_click.reform(move |_| col)}
+                                            disabled={!is_enabled}
+                                            >
+                                                {
+                                                    match cell {
+                                                        connect4::Cell::Empty => {
+                                                            // UI prediction of the future position of next move
+                                                            if let Some(pos) = *predicted_pos {
+                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} width="80" height="80"/> } }
+                                                                else {html! {}}
+                                                            } else {
+                                                                html! {}
+                                                            }
+                                                        },
+                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
+                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
+                                                    }
+                                                }
+                                            </button>
+                                        }
+                                    })
+                                }
                             }
-                        }
-                    })
-                }
+                        })
+                    }
+                </div>
             </div>
             <div>
                 {
@@ -744,15 +735,7 @@ fn toot_otto_game() -> Html {
         TootPlayer::Otto => "OTTO",
     };
 
-    let cell_style_locked = "
-    border: 1px solid black;
-    text-align: center;
-    line-height: 100px;
-    ";
     let cell_style_hovered = "
-    border: 1px solid black;
-    text-align: center;
-    line-height: 100px;
     background-color: lightgray;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     ";
@@ -823,11 +806,7 @@ fn toot_otto_game() -> Html {
                                     if let Some(hovered_col) = *hovered_col {
                                         if hovered_col == col {
                                             cell_style = cell_style_hovered;
-                                        } else {
-                                            cell_style = cell_style_locked;
                                         }
-                                    } else {
-                                        cell_style = cell_style_locked;
                                     };
                                     // robot move
                                     if *player1_done == true {
@@ -835,6 +814,7 @@ fn toot_otto_game() -> Html {
                                     }
                                     html! {
                                         <button
+                                        class="cell"
                                         style={cell_style}
                                         onmouseenter={
                                             handle_mouseover.reform(move |_| col)
