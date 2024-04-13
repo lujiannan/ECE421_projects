@@ -1,3 +1,4 @@
+use rand::distributions::{Distribution, WeightedIndex};
 use serde::{Serialize, Deserialize};
 use rand::Rng; // Import the Rng trait to use random number generation
 use rand::seq::SliceRandom;
@@ -79,12 +80,14 @@ impl Board {
 
     pub fn computer_move_hard(&mut self, given_col: usize) -> Result<(), &'static str> {
         let mut rng = rand::thread_rng();
+        let offsets = [-1, 0, 1]; // possible offsets
+        let weights = [33, 34, 33]; // weights for each offset
+        let dist = WeightedIndex::new(&weights).unwrap(); // distribution for the offsets (given the weights)
         let mut attempts = 0;
         loop {
             //generic 'hard' strategy: pick a column near the last move
-            let choices = [given_col, given_col.saturating_add(1), given_col.saturating_sub(1)];
-            let col = *choices.choose(&mut rng).unwrap();
-            // let col = given_col;
+            let offset = offsets[dist.sample(&mut rng)];
+            let col = (given_col as isize + offset).clamp(0, self.cols as isize - 1) as usize;
             if let Ok(_) = self.insert_disc(col) {
                 println!("Computer placed on column {}", col + 1);
                 break;

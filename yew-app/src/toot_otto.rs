@@ -1,3 +1,4 @@
+use rand::distributions::{Distribution, WeightedIndex};
 use serde::{Serialize, Deserialize};
 use rand::Rng; // Import the Rng trait to use random number generation
 use rand::seq::SliceRandom;
@@ -34,6 +35,7 @@ pub struct Board {
     pub rows: usize,
     pub cols: usize,
     pub state: State,
+    pub last_move: Option<(usize, usize)>, // Track the last move as (row, col)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -51,7 +53,7 @@ impl Board {
             rows,
             cols,
             state: State::Running,
-            
+            last_move: None,
         }
     }
 
@@ -94,18 +96,16 @@ impl Board {
     // Hard strategy move focusing around a given column
     pub fn computer_move_hard(&mut self, given_col: usize) -> Result<(), &'static str> {
         let mut rng = rand::thread_rng();
+        let offsets = [-1, 0, 1]; // possible offsets
+        let weights = [30, 40, 30]; // weights for each offset
+        let dist = WeightedIndex::new(&weights).unwrap(); // distribution for the offsets (given the weights)
+        let pieces = [Piece::T, Piece::O]; // Array of pieces
         let mut attempts = 0;
         loop {
-            let choices = [
-                given_col,
-                given_col.saturating_add(1),
-                given_col.saturating_sub(1),
-            ];
-            let col = *choices.choose(&mut rng).unwrap_or(&given_col); // Ensures a fallback to the given column
-
-            let pieces = [Piece::T, Piece::O]; // Array of pieces
+            let offset = offsets[dist.sample(&mut rng)];
+            let col = (given_col as isize + offset).clamp(0, self.cols as isize - 1) as usize;
             let piece = *pieces.choose(&mut rng).expect("Failed to select a random piece");
-
+    
             if let Ok(_) = self.insert_piece(col, piece) {
                 println!("Computer placed piece on column {}", col + 1);
                 break;
@@ -130,7 +130,7 @@ impl Board {
         for row in (0..self.rows).rev() {
             if matches!(self.grid[row][col], Cell::Empty) {
                 self.grid[row][col] = Cell::Occupied(piece);
-
+                self.last_move = Some((row, col));
                 match self.check_win(row, col) {
                     Some(Winner::Player(player)) => {
                         self.state = State::Won(player);

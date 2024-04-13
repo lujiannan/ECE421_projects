@@ -9,10 +9,10 @@ use toot_otto::{
     Board as TootBoard, Cell as TootCell, Piece, Player as TootPlayer, State as TootState,
 };
 
-use std::io::{self, Write};
-use serde::{Serialize, Deserialize};
-use web_sys::window;
+use serde::{Deserialize, Serialize};
 use serde_json::*;
+use std::io::{self, Write};
+use web_sys::window;
 
 #[derive(Clone, Routable, PartialEq)]
 enum Route {
@@ -87,12 +87,12 @@ lazy_static! {
     static ref APP_STATE: Arc<Mutex<AppState>> = Arc::new(Mutex::new(AppState::new()));
 }
 
-
-
 fn save_state(state: &AppState) {
     let window = window().expect("no global `window` exists");
     let storage = window.local_storage().unwrap().unwrap();
-    storage.set_item("appState", &serde_json::to_string(state).unwrap()).unwrap();
+    storage
+        .set_item("appState", &serde_json::to_string(state).unwrap())
+        .unwrap();
 }
 
 fn load_state() -> Option<AppState> {
@@ -101,7 +101,7 @@ fn load_state() -> Option<AppState> {
     let state_json = storage.get_item("appState").unwrap()?;
     Some(serde_json::from_str(&state_json).unwrap())
 }
-// //alternative version to return state, incase serialized data returned is not compatible with AppState
+//alternative version to return state, incase serialized data returned is not compatible with AppState
 // fn load_state() -> Result<AppState, serde_json::Error> {
 //     let window = window().expect("no global `window` exists");
 //     let storage = window.local_storage().unwrap().unwrap();
@@ -301,7 +301,7 @@ fn instructions() -> Html {
             <p>{ "These are instructions on how to play Connect Four." }</p>
             <p>{ "Place your discs by clicking the buttons and try to get four in a row." }</p>
 
-            <p>{ "Connect Four is a two-player connection game in which the players take turns 
+            <p>{ "Connect Four is a two-player connection game in which the players take turns
             dropping colored discs from the top into a seven-column, six-row vertically suspended 
             grid. The objective of the game is to be the first to form a horizontal, vertical, 
             or diagonal line of four of one's own discs." }</p>
@@ -324,7 +324,7 @@ fn instructions() -> Html {
             <ul>
                 <li>{ "A new game describes discs of which name (TooT or Otto) belongs to which player" }</li>
                 <li>{ "Click on the desired column on the game board to place your disc of either T or O" }</li>
-                <li>{ "One player is TOOT and the other player is OTTO. Each takes six O's 
+                <li>{ "One player is TOOT and the other player is OTTO. Each takes six O's
                 and six T's. The first player who spells his or her name - up, down, 
                 sideways, or on the diagonal - wins!" }</li>
             </ul>
@@ -442,14 +442,24 @@ fn connect_four_game() -> Html {
                         board.set(b);
                         player1_clicked.set(false);
                     }
-                },
+                }
                 Difficulty::Hard => {
-                    if let Err(e) = b.computer_move_hard(_col) {
-                        println!("Error: {}", e);
+                    if let Some((_row, col)) = b.last_move {
+                        if let Err(e) = b.computer_move_hard(col) {
+                            println!("Error: {}", e);
+                        } else {
+                            println!("Hard moved");
+                            board.set(b);
+                            player1_clicked.set(false);
+                        }
                     } else {
-                        println!("Hard moved");
-                        board.set(b);
-                        player1_clicked.set(false);
+                        if let Err(e) = b.computer_move_hard(_col) {
+                            println!("Error: {}", e);
+                        } else {
+                            println!("Hard moved");
+                            board.set(b);
+                            player1_clicked.set(false);
+                        }
                     }
                 }
             }
@@ -558,7 +568,7 @@ fn connect_four_game() -> Html {
                                         if let Some(hovered_col) = *hovered_col {
                                             if hovered_col == col {
                                                 cell_style = cell_style_hovered;
-                                            } 
+                                            }
                                         };
                                         let is_enabled = matches!(board.state, connect4::State::Running);
                                         // robot move
@@ -677,7 +687,7 @@ fn toot_otto_game() -> Html {
         Callback::from(move |_col: usize| {
             let mut b = (*board).clone();
             let current_difficulty = app_state_borrowed.difficulty; // Directly accessing because we cloned the state.
-            
+
             match current_difficulty {
                 Difficulty::None => (), // Do nothing if no difficulty is set.
                 Difficulty::Easy => {
@@ -687,16 +697,36 @@ fn toot_otto_game() -> Html {
                         board.set(b);
                         player1_done.set(false); // Reset the player1_done flag.
                     }
-                },
+                }
+                // Difficulty::Hard => {
+                //     if let Err(e) = b.computer_move_hard(_col) {
+                //         println!("Error: {}", e);
+                //     } else {
+                //         println!("Hard moved");
+                //         board.set(b);
+                //         player1_done.set(false); // Reset the player1_done flag.
+                //     }
+                // }
                 Difficulty::Hard => {
-                    if let Err(e) = b.computer_move_hard(_col) {
-                        println!("Error: {}", e);
+                    if let Some((_row, col)) = b.last_move {
+                        if let Err(e) = b.computer_move_hard(col) {
+                            println!("Error: {}", e);
+                        } else {
+                            println!("Hard moved");
+                            board.set(b);
+                            player1_done.set(false);
+                        }
                     } else {
-                        println!("Hard moved");
-                        board.set(b);
-                        player1_done.set(false); // Reset the player1_done flag.
+                        if let Err(e) = b.computer_move_hard(_col) {
+                            println!("Error: {}", e);
+                        } else {
+                            println!("Hard moved");
+                            board.set(b);
+                            player1_done.set(false);
+                        }
                     }
                 }
+
             }
         })
     };
