@@ -192,13 +192,13 @@ fn home() -> Html {
     html! {
         <div>
             <h1 class="text_titles">{ "Welcome to our game center!" }</h1>
-            <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
+            <p>{ "We have simple implementations of Connect Four, and, Toot and Otto, using Yew, WASM, and Rust." }</p>
             <nav>
                 <text>{ "Instructions for each game:  " }</text>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
             </nav>
 
-            <h1 class="text_titles">{ "I want to play Connect-4..." }</h1>
+            <h1 class="text_titles">{ "I want to play Connect Four..." }</h1>
             <p>{ "Select an icon for player1:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
                 <label class="l-radio" for="option1">
@@ -244,7 +244,7 @@ fn home() -> Html {
                         <span class="circle" aria-hidden="true">
                             <span class="icon arrow"></span>
                         </span>
-                        <span class="button-text">{"Play Connect4"}</span>
+                        <span class="button-text">{"Play Connect Four"}</span>
                     </button>
                 </Link<Route>>
             </nav>
@@ -277,7 +277,7 @@ fn home() -> Html {
                 <span class="circle" aria-hidden="true">
                         <span class="icon arrow"></span>
                     </span>
-                    <span class="button-text">{"Play Toot-Otto"}</span>
+                    <span class="button-text">{"Play Toot and Otto"}</span>
                 </button>
             </Link<Route>>
         </nav>
@@ -306,21 +306,21 @@ fn instructions() -> Html {
             grid. The objective of the game is to be the first to form a horizontal, vertical, 
             or diagonal line of four of one's own discs." }</p>
             <br/>
-            <div><h5>{ "To play Connect 4 follow the following steps:" }</h5></div>
+            <div><h5>{ "To play Connect Four follow the following steps:" }</h5></div>
             <ul>
                 <li>{ "A new game describes discs of which color belongs to which player" }</li>
                 <li>{ "Click on the desired column on the game board to place your disc" }</li>
                 <li>{ "Try to connect 4 of your colored discs either horizontally or vertically or diagonally" }</li>
             </ul>
             <br/>
-            { "For More information on Connect 4 click " }
+            { "For More information on Connect Four click " }
             <a href="https://en.wikipedia.org/wiki/Connect_Four">{ "here" }</a>
             <br/>
 
-            <p>{ "These are instructions on how to play Toot-Otto." }</p>
+            <p>{ "These are instructions on how to play Toot and Otto." }</p>
             <p>{ "Place your discs by clicking the buttons and try to complete a spelling of TOOT or OTTO." }</p>
             <br/>
-            <div><h5>{ "To play Toot-Otto follow the following steps:" }</h5></div>
+            <div><h5>{ "To play Toot and Otto follow the following steps:" }</h5></div>
             <ul>
                 <li>{ "A new game describes discs of which name (TooT or Otto) belongs to which player" }</li>
                 <li>{ "Click on the desired column on the game board to place your disc of either T or O" }</li>
@@ -329,7 +329,7 @@ fn instructions() -> Html {
                 sideways, or on the diagonal - wins!" }</li>
             </ul>
             <br/>
-            { "For More information on Toot-Otto click " }
+            { "For More information on Toot and Otto click " }
             <a href="https://boardgamegeek.com/boardgame/19530/toot-and-otto">{ "here" }</a>
             <br/>
         </div>
@@ -776,7 +776,7 @@ fn toot_otto_game() -> Html {
                     <span class="button-text">{"Back to Home"}</span>
                 </button>
             </Link<Route>>
-            <h1 class="text_titles">{ "TOOT-OTTO" }</h1>
+            <h1 class="text_titles">{ "TOOT and OTTO" }</h1>
             <h2 class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Status: ") }
                 { format!("Player1 - ") }
