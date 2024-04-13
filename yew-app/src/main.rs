@@ -179,7 +179,7 @@ fn home() -> Html {
             <h1>{ "Welcome to our game center!" }</h1>
             <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
             <nav>
-                <p>{ "Instructions for each game are below:" }</p>
+                <text>{ "Instructions for each game:  " }</text>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
             </nav>
 
