@@ -569,14 +569,14 @@ fn connect_four_game() -> Html {
                                                         connect4::Cell::Empty => {
                                                             // UI prediction of the future position of next move
                                                             if let Some(pos) = *predicted_pos {
-                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} width="80" height="80"/> } }
+                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} width="60" height="60"/> } }
                                                                 else {html! {}}
                                                             } else {
                                                                 html! {}
                                                             }
                                                         },
-                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="80" height="80" /> },
-                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="80" height="80" /> },
+                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="60" height="60" /> },
+                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="60" height="60" /> },
                                                     }
                                                 }
                                             </button>
