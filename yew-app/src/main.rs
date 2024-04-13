@@ -191,14 +191,14 @@ fn home() -> Html {
 
     html! {
         <div>
-            <h1>{ "Welcome to our game center!" }</h1>
+            <h1 class="text_titles">{ "Welcome to our game center!" }</h1>
             <p>{ "We have simple implementations of Connect 4 and Toot-Otto, using Yew, WASM, Rust." }</p>
             <nav>
                 <text>{ "Instructions for each game:  " }</text>
                 <Link<Route> to={Route::Instructions}>{ "Instructions" }</Link<Route>>
             </nav>
 
-            <h1>{ "I want to play Connect-4..." }</h1>
+            <h1 class="text_titles">{ "I want to play Connect-4..." }</h1>
             <p>{ "Select an icon for player1:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
                 <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
@@ -244,7 +244,7 @@ fn home() -> Html {
                 </Link<Route>>
             </nav>
 
-            <h1>{ "I want to play TooT and Otto..." }</h1>
+            <h1 class="text_titles">{ "I want to play TooT and Otto..." }</h1>
             <p>{ "Select player1's word (and player2/computer will be other word):" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
                 <input type="radio" id="TOOT" name="player1" value="TOOT" onclick={on_player_select_toototto.clone()} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot} />
@@ -509,13 +509,13 @@ fn connect_four_game() -> Html {
                     <span class="button-text">{"Back to Home"}</span>
                 </button>
             </Link<Route>>
-            <h1>{ "Connect Four" }</h1>
+            <h1 class="text_titles">{ "Connect Four" }</h1>
 
             <h2 class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Status: ") }
                 { format!("Player1 - ") }
                 <img src={players_icon} width="50" height="50" />
-                { format!(", Player2/Computer -") }
+                { format!(", Player2/Computer - ") }
                 <img src={comp_icon} width="50" height="50" />
             </h2>
             <div class="radio-buttons" style="display: flex; align-items: center;">
@@ -571,14 +571,18 @@ fn connect_four_game() -> Html {
                                                         connect4::Cell::Empty => {
                                                             // UI prediction of the future position of next move
                                                             if let Some(pos) = *predicted_pos {
-                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} width="60" height="60"/> } }
+
+                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} style="transform: translate(-10px, -8px);" width="80" height="80"/> } }
+
                                                                 else {html! {}}
                                                             } else {
                                                                 html! {}
                                                             }
                                                         },
-                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} width="60" height="60" /> },
-                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} width="60" height="60" /> },
+
+                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
+                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
+
                                                     }
                                                 }
                                             </button>
@@ -758,12 +762,12 @@ fn toot_otto_game() -> Html {
                     <span class="button-text">{"Back to Home"}</span>
                 </button>
             </Link<Route>>
-            <h1>{ "TOOT-OTTO" }</h1>
+            <h1 class="text_titles">{ "TOOT-OTTO" }</h1>
             <h2 class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Status: ") }
                 { format!("Player1 - ") }
                 { player1_word }
-                { format!(", Player2/Computer -") }
+                { format!(", Player2/Computer - ") }
                 { opponent_word }
             </h2>
             <div class="radio-buttons" style="display: flex; align-items: center;">
@@ -835,8 +839,8 @@ fn toot_otto_game() -> Html {
                                                                 if row == pos.0 && col == pos.1 {
                                                                     if let Some(piece) = *selected_piece {
                                                                         match piece {
-                                                                            Piece::T => html! {<text style="opacity:0.6">{"T"}</text>},
-                                                                            Piece::O => html! {<text style="opacity:0.6">{"O"}</text>},
+                                                                            Piece::T => html! {<text style="font-size: 60px; text-align: center; display: block; line-height: 0.65; opacity: 0.6;">{"T"}</text>},
+                                                                            Piece::O => html! {<text style="font-size: 60px; text-align: center; display: block; line-height: 0.65; opacity: 0.6;">{"O"}</text>},
                                                                         }
                                                                     } else {html! {<text>{" "}</text>}}
                                                                 }
@@ -846,8 +850,8 @@ fn toot_otto_game() -> Html {
                                                             }
                                                         },
                                                         TootCell::Occupied(piece) => match piece {
-                                                            Piece::T => html! {<text>{"T"}</text>},
-                                                            Piece::O => html! {<text>{"O"}</text>},
+                                                            Piece::T => html! {<text style="font-size: 60px; text-align: center; display: block; line-height: 0.65; ">{"T"}</text>},
+                                                            Piece::O => html! {<text style="font-size: 60px; text-align: center; display: block; line-height: 0.65; ">{"O"}</text>},
                                                         },
                                                     }
                                                 }
