@@ -543,7 +543,7 @@ fn connect_four_game() -> Html {
             </div>
             <p class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Current turn: ") }
-                <img src={current_player_icon} width="50" height="50" />
+                <img src={current_player_icon} width="30" height="30" />
                 { format!(" ({})", current_player) }
             </p>
 
@@ -586,7 +586,7 @@ fn connect_four_game() -> Html {
                                                             // UI prediction of the future position of next move
                                                             if let Some(pos) = *predicted_pos {
 
-                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img style="opacity:0.6" src={current_player_icon} style="transform: translate(-10px, -8px);" width="80" height="80"/> } }
+                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img src={current_player_icon} style="opacity:0.6; transform: translate(-10px, -8px);" width="80" height="80"/> } }
 
                                                                 else {html! {}}
                                                             } else {
