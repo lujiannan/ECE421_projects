@@ -9,11 +9,19 @@ html,
 body {
     margin: 0;
     /*padding: 20px;*/
-    text-align: left;
+    text-align: center;
     padding-left: 10px;
     padding-top: 10px;
     font-family: 'CustomFont_SupplyCenter', sans-serif;
     background-color: #cfc494; 
+}
+.radio-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.grid {
+    justify-content: center;
 }
 
 // .cell {
