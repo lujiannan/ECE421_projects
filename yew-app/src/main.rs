@@ -159,21 +159,21 @@ fn home() -> Html {
         })
     };
 
-    let on_player_select_toototto = {
-        let app_state = Arc::clone(&APP_STATE);
-        Callback::from(move |_| {
-            let mut app_state = app_state.lock().unwrap();
-            let value = if app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot {
-                PlayerAsTootOtto::PlayerOtto
-            } else {
-                PlayerAsTootOtto::PlayerToot
-            };
-            app_state.player_as_toot_otto = value;
+    // let on_player_select_toototto = {
+    //     let app_state = Arc::clone(&APP_STATE);
+    //     Callback::from(move |_| {
+    //         let mut app_state = app_state.lock().unwrap();
+    //         let value = if app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot {
+    //             PlayerAsTootOtto::PlayerOtto
+    //         } else {
+    //             PlayerAsTootOtto::PlayerToot
+    //         };
+    //         app_state.player_as_toot_otto = value;
 
-            // Save state when the computer icon changes
-            save_state(&app_state);
-        })
-    };
+    //         // Save state when the computer icon changes
+    //         save_state(&app_state);
+    //     })
+    // };
 
     // let on_difficulty_change = {
     //     let app_state = Arc::clone(&APP_STATE);
@@ -199,32 +199,34 @@ fn home() -> Html {
             </nav>
 
             <h1 class="text_titles">{ "I want to play Connect Four..." }</h1>
-            <p>{ "Select an icon for player1:" }</p>
+            <p>{ "Select an icon for Player1:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
+                <img src={ARMOR_IMG_URL} width="80" height="80" />
                 <label class="l-radio" for="option1">
                     <input type="radio" id="option1" name="player_icon" value="option1" onclick={on_player_icon_change.clone()} checked={app_state.player_icon == PlayerIcon::Option1} />
-                    <span>{"option1"}</span>
+                    <span>{"Armor"}</span>
                 </label>
-                <img src={ARMOR_IMG_URL} width="60" height="60" />
+                
                 <label class="l-radio" for="option2">
                     <input type="radio" id="option2" name="player_icon" value="option2" onclick={on_player_icon_change} checked={app_state.player_icon == PlayerIcon::Option2} />
-                    <span>{"option2"}</span>
+                    <span>{"Spear"}</span>
                 </label>
-                <img src={SWORD_IMG_URL} width="60" height="60" />
+                <img src={SWORD_IMG_URL} width="70" height="70" />
             </div>
 
-            <p>{ "Select an icon for player2/computer:" }</p>
+            <p>{ "Select an icon for Player2/Computer:" }</p>
             <div class="radio-buttons" style="display: flex; align-items: center;">
+                <img src={GEM_IMG_URL} width="90" height="90" />
                 <label class="l-radio" for="option3">
                     <input type="radio" id="option3" name="comp_icon" value="option3" onclick={on_comp_icon_change.clone()} checked={app_state.comp_icon == CompIcon::Option3} />
-                    <span>{"option3"}</span>
+                    <span>{"Gem"}</span>
                 </label>
-                <img src={GEM_IMG_URL} width="60" height="60" />
+                
                 <label class="l-radio" for="option4">
                     <input type="radio" id="option4" name="comp_icon" value="option4" onclick={on_comp_icon_change} checked={app_state.comp_icon == CompIcon::Option4} />
-                    <span>{"option4"}</span>
+                    <span>{"Heart"}</span>
                 </label>
-                <img src={HEART_IMG_URL} width="60" height="60" />
+                <img src={HEART_IMG_URL} width="80" height="80" />
             </div>
 
             // <p>{ "Select the play mode ('none' for 2-human players, 'easy' for easy computer opponent, 'hard' for hard computer opponent):" }</p>
@@ -250,17 +252,18 @@ fn home() -> Html {
             </nav>
 
             <h1 class="text_titles">{ "I want to play TooT and Otto..." }</h1>
-            <p>{ "Select player1's word (and player2/computer will be other word):" }</p>
-            <div class="radio-buttons" style="display: flex; align-items: center;">
-                <label class="l-radio" for="TOOT">
-                    <input type="radio" id="TOOT" name="player1" value="TOOT" onclick={on_player_select_toototto.clone()} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot} />
-                    <span>{"TOOT"}</span>
-                </label>
-                <label class="l-radio" for="OTTO">
-                    <input type="radio" id="OTTO" name="player1" value="OTTO" onclick={on_player_select_toototto} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerOtto} />
-                    <span>{"OTTO"}</span>
-                </label>
-            </div>
+            <p>{ "Player 1 is TOOT and always starts first, the Player2/Computer goes after." }</p>
+            // <p>{ "Select player1's word (and player2/computer will be other word):" }</p>
+            // <div class="radio-buttons" style="display: flex; align-items: center;">
+            //     <label class="l-radio" for="TOOT">
+            //         <input type="radio" id="TOOT" name="player1" value="TOOT" onclick={on_player_select_toototto.clone()} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerToot} />
+            //         <span>{"TOOT"}</span>
+            //     </label>
+            //     <label class="l-radio" for="OTTO">
+            //         <input type="radio" id="OTTO" name="player1" value="OTTO" onclick={on_player_select_toototto} checked={app_state.player_as_toot_otto == PlayerAsTootOtto::PlayerOtto} />
+            //         <span>{"OTTO"}</span>
+            //     </label>
+            // </div>
 
             // <p>{ "Select the play mode ('none' for 2-human players, 'easy' for easy computer opponent, 'hard' for hard computer opponent):" }</p>
             // <div style="display: flex; align-items: center;">
@@ -288,7 +291,7 @@ fn home() -> Html {
 #[function_component(Instructions)]
 fn instructions() -> Html {
     html! {
-        <div>
+        <div class="content_padding">
             <Link<Route> to={Route::Home}>
                 <button class="btn-back">
                     <span class="circle" aria-hidden="true">
@@ -297,39 +300,34 @@ fn instructions() -> Html {
                     <span class="button-text">{"Back to Home"}</span>
                 </button>
             </Link<Route>>
-            <h1>{ "Instructions" }</h1>
-            <p>{ "These are instructions on how to play Connect Four." }</p>
-            <p>{ "Place your discs by clicking the buttons and try to get four in a row." }</p>
-
+            <h1 class="text_titles">{ "Instructions" }</h1>
+            <h2 class="text_titles">{ "How to play our Connect Four:" }</h2>
             <p>{ "Connect Four is a two-player connection game in which the players take turns
-            dropping colored discs from the top into a seven-column, six-row vertically suspended 
+            dropping their disc/icons from the top into a seven-column, six-row vertically suspended 
             grid. The objective of the game is to be the first to form a horizontal, vertical, 
-            or diagonal line of four of one's own discs." }</p>
-            <br/>
-            <div><h5>{ "To play Connect Four follow the following steps:" }</h5></div>
-            <ul>
-                <li>{ "A new game describes discs of which color belongs to which player" }</li>
-                <li>{ "Click on the desired column on the game board to place your disc" }</li>
-                <li>{ "Try to connect 4 of your colored discs either horizontally or vertically or diagonally" }</li>
-            </ul>
-            <br/>
-            { "For More information on Connect Four click " }
+            or diagonal line of four of one's own discs/icons. In our implementation, 
+            a player can play against a person or a computer (with easy or hard modes); 
+            there are different two icons, per player, to choose between as their representative icon of the game; 
+            the Player1 goes first, so Player2/Computer is always second to play;
+            a tie is made when the board fills without a winner." }</p>
+
+            { "For more information on the official Connect Four game, click: " }
             <a href="https://en.wikipedia.org/wiki/Connect_Four">{ "here" }</a>
             <br/>
 
-            <p>{ "These are instructions on how to play Toot and Otto." }</p>
-            <p>{ "Place your discs by clicking the buttons and try to complete a spelling of TOOT or OTTO." }</p>
-            <br/>
-            <div><h5>{ "To play Toot and Otto follow the following steps:" }</h5></div>
-            <ul>
-                <li>{ "A new game describes discs of which name (TooT or Otto) belongs to which player" }</li>
-                <li>{ "Click on the desired column on the game board to place your disc of either T or O" }</li>
-                <li>{ "One player is TOOT and the other player is OTTO. Each takes six O's
-                and six T's. The first player who spells his or her name - up, down, 
-                sideways, or on the diagonal - wins!" }</li>
-            </ul>
-            <br/>
-            { "For More information on Toot and Otto click " }
+            <h2 class="text_titles">{ "How to play our Toot and Otto:" }</h2>
+            <p>{ "Toot and Otto is a two-player connection game in which the players take turns
+            dropping their selections of O or T (as representations of disc/icons) 
+            from the top into a six-column, four-row vertically suspended 
+            grid. Players choose if they will represent Toot or Otto before the game begins. 
+            The objective of the game is to be the first to form a horizontal, vertical, 
+            or diagonal spelling of one's own name (i.e. if they are Toot, they want to make TOOT somewhere in the grid). 
+            In our implementation, 
+            a player can play against a person or a computer (with easy or hard modes); 
+            the Player1 goes first and is always TOOT (in the official game, TOOT always goes first); 
+            so Player2/Computer is always OTTO;
+            a tie is made when the board fills without a winner." }</p>
+            { "For more information on the official Toot and Otto game, click: " }
             <a href="https://boardgamegeek.com/boardgame/19530/toot-and-otto">{ "here" }</a>
             <br/>
         </div>
@@ -527,14 +525,14 @@ fn connect_four_game() -> Html {
                     <span class="button-text">{"Back to Home"}</span>
                 </button>
             </Link<Route>>
-            <h1 class="text_titles">{ "Connect Four" }</h1>
+            <h2 class="text_titles">{ "Connect Four" }</h2>
 
             <h2 class="radio-buttons" style="display: flex; align-items: center;">
                 { format!("Status: ") }
                 { format!("Player1 - ") }
-                <img src={players_icon} width="50" height="50" />
+                <img src={players_icon} width="75" height="75" />
                 { format!(", Player2/Computer - ") }
-                <img src={comp_icon} width="50" height="50" />
+                <img src={comp_icon} width="75" height="75" />
             </h2>
             <div class="radio-buttons" style="display: flex; align-items: center;">
                 <text>{ "Robot: "}</text>
@@ -596,7 +594,7 @@ fn connect_four_game() -> Html {
                                                             // UI prediction of the future position of next move
                                                             if let Some(pos) = *predicted_pos {
 
-                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img src={current_player_icon} style="opacity:0.6; transform: translate(-10px, -8px);" width="80" height="80"/> } }
+                                                                if row == pos.0 && col == pos.1 && is_enabled { html! { <img src={current_player_icon} style="opacity:0.6; transform: translate(-13px, -8px);" width="80" height="80"/> } }
 
                                                                 else {html! {}}
                                                             } else {
@@ -604,8 +602,8 @@ fn connect_four_game() -> Html {
                                                             }
                                                         },
 
-                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
-                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} style="transform: translate(-10px, -8px);" width="80" height="80" /> },
+                                                        connect4::Cell::Occupied(Player::Red) => html! { <img src={players_icon} style="transform: translate(-13px, -8px);" width="80" height="80" /> },
+                                                        connect4::Cell::Occupied(Player::Yellow) => html! { <img src={comp_icon} style="transform: translate(-13px, -8px);" width="80" height="80" /> },
 
                                                     }
                                                 }
@@ -829,7 +827,7 @@ fn toot_otto_game() -> Html {
                     <span>{"hard"}</span>
                 </label>
             </div>
-            <p>{ format!("Current turn: {}", current_player) }</p>
+            <h2>{ format!("Current turn: {}", current_player) }</h2>
             <div>
                 <button
                     style={
