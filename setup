@@ -1,0 +1,8 @@
+cargo install trunk
+rustup target add wasm32-unknown-unknown
+
+if doing backend, Backend runs on port 3000. cd into backend and do:
+cargo run
+
+Frontend runs on port 8000. cd into frontend and do:
+trunk serve
